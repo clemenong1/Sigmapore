@@ -215,7 +215,6 @@ function AuthScreen() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      Alert.alert('Success', 'Logged in successfully!');
     } catch (error: any) {
       Alert.alert('Login Error', error.message);
     }
