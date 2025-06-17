@@ -5,12 +5,12 @@ import { getFirestore, enableNetwork, disableNetwork } from "firebase/firestore"
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyA0TwinKuJzfZ1ZnROtsR6Mag8lZ1L3tSo",
-  authDomain: "health-pulse-5d20b.firebaseapp.com",
-  projectId: "health-pulse-5d20b",
-  storageBucket: "health-pulse-5d20b.firebasestorage.app",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef123456789",
+  apiKey: "AIzaSyCndacyZmFXjN7JixfNYM8LjDMCwTIMyBI",
+  authDomain: "sigmapore-52908.firebaseapp.com",
+  projectId: "sigmapore-52908",
+  storageBucket: "sigmapore-52908.firebasestorage.app",
+  messagingSenderId: "470470428150",
+  appId: "1:470470428150:web:e7c6c6c9abffa6e4f273d7"
 };
 
 // Initialize Firebase
@@ -31,32 +31,5 @@ export const COLLECTIONS = {
   USERS: 'users',
   REPORTS: 'reports'
 };
-
-// User data structure
-export const createUserData = (uid, email, fullName, country, phoneNumber = '') => ({
-  uid,
-  email,
-  fullName,
-  phoneNumber,
-  country,
-  points: 0,
-  badges: [],
-  totalReports: 0,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-});
-
-// Report data structure
-export const createReportData = (title, description, lat, lng, userId, userName) => ({
-  title,
-  description,
-  lat,
-  lng,
-  userId,
-  userName,
-  verified: false,
-  createdAt: new Date().toISOString(),
-  timestamp: null // Will be set to serverTimestamp() when saving
-});
 
 export default app; 

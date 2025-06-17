@@ -199,12 +199,9 @@ const MapScreen = ({ user }) => {
   };
 
   const handleMarkerPress = (report) => {
-    const reporterInfo = report.userName || report.userEmail || 'Anonymous';
-    const verifiedText = report.verified ? ' ✅ Verified' : '';
-    
     Alert.alert(
-      report.title + verifiedText,
-      `${report.description}\n\n👤 Reported by: ${reporterInfo}\n🕒 ${formatDate(report.timestamp)}`,
+      report.title,
+      `${report.description}\n\n${formatDate(report.timestamp)}`,
       [{ text: 'OK' }]
     );
   };
@@ -253,8 +250,8 @@ const MapScreen = ({ user }) => {
           <Marker
             key={report.id}
             coordinate={{
-              latitude: report.lat || report.latitude,
-              longitude: report.lng || report.longitude,
+              latitude: report.latitude,
+              longitude: report.longitude,
             }}
             title={report.title}
             description={`${report.description} • ${formatDate(report.timestamp)}`}
