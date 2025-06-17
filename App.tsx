@@ -40,66 +40,6 @@ const COUNTRIES = [
   'Singapore'
 ];
 
-interface HealthDistrict {
-  id: string;
-  name: string;
-  icon: string;
-  percentage: number;
-  color: string;
-  description: string;
-}
-
-const healthDistricts: HealthDistrict[] = [
-  {
-    id: '1',
-    name: 'Wellness District',
-    icon: '🏥',
-    percentage: 94,
-    color: '#4CAF50',
-    description: 'Public health centers'
-  },
-  {
-    id: '2',
-    name: 'Active Quarter',
-    icon: '🏃',
-    percentage: 87,
-    color: '#FF9800',
-    description: 'Community fitness'
-  },
-  {
-    id: '3',
-    name: 'Green Commons',
-    icon: '🌱',
-    percentage: 76,
-    color: '#8BC34A',
-    description: 'Air quality'
-  },
-  {
-    id: '4',
-    name: 'Nutrition Hub',
-    icon: '🍎',
-    percentage: 89,
-    color: '#F44336',
-    description: 'Food security'
-  },
-  {
-    id: '5',
-    name: 'Mental Wellness Zone',
-    icon: '💚',
-    percentage: 82,
-    color: '#9C27B0',
-    description: 'Community support'
-  },
-  {
-    id: '6',
-    name: 'Education Heights',
-    icon: '🎓',
-    percentage: 91,
-    color: '#2196F3',
-    description: 'Health literacy'
-  }
-];
-
 interface UserData {
   username: string;
   email: string;
@@ -378,34 +318,6 @@ function AuthScreen() {
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
-  );
-}
-
-function DistrictCard({ district }: { district: HealthDistrict }) {
-  const buildingHeight = (district.percentage / 100) * 80;
-  
-  return (
-    <View style={styles.districtCard}>
-      <View style={styles.districtHeader}>
-        <Text style={styles.districtIcon}>{district.icon}</Text>
-        <Text style={styles.districtName}>{district.name}</Text>
-      </View>
-      
-      <View style={styles.buildingContainer}>
-        <View 
-          style={[
-            styles.building, 
-            { 
-              height: buildingHeight, 
-              backgroundColor: district.color 
-            }
-          ]} 
-        />
-        <Text style={styles.percentage}>{district.percentage}%</Text>
-      </View>
-      
-      <Text style={styles.description}>{district.description}</Text>
-    </View>
   );
 }
 
@@ -741,14 +653,6 @@ function HomeScreen({ user }: { user: User }) {
             <Text style={styles.genderLabel}>Female ({populationData.demographics.female.percentage}%)</Text>
           </View>
         </View>
-      </View>
-
-      {/* Neighborhood Districts */}
-      <Text style={styles.sectionTitle}>🏘️ Health Districts</Text>
-      <View style={styles.districtsGrid}>
-        {healthDistricts.map((district) => (
-          <DistrictCard key={district.id} district={district} />
-        ))}
       </View>
     </ScrollView>
   );

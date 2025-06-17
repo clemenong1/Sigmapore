@@ -7,6 +7,7 @@ import {
   Alert,
   TouchableOpacity,
   Modal,
+  SafeAreaView,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -664,7 +665,7 @@ const SingaporeMapScreen = ({ user }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Header with dropdown */}
       <View style={styles.header}>
         <TouchableOpacity 
@@ -745,7 +746,7 @@ const SingaporeMapScreen = ({ user }) => {
           </View>
         </TouchableOpacity>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
