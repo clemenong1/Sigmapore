@@ -378,4 +378,599 @@ export const dashboardStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+});
+
+// Main styles for all screens
+export const styles = StyleSheet.create({
+  // Common screen styles
+  screenContainer: {
+    flex: 1,
+  },
+  scrollContainer: {
+    flex: 1,
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#B0BEC5',
+  },
+
+  // Profile/Info Screen styles
+  profileHeader: {
+    alignItems: 'center',
+    paddingVertical: 30,
+    marginBottom: 20,
+  },
+  avatarContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  avatarText: {
+    fontSize: 32,
+    color: 'white',
+  },
+  profileName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 5,
+  },
+  profileEmail: {
+    fontSize: 16,
+    color: '#B0BEC5',
+  },
+  profileSection: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  editButton: {
+    backgroundColor: 'rgba(76, 175, 80, 0.8)',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  editButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  fieldContainer: {
+    marginBottom: 20,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#B0BEC5',
+    marginBottom: 8,
+  },
+  fieldValue: {
+    fontSize: 16,
+    color: 'white',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 12,
+    borderRadius: 8,
+  },
+  fieldInput: {
+    fontSize: 16,
+    color: '#333',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    padding: 12,
+    borderRadius: 8,
+  },
+  addressInput: {
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  fieldNote: {
+    fontSize: 12,
+    color: '#90A4AE',
+    marginTop: 4,
+    fontStyle: 'italic',
+  },
+  saveButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  logoutButton: {
+    backgroundColor: 'rgba(244, 67, 54, 0.8)',
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  logoutButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  // Report Screen styles
+  reportHeader: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    marginBottom: 20,
+  },
+  reportTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  reportSubtitle: {
+    fontSize: 14,
+    color: '#B0BEC5',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  locationContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 15,
+    padding: 15,
+    marginBottom: 20,
+  },
+  locationLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+    marginBottom: 8,
+  },
+  locationLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  locationText: {
+    fontSize: 14,
+    color: '#B0BEC5',
+    marginLeft: 8,
+  },
+  locationButton: {
+    backgroundColor: 'rgba(76, 175, 80, 0.8)',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  locationButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  sectionContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 20,
+  },
+  categoriesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  categoryCard: {
+    width: (width - 80) / 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 15,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  selectedCategoryCard: {
+    borderColor: '#4CAF50',
+    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+  },
+  categoryIcon: {
+    fontSize: 30,
+    marginBottom: 8,
+  },
+  categoryTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  categoryDescription: {
+    fontSize: 12,
+    color: '#B0BEC5',
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+    marginBottom: 8,
+  },
+  textInput: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 10,
+    padding: 15,
+    fontSize: 16,
+    color: '#333',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  textArea: {
+    minHeight: 120,
+    textAlignVertical: 'top',
+  },
+  characterCount: {
+    fontSize: 12,
+    color: '#B0BEC5',
+    textAlign: 'right',
+    marginTop: 5,
+  },
+  submitButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  submitButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  recentReportCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 10,
+  },
+  recentReportHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  recentReportTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+    flex: 1,
+  },
+  recentReportTime: {
+    fontSize: 12,
+    color: '#B0BEC5',
+  },
+  recentReportDescription: {
+    fontSize: 14,
+    color: '#B0BEC5',
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  recentReportFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  recentReportStatus: {
+    fontSize: 12,
+    color: '#FFB74D',
+    fontWeight: '600',
+  },
+  recentReportCategory: {
+    fontSize: 20,
+  },
+
+  // Bottom Navigation styles
+  bottomNavigation: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(13, 20, 33, 0.95)',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  navItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  activeNavItem: {
+    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+    borderRadius: 12,
+  },
+  navIcon: {
+    fontSize: 24,
+    marginBottom: 4,
+    color: '#B0BEC5',
+  },
+  activeNavIcon: {
+    color: '#4CAF50',
+  },
+  navLabel: {
+    fontSize: 12,
+    color: '#B0BEC5',
+    fontWeight: '500',
+  },
+  activeNavLabel: {
+    color: '#4CAF50',
+    fontWeight: '600',
+  },
+
+  // Dashboard styles (from original App.tsx)
+  dashboardContainer: {
+    flex: 1,
+  },
+  dashboardContent: {
+    flex: 1,
+  },
+  header: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  dashboardTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  tagline: {
+    fontSize: 14,
+    color: '#B0BEC5',
+    textAlign: 'center',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 20,
+    marginBottom: 30,
+  },
+  statCard: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 15,
+    borderRadius: 10,
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#B0BEC5',
+    marginTop: 5,
+  },
+  districtsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+  },
+  districtCard: {
+    width: (width - 45) / 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 15,
+    padding: 15,
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+  districtHeader: {
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  districtIcon: {
+    fontSize: 30,
+    marginBottom: 5,
+  },
+  districtName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+  },
+  buildingContainer: {
+    alignItems: 'center',
+    height: 100,
+    justifyContent: 'flex-end',
+    marginBottom: 10,
+  },
+  building: {
+    width: 40,
+    borderRadius: 5,
+    marginBottom: 5,
+  },
+  percentage: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+  },
+  description: {
+    fontSize: 12,
+    color: '#B0BEC5',
+    textAlign: 'center',
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 10,
+  },
+  logoutButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 15,
+  },
+  logoutText: {
+    color: '#FF5722',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: '#4CAF50',
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+
+  // Auth Screen styles (from original App.tsx)
+  loginContainer: {
+    flex: 1,
+  },
+  loginContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  citySkylne: {
+    marginBottom: 40,
+  },
+  skylineText: {
+    fontSize: 40,
+    textAlign: 'center',
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#E8F5E8',
+    textAlign: 'center',
+    marginBottom: 40,
+  },
+  inputContainer: {
+    width: '100%',
+    maxWidth: 300,
+  },
+  input: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+    fontSize: 16,
+    color: '#333',
+  },
+  enterButton: {
+    backgroundColor: '#4CAF50',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  enterButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  authToggle: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 25,
+    padding: 3,
+    marginBottom: 30,
+  },
+  toggleButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  activeToggle: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  },
+  toggleText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  activeToggleText: {
+    color: '#1976D2',
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
+  countryDropdownWrapper: {
+    marginBottom: 15,
+  },
+  countryInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    padding: 10,
+    borderRadius: 10,
+  },
+  countryInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+  },
+  countryArrow: {
+    fontSize: 12,
+    color: '#666',
+  },
+  countryArrowUp: {
+    transform: [{ rotate: '180deg' }],
+  },
+  countryDropdown: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    maxHeight: 200,
+    marginTop: 5,
+  },
+  countryOption: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  countryOptionText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  lastCountryOption: {
+    borderBottomWidth: 0,
+  },
 }); 

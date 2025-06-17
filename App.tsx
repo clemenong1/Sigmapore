@@ -24,6 +24,9 @@ import {
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from './src/config/firebase';
 import MapScreen from './src/components/MapScreen';
+import SingaporeMapScreen from './components/SingaporeMapScreen';
+import InfoScreen from './src/components/InfoScreen';
+import { styles } from './src/styles/styles';
 
 const { width, height } = Dimensions.get('window');
 
@@ -267,29 +270,38 @@ function AuthScreen() {
       style={styles.loginContainer}
     >
       <SafeAreaView style={styles.loginContent}>
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.citySkylne}>
-            <Text style={styles.skylineText}>🏙️🏢🏗️🏘️🌃</Text>
+            <Text style={styles.skylineText}>🏙️</Text>
           </View>
           
-          <Text style={styles.title}>🏙️ Health Pulse</Text>
-          <Text style={styles.subtitle}>A Living City Health Visualization</Text>
-          
+          <Text style={styles.title}>Health Pulse</Text>
+          <Text style={styles.subtitle}>
+            Transform community health data into a breathing cityscape
+          </Text>
+
           <View style={styles.authToggle}>
             <TouchableOpacity
               style={[styles.toggleButton, isLogin && styles.activeToggle]}
-              onPress={() => setIsLogin(true)}
+              onPress={() => !isLogin && toggleMode()}
             >
-              <Text style={[styles.toggleText, isLogin && styles.activeToggleText]}>Login</Text>
+              <Text style={[styles.toggleText, isLogin && styles.activeToggleText]}>
+                Login
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.toggleButton, !isLogin && styles.activeToggle]}
-              onPress={() => setIsLogin(false)}
+              onPress={() => isLogin && toggleMode()}
             >
-              <Text style={[styles.toggleText, !isLogin && styles.activeToggleText]}>Sign Up</Text>
+              <Text style={[styles.toggleText, !isLogin && styles.activeToggleText]}>
+                Sign Up
+              </Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.inputContainer}>
             {!isLogin && (
               <TextInput
@@ -320,13 +332,13 @@ function AuthScreen() {
               onChangeText={setPassword}
               secureTextEntry
             />
-            
+
             {!isLogin && (
               <>
                 <CountryDropdown
                   value={country}
                   onSelect={setCountry}
-                  placeholder="Select Country"
+                  placeholder="Select your country"
                 />
                 
                 <TextInput
@@ -336,18 +348,17 @@ function AuthScreen() {
                   value={homeAddress}
                   onChangeText={setHomeAddress}
                   multiline
-                  numberOfLines={2}
                 />
               </>
             )}
-            
+
             <TouchableOpacity
               style={[styles.enterButton, loading && styles.disabledButton]}
               onPress={isLogin ? handleLogin : handleSignup}
               disabled={loading}
             >
               <Text style={styles.enterButtonText}>
-                {loading ? 'Please wait...' : (isLogin ? 'Login to Health City' : 'Create Account')}
+                {loading ? 'Please wait...' : isLogin ? 'Login' : 'Create Account'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -372,10 +383,10 @@ function DistrictCard({ district }: { district: HealthDistrict }) {
           style={[
             styles.building, 
             { 
-              height: buildingHeight,
+              height: buildingHeight, 
               backgroundColor: district.color 
             }
-          ]}
+          ]} 
         />
         <Text style={styles.percentage}>{district.percentage}%</Text>
       </View>
@@ -385,14 +396,103 @@ function DistrictCard({ district }: { district: HealthDistrict }) {
   );
 }
 
-function Dashboard({ user }: { user: User }) {
-  const [activeTab, setActiveTab] = useState('overview');
+function HomeScreen({ user }: { user: User }) {
+  return (
+    <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <View style={styles.header}>
+        <Text style={styles.dashboardTitle}>🏙️ Health City</Text>
+        <Text style={styles.welcomeText}>Welcome, {user.email}</Text>
+        <Text style={styles.tagline}>Transform community health data into a breathing cityscape</Text>
+      </View>
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error: any) {
-      Alert.alert('Logout Error', error.message);
+      <View style={styles.statsContainer}>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>2.8M</Text>
+          <Text style={styles.statLabel}>Population</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>34.2</Text>
+          <Text style={styles.statLabel}>Average Age</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>86%</Text>
+          <Text style={styles.statLabel}>Overall Wellbeing</Text>
+        </View>
+      </View>
+      
+      <Text style={styles.sectionTitle}>🏘️ Neighborhood Districts</Text>
+      
+      <View style={styles.districtsGrid}>
+        {healthDistricts.map((district) => (
+          <DistrictCard key={district.id} district={district} />
+        ))}
+      </View>
+    </ScrollView>
+  );
+}
+
+function BottomNavigation({ 
+  activeTab, 
+  onTabPress 
+}: { 
+  activeTab: string; 
+  onTabPress: (tab: string) => void; 
+}) {
+  const tabs = [
+    { id: 'home', label: 'Home', icon: '🏠' },
+    { id: 'map', label: 'Map', icon: '🗺️' },
+    { id: 'report', label: 'Report', icon: '📋' },
+    { id: 'info', label: 'Info', icon: '👤' },
+  ];
+
+  return (
+    <View style={styles.bottomNavigation}>
+      {tabs.map((tab) => (
+        <TouchableOpacity
+          key={tab.id}
+          style={[
+            styles.navItem,
+            activeTab === tab.id && styles.activeNavItem,
+          ]}
+          onPress={() => onTabPress(tab.id)}
+        >
+          <Text
+            style={[
+              styles.navIcon,
+              activeTab === tab.id && styles.activeNavIcon,
+            ]}
+          >
+            {tab.icon}
+          </Text>
+          <Text
+            style={[
+              styles.navLabel,
+              activeTab === tab.id && styles.activeNavLabel,
+            ]}
+          >
+            {tab.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+}
+
+function Dashboard({ user }: { user: User }) {
+  const [activeTab, setActiveTab] = useState('home');
+
+  const renderActiveScreen = () => {
+    switch (activeTab) {
+      case 'home':
+        return <HomeScreen user={user} />;
+      case 'map':
+        return <SingaporeMapScreen user={user} />;
+      case 'report':
+        return <MapScreen user={user} />;
+      case 'info':
+        return <InfoScreen user={user} />;
+      default:
+        return <HomeScreen user={user} />;
     }
   };
 
@@ -402,64 +502,10 @@ function Dashboard({ user }: { user: User }) {
       style={styles.dashboardContainer}
     >
       <SafeAreaView style={styles.dashboardContent}>
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <Text style={styles.dashboardTitle}>🏙️ Health City</Text>
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-              <Text style={styles.logoutText}>Logout</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.welcomeText}>Welcome, {user.email}</Text>
-          <Text style={styles.tagline}>Transform community health data into a breathing cityscape</Text>
+        <View style={{ flex: 1 }}>
+          {renderActiveScreen()}
         </View>
-
-        <View style={styles.tabBar}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'overview' && styles.activeTab]}
-            onPress={() => setActiveTab('overview')}
-          >
-            <Text style={[styles.tabText, activeTab === 'overview' && styles.activeTabText]}>
-              Overview
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'reports' && styles.activeTab]}
-            onPress={() => setActiveTab('reports')}
-          >
-            <Text style={[styles.tabText, activeTab === 'reports' && styles.activeTabText]}>
-              Health Reports
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {activeTab === 'overview' ? (
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={styles.statsContainer}>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>2.8M</Text>
-                <Text style={styles.statLabel}>Population</Text>
-              </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>34.2</Text>
-                <Text style={styles.statLabel}>Average Age</Text>
-              </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>86%</Text>
-                <Text style={styles.statLabel}>Overall Wellbeing</Text>
-              </View>
-            </View>
-            
-            <Text style={styles.sectionTitle}>🏘️ Neighborhood Districts</Text>
-            
-            <View style={styles.districtsGrid}>
-              {healthDistricts.map((district) => (
-                <DistrictCard key={district.id} district={district} />
-              ))}
-            </View>
-          </ScrollView>
-        ) : (
-          <MapScreen user={user} />
-        )}
+        <BottomNavigation activeTab={activeTab} onTabPress={setActiveTab} />
       </SafeAreaView>
     </LinearGradient>
   );
@@ -499,289 +545,3 @@ export default function App() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  // Login Screen Styles
-  loginContainer: {
-    flex: 1,
-  },
-  loginContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  citySkylne: {
-    marginBottom: 40,
-  },
-  skylineText: {
-    fontSize: 40,
-    textAlign: 'center',
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#E8F5E8',
-    textAlign: 'center',
-    marginBottom: 40,
-  },
-  inputContainer: {
-    width: '100%',
-    maxWidth: 300,
-  },
-  input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-    fontSize: 16,
-    color: '#333',
-  },
-  enterButton: {
-    backgroundColor: '#4CAF50',
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  enterButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  authToggle: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 25,
-    padding: 3,
-    marginBottom: 30,
-  },
-  toggleButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  activeToggle: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  },
-  toggleText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  activeToggleText: {
-    color: '#1976D2',
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  
-  // Country Dropdown Styles
-  countryDropdownWrapper: {
-    marginBottom: 15,
-  },
-  countryInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    padding: 10,
-    borderRadius: 10,
-  },
-  countryInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-  },
-  countryArrow: {
-    fontSize: 12,
-    color: '#666',
-  },
-  countryArrowUp: {
-    transform: [{ rotate: '180deg' }],
-  },
-  countryDropdown: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    maxHeight: 200,
-    marginTop: 5,
-  },
-  countryOption: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-  },
-  countryOptionText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  lastCountryOption: {
-    borderBottomWidth: 0,
-  },
-  
-  // Dashboard Styles
-  dashboardContainer: {
-    flex: 1,
-  },
-  dashboardContent: {
-    flex: 1,
-  },
-  header: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  dashboardTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  tagline: {
-    fontSize: 14,
-    color: '#B0BEC5',
-    textAlign: 'center',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 20,
-    marginBottom: 30,
-  },
-  statCard: {
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: 15,
-    borderRadius: 10,
-    flex: 1,
-    marginHorizontal: 5,
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#4CAF50',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#B0BEC5',
-    marginTop: 5,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  districtsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 15,
-  },
-  districtCard: {
-    width: (width - 45) / 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
-    alignItems: 'center',
-  },
-  districtHeader: {
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  districtIcon: {
-    fontSize: 30,
-    marginBottom: 5,
-  },
-  districtName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-  },
-  buildingContainer: {
-    alignItems: 'center',
-    height: 100,
-    justifyContent: 'flex-end',
-    marginBottom: 10,
-  },
-  building: {
-    width: 40,
-    borderRadius: 5,
-    marginBottom: 5,
-  },
-  percentage: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#4CAF50',
-  },
-  description: {
-    fontSize: 12,
-    color: '#B0BEC5',
-    textAlign: 'center',
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 10,
-  },
-  logoutButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 15,
-  },
-  logoutText: {
-    color: '#FF5722',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  welcomeText: {
-    fontSize: 16,
-    color: '#4CAF50',
-    textAlign: 'center',
-    marginBottom: 5,
-  },
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 25,
-    padding: 3,
-    marginHorizontal: 20,
-    marginBottom: 20,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 20,
-  },
-  activeTab: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  activeTabText: {
-    color: '#1976D2',
-  },
-});
