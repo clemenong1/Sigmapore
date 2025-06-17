@@ -13,17 +13,41 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs location access to show health reports on the map",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs location access to show health reports on the map"
+      },
+      "config": {
+        "googlemapsApiKey": "AIzaSyA0TwinKuJzfZ1ZnROtsR6Mag8lZ1L3tSo"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyA0TwinKuJzfZ1ZnROtsR6Mag8lZ1L3tSo"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Health Pulse to use your location to show nearby health reports."
+        }
+      ]
+    ]
   }
 }

@@ -22,7 +22,8 @@ import {
   User
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from './firebaseConfig';
+import { auth, db } from './src/config/firebase';
+import MapScreen from './src/components/MapScreen';
 
 const { width, height } = Dimensions.get('window');
 
@@ -386,6 +387,8 @@ function DistrictCard({ district }: { district: HealthDistrict }) {
 }
 
 function Dashboard({ user }: { user: User }) {
+  const [activeTab, setActiveTab] = useState('overview');
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -400,41 +403,64 @@ function Dashboard({ user }: { user: User }) {
       style={styles.dashboardContainer}
     >
       <SafeAreaView style={styles.dashboardContent}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <View style={styles.headerTop}>
-              <Text style={styles.dashboardTitle}>🏙️ Health City</Text>
-              <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                <Text style={styles.logoutText}>Logout</Text>
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.welcomeText}>Welcome, {user.email}</Text>
-            <Text style={styles.tagline}>Transform community health data into a breathing cityscape</Text>
+        <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <Text style={styles.dashboardTitle}>🏙️ Health City</Text>
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+              <Text style={styles.logoutText}>Logout</Text>
+            </TouchableOpacity>
           </View>
-          
-          <View style={styles.statsContainer}>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>2.8M</Text>
-              <Text style={styles.statLabel}>Population</Text>
+          <Text style={styles.welcomeText}>Welcome, {user.email}</Text>
+          <Text style={styles.tagline}>Transform community health data into a breathing cityscape</Text>
+        </View>
+
+        <View style={styles.tabBar}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'overview' && styles.activeTab]}
+            onPress={() => setActiveTab('overview')}
+          >
+            <Text style={[styles.tabText, activeTab === 'overview' && styles.activeTabText]}>
+              Overview
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'reports' && styles.activeTab]}
+            onPress={() => setActiveTab('reports')}
+          >
+            <Text style={[styles.tabText, activeTab === 'reports' && styles.activeTabText]}>
+              Health Reports
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {activeTab === 'overview' ? (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={styles.statsContainer}>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>2.8M</Text>
+                <Text style={styles.statLabel}>Population</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>34.2</Text>
+                <Text style={styles.statLabel}>Average Age</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>86%</Text>
+                <Text style={styles.statLabel}>Overall Wellbeing</Text>
+              </View>
             </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>34.2</Text>
-              <Text style={styles.statLabel}>Average Age</Text>
+            
+            <Text style={styles.sectionTitle}>🏘️ Neighborhood Districts</Text>
+            
+            <View style={styles.districtsGrid}>
+              {healthDistricts.map((district) => (
+                <DistrictCard key={district.id} district={district} />
+              ))}
             </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>86%</Text>
-              <Text style={styles.statLabel}>Overall Wellbeing</Text>
-            </View>
-          </View>
-          
-          <Text style={styles.sectionTitle}>🏘️ Neighborhood Districts</Text>
-          
-          <View style={styles.districtsGrid}>
-            {healthDistricts.map((district) => (
-              <DistrictCard key={district.id} district={district} />
-            ))}
-          </View>
-        </ScrollView>
+          </ScrollView>
+        ) : (
+          <MapScreen user={user} />
+        )}
       </SafeAreaView>
     </LinearGradient>
   );
@@ -529,6 +555,40 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  authToggle: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 25,
+    padding: 3,
+    marginBottom: 30,
+  },
+  toggleButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  activeToggle: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  },
+  toggleText: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  activeToggleText: {
+    color: '#1976D2',
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
   
   // Country Dropdown Styles
@@ -676,40 +736,6 @@ const styles = StyleSheet.create({
     color: '#B0BEC5',
     textAlign: 'center',
   },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  authToggle: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 25,
-    padding: 3,
-    marginBottom: 30,
-  },
-  toggleButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  activeToggle: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  },
-  toggleText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  activeToggleText: {
-    color: '#1976D2',
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -733,5 +759,30 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     textAlign: 'center',
     marginBottom: 5,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 25,
+    padding: 3,
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 20,
+  },
+  activeTab: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  },
+  tabText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  activeTabText: {
+    color: '#1976D2',
   },
 });
