@@ -83,43 +83,6 @@ export const mapStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  zoomControls: {
-    position: 'absolute',
-    top: 100,
-    left: 13,
-    zIndex: 1000,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  zoomButton: {
-    width: 22,
-    height: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderWidth: 1,
-    borderColor: '#888',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#aaa',
-  },
-  zoomButtonTop: {
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-  },
-  zoomButtonBottom: {
-    borderBottomLeftRadius: 4,
-    borderBottomRightRadius: 4,
-    borderBottomWidth: 0,
-  },
-  zoomIcon: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'black',
-    textAlign: 'center',
-  },
 });
 
 export const modalStyles = StyleSheet.create({
@@ -511,7 +474,6 @@ export const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#0D1421',
   },
   loadingText: {
     marginTop: 10,
@@ -564,7 +526,6 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 10,
   },
   editButton: {
     backgroundColor: 'rgba(76, 175, 80, 0.8)',
@@ -769,20 +730,6 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  lightButton: {
-    backgroundColor: '#f8f9fa',
-    paddingVertical: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-  },
-  lightButtonText: {
-    color: '#4CAF50',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   recentReportCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 10,
@@ -827,15 +774,11 @@ export const styles = StyleSheet.create({
 
   // Bottom Navigation styles
   bottomNavigation: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     backgroundColor: 'rgba(13, 20, 33, 0.95)',
-    paddingTop: 8,
+    paddingTop: 12,
     paddingHorizontal: 8,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 12,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
@@ -1028,7 +971,7 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 15,
     fontSize: 16,
-    color: '#000',
+    color: '#333',
   },
   enterButton: {
     backgroundColor: '#4CAF50',
@@ -1089,7 +1032,7 @@ export const styles = StyleSheet.create({
   countryInput: {
     flex: 1,
     fontSize: 16,
-    color: '#000',
+    color: '#333',
   },
   countryArrow: {
     fontSize: 12,
@@ -1143,28 +1086,6 @@ export const styles = StyleSheet.create({
   liveStatsSubtitle: {
     fontSize: 14,
     color: '#B0BEC5',
-  },
-  populationContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 15,
-    padding: 20,
-    marginHorizontal: 15,
-    marginVertical: 15,
-  },
-  populationCard: {
-    alignItems: 'center',
-    padding: 10,
-  },
-  populationNumber: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#4CAF50',
-    marginVertical: 5,
-  },
-  populationLabel: {
-    fontSize: 14,
-    color: '#B0BEC5',
-    textAlign: 'center',
   },
   todayStatsContainer: {
     margin: 15,
@@ -1234,8 +1155,9 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   chartContainer: {
+    marginHorizontal: 16,
     marginTop: 8,
-    backgroundColor: '#0D1421',
+    backgroundColor: 'rgba(13, 20, 33, 0.7)',
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
@@ -1245,7 +1167,6 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    overflow: 'hidden',
   },
   noDataContainer: {
     justifyContent: 'center',
@@ -1256,5 +1177,321 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.7)',
     fontWeight: '500',
-  }
+  },
+
+  // Quiz Screen Styles
+  quizContainer: {
+    flex: 1,
+    padding: 20,
+  },
+  quizHeader: {
+    alignItems: 'center',
+    marginBottom: 30,
+    paddingTop: 20,
+  },
+  quizTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  quizSubtitle: {
+    fontSize: 16,
+    color: '#B0BEC5',
+    textAlign: 'center',
+  },
+  quizStatsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 30,
+  },
+  quizStatCard: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginHorizontal: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(76, 175, 80, 0.3)',
+  },
+  quizStatNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginBottom: 4,
+  },
+  quizStatLabel: {
+    fontSize: 12,
+    color: '#B0BEC5',
+    textAlign: 'center',
+  },
+  quizCompletedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 20,
+    padding: 40,
+    marginTop: 20,
+  },
+  quizCompletedIcon: {
+    fontSize: 60,
+    marginBottom: 20,
+  },
+  quizCompletedTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  quizCompletedText: {
+    fontSize: 16,
+    color: '#B0BEC5',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  quizCompletedSubtext: {
+    fontSize: 14,
+    color: '#E0E0E0',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  quizCompletedResult: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  quizQuestionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  quizQuestion: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 40,
+    lineHeight: 30,
+    paddingHorizontal: 10,
+  },
+  quizAnswersContainer: {
+    marginBottom: 30,
+  },
+  quizAnswerButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 20,
+    borderRadius: 15,
+    marginBottom: 15,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    minHeight: 70,
+    justifyContent: 'center',
+  },
+  quizAnswerButtonSelected: {
+    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+    borderColor: '#4CAF50',
+  },
+  quizAnswerButtonCorrect: {
+    backgroundColor: 'rgba(76, 175, 80, 0.3)',
+    borderColor: '#4CAF50',
+  },
+  quizAnswerButtonIncorrect: {
+    backgroundColor: 'rgba(244, 67, 54, 0.3)',
+    borderColor: '#F44336',
+  },
+  quizAnswerText: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  quizAnswerTextSelected: {
+    color: '#4CAF50',
+    fontWeight: 'bold',
+  },
+  quizSubmitButton: {
+    backgroundColor: '#4CAF50',
+    padding: 18,
+    borderRadius: 15,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  quizSubmitButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  quizSubmittingContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  quizSubmittingText: {
+    color: '#4CAF50',
+    fontSize: 16,
+    marginLeft: 10,
+  },
+
+  // Quiz Header Styles
+  quizHeaderContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
+  leaderboardButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 12,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: 'rgba(76, 175, 80, 0.3)',
+  },
+  leaderboardButtonIcon: {
+    fontSize: 24,
+  },
+
+  // Leaderboard Modal Styles
+  leaderboardOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  leaderboardContainer: {
+    width: '95%',
+    height: '85%',
+    borderRadius: 20,
+    padding: 20,
+  },
+  leaderboardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  leaderboardTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+  },
+  leaderboardSubtitle: {
+    fontSize: 16,
+    color: '#B0BEC5',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  leaderboardCloseButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 8,
+    borderRadius: 20,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  leaderboardCloseButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  leaderboardLoading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  leaderboardLoadingText: {
+    color: '#B0BEC5',
+    fontSize: 16,
+    marginTop: 15,
+  },
+  leaderboardList: {
+    flex: 1,
+  },
+  leaderboardItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  leaderboardItemTopThree: {
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    borderColor: 'rgba(255, 215, 0, 0.3)',
+  },
+  leaderboardItemCurrentUser: {
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    borderColor: 'rgba(76, 175, 80, 0.3)',
+  },
+  leaderboardRank: {
+    width: 50,
+    alignItems: 'center',
+  },
+  leaderboardRankText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  leaderboardRankTextTopThree: {
+    fontSize: 24,
+  },
+  leaderboardUserInfo: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  leaderboardUsername: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  leaderboardUsernameTopThree: {
+    color: '#FFD700',
+  },
+  leaderboardUsernameCurrentUser: {
+    color: '#4CAF50',
+  },
+  leaderboardUserStats: {
+    fontSize: 14,
+    color: '#B0BEC5',
+  },
+  leaderboardPoints: {
+    alignItems: 'center',
+  },
+  leaderboardPointsText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+  },
+  leaderboardPointsTextTopThree: {
+    color: '#FFD700',
+    fontSize: 24,
+  },
+  leaderboardPointsLabel: {
+    fontSize: 12,
+    color: '#B0BEC5',
+  },
+  leaderboardEmpty: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
+  },
+  leaderboardEmptyText: {
+    fontSize: 18,
+    color: '#B0BEC5',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  leaderboardEmptySubtext: {
+    fontSize: 14,
+    color: '#777',
+    textAlign: 'center',
+  },
 }); 
