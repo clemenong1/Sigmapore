@@ -236,16 +236,27 @@ function AuthScreen() {
       const user = userCredential.user;
       
       // Store additional user data in Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        username,
-        email,
-        country,
-        homeAddress,
-        createdAt: new Date().toISOString()
-      });
+      try {
+        await setDoc(doc(db, 'users', user.uid), {
+          username,
+          email,
+          country,
+          homeAddress,
+          createdAt: new Date().toISOString()
+        });
 
-      Alert.alert('Success', 'Account created successfully!');
+        Alert.alert('Success', 'Account created successfully!');
+      } catch (firestoreError: any) {
+        console.error('Firestore error:', firestoreError);
+        
+        // If Firestore fails, still complete signup but warn user
+        Alert.alert(
+          'Account Created', 
+          `Your account was created successfully, but there was an issue saving your profile data. Error: ${firestoreError.message}\n\nYou can update your profile later in the app.`
+        );
+      }
     } catch (error: any) {
+      console.error('Signup error:', error);
       Alert.alert('Signup Error', error.message);
     }
     setLoading(false);
@@ -441,8 +452,8 @@ function BottomNavigation({
   const tabs = [
     { id: 'home', label: 'Home', icon: '🏠' },
     { id: 'map', label: 'Map', icon: '🗺️' },
-    { id: 'report', label: 'Report', icon: '📋' },
-    { id: 'info', label: 'Info', icon: '👤' },
+    { id: 'report', label: 'Reports', icon: '📋' },
+    { id: 'info', label: 'Profile', icon: '👤' },
   ];
 
   return (
@@ -501,12 +512,12 @@ function Dashboard({ user }: { user: User }) {
       colors={['#0D1421', '#1A237E']}
       style={styles.dashboardContainer}
     >
-      <SafeAreaView style={styles.dashboardContent}>
+      <SafeAreaView style={{ flex: 1 }}>
         <View style={{ flex: 1 }}>
           {renderActiveScreen()}
         </View>
-        <BottomNavigation activeTab={activeTab} onTabPress={setActiveTab} />
       </SafeAreaView>
+      <BottomNavigation activeTab={activeTab} onTabPress={setActiveTab} />
     </LinearGradient>
   );
 }

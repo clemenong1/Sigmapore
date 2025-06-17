@@ -235,6 +235,11 @@ const MapScreen = ({ user }) => {
 
   return (
     <View style={mapStyles.container}>
+      {/* Header with instruction */}
+      <View style={mapStyles.header}>
+        <Text style={mapStyles.headerTitle}>📍 Tap a location to report!</Text>
+      </View>
+      
       <MapView
         ref={mapRef}
         provider={PROVIDER_GOOGLE}

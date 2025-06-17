@@ -22,29 +22,53 @@ const ReportModal = ({
   user,
   onReportSubmitted 
 }) => {
-  const [title, setTitle] = useState('');
+  const [selectedSickness, setSelectedSickness] = useState([]);
+  const [otherSickness, setOtherSickness] = useState('');
+  const [peopleCount, setPeopleCount] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const sicknessOptions = ['Cough', 'Fever', 'Flu', 'Others'];
+  const peopleCountOptions = ['0-2', '2-5', '5-10', '>10'];
 
   useEffect(() => {
     if (!visible) {
       // Reset form when modal closes
-      setTitle('');
+      setSelectedSickness([]);
+      setOtherSickness('');
+      setPeopleCount('');
       setDescription('');
       setErrors({});
+      setShowDropdown(false);
     }
   }, [visible]);
+
+  const handleSicknessToggle = (sickness) => {
+    if (selectedSickness.includes(sickness)) {
+      setSelectedSickness(selectedSickness.filter(s => s !== sickness));
+      if (sickness === 'Others') {
+        setOtherSickness('');
+      }
+    } else {
+      setSelectedSickness([...selectedSickness, sickness]);
+    }
+  };
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!title.trim()) {
-      newErrors.title = 'Title is required';
-    } else if (title.trim().length < 3) {
-      newErrors.title = 'Title must be at least 3 characters';
-    } else if (title.trim().length > 100) {
-      newErrors.title = 'Title must be less than 100 characters';
+    if (selectedSickness.length === 0) {
+      newErrors.sickness = 'Please select at least one sickness';
+    }
+
+    if (selectedSickness.includes('Others') && !otherSickness.trim()) {
+      newErrors.otherSickness = 'Please specify the other sickness';
+    }
+
+    if (!peopleCount) {
+      newErrors.peopleCount = 'Please select the number of people affected';
     }
 
     if (!description.trim()) {
@@ -76,8 +100,17 @@ const ReportModal = ({
     setLoading(true);
 
     try {
+      // Create title from selected sickness
+      let sicknessTitle = selectedSickness.filter(s => s !== 'Others').join(', ');
+      if (selectedSickness.includes('Others') && otherSickness.trim()) {
+        sicknessTitle += sicknessTitle ? `, ${otherSickness.trim()}` : otherSickness.trim();
+      }
+
       const reportData = {
-        title: title.trim(),
+        sickness: selectedSickness,
+        otherSickness: selectedSickness.includes('Others') ? otherSickness.trim() : '',
+        peopleCount: peopleCount,
+        title: `Health Report: ${sicknessTitle}`, // Auto-generated title
         description: description.trim(),
         latitude: location.latitude,
         longitude: location.longitude,
@@ -147,24 +180,90 @@ const ReportModal = ({
             style={modalStyles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
+            {/* Sickness Selection */}
             <View style={modalStyles.inputGroup}>
-              <Text style={modalStyles.label}>Title *</Text>
-              <TextInput
-                style={[
-                  modalStyles.input,
-                  errors.title && { borderColor: '#ff4444' }
-                ]}
-                placeholder="Brief title for your health report"
-                value={title}
-                onChangeText={setTitle}
-                maxLength={100}
-                editable={!loading}
-              />
-              {errors.title && (
-                <Text style={modalStyles.errorText}>{errors.title}</Text>
+              <Text style={modalStyles.label}>What sickness are you reporting? *</Text>
+              {sicknessOptions.map((sickness) => (
+                <TouchableOpacity
+                  key={sickness}
+                  style={modalStyles.checkboxContainer}
+                  onPress={() => handleSicknessToggle(sickness)}
+                  disabled={loading}
+                >
+                  <View style={[
+                    modalStyles.checkbox,
+                    selectedSickness.includes(sickness) && modalStyles.checkboxSelected
+                  ]}>
+                    {selectedSickness.includes(sickness) && (
+                      <Text style={modalStyles.checkboxText}>✓</Text>
+                    )}
+                  </View>
+                  <Text style={modalStyles.checkboxLabel}>{sickness}</Text>
+                </TouchableOpacity>
+              ))}
+              {errors.sickness && (
+                <Text style={modalStyles.errorText}>{errors.sickness}</Text>
+              )}
+
+              {/* Others text input */}
+              {selectedSickness.includes('Others') && (
+                <View style={{ marginTop: 10 }}>
+                  <TextInput
+                    style={[
+                      modalStyles.input,
+                      errors.otherSickness && { borderColor: '#ff4444' }
+                    ]}
+                    placeholder="Please specify the sickness"
+                    value={otherSickness}
+                    onChangeText={setOtherSickness}
+                    editable={!loading}
+                  />
+                  {errors.otherSickness && (
+                    <Text style={modalStyles.errorText}>{errors.otherSickness}</Text>
+                  )}
+                </View>
               )}
             </View>
 
+            {/* People Count Selection */}
+            <View style={modalStyles.inputGroup}>
+              <Text style={modalStyles.label}>Number of people you know with the sickness *</Text>
+              <TouchableOpacity
+                style={modalStyles.dropdownContainer}
+                onPress={() => setShowDropdown(!showDropdown)}
+                disabled={loading}
+              >
+                <Text style={[
+                  modalStyles.dropdownText,
+                  !peopleCount && modalStyles.dropdownPlaceholder
+                ]}>
+                  {peopleCount || 'Select number of people'}
+                </Text>
+                <Text style={modalStyles.dropdownArrow}>▼</Text>
+              </TouchableOpacity>
+
+              {showDropdown && (
+                <View style={modalStyles.dropdownList}>
+                  {peopleCountOptions.map((option) => (
+                    <TouchableOpacity
+                      key={option}
+                      style={modalStyles.dropdownOption}
+                      onPress={() => {
+                        setPeopleCount(option);
+                        setShowDropdown(false);
+                      }}
+                    >
+                      <Text style={modalStyles.dropdownOptionText}>{option}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+              {errors.peopleCount && (
+                <Text style={modalStyles.errorText}>{errors.peopleCount}</Text>
+              )}
+            </View>
+
+            {/* Description */}
             <View style={modalStyles.inputGroup}>
               <Text style={modalStyles.label}>Description *</Text>
               <TextInput
@@ -189,6 +288,7 @@ const ReportModal = ({
               </Text>
             </View>
 
+            {/* Location */}
             <View style={modalStyles.inputGroup}>
               <Text style={modalStyles.label}>Location</Text>
               <View style={modalStyles.locationContainer}>

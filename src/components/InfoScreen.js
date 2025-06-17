@@ -130,7 +130,7 @@ const InfoScreen = ({ user }) => {
             </Text>
           </View>
           <Text style={styles.profileName}>
-            {userProfile.fullName || userProfile.username || 'User'}
+            {userProfile.username || 'User'}
           </Text>
           <Text style={styles.profileEmail}>{userProfile.email}</Text>
         </View>
@@ -273,13 +273,23 @@ const InfoScreen = ({ user }) => {
           )}
         </View>
 
-        <View style={styles.profileSection}>
-          <Text style={styles.sectionTitle}>Account Actions</Text>
-          
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutButtonText}>🚪 Logout</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Red Logout Button */}
+        <TouchableOpacity 
+          style={[
+            styles.logoutButton, 
+            { 
+              backgroundColor: '#F44336', 
+              marginTop: 30, 
+              marginBottom: 40,
+              marginHorizontal: 20,
+              paddingVertical: 20,
+              paddingHorizontal: 30
+            }
+          ]} 
+          onPress={handleLogout}
+        >
+          <Text style={[styles.logoutButtonText, { fontSize: 18 }]}>🚪 Logout</Text>
+        </TouchableOpacity>
       </ScrollView>
     </LinearGradient>
   );
