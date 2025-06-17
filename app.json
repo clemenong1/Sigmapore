@@ -19,7 +19,7 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs location access to show health reports on the map"
       },
       "config": {
-        "googlemapsApiKey": "AIzaSyA0TwinKuJzfZ1ZnROtsR6Mag8lZ1L3tSo"
+        "googlemapsApiKey": "$EXPO_PUBLIC_GOOGLE_MAPS_API_KEY"
       }
     },
     "android": {
@@ -34,7 +34,7 @@
       ],
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyA0TwinKuJzfZ1ZnROtsR6Mag8lZ1L3tSo"
+          "apiKey": "$EXPO_PUBLIC_GOOGLE_MAPS_API_KEY"
         }
       }
     },
