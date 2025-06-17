@@ -22,8 +22,9 @@ import {
   User
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from './src/config/firebase';
+import { auth, db, COLLECTIONS, createUserData } from './src/config/firebase';
 import MapScreen from './src/components/MapScreen';
+import UserProfile from './src/components/UserProfile';
 
 const { width, height } = Dimensions.get('window');
 
@@ -47,59 +48,75 @@ interface HealthDistrict {
 const healthDistricts: HealthDistrict[] = [
   {
     id: '1',
-    name: 'Wellness District',
-    icon: '🏥',
-    percentage: 94,
+    name: 'Downtown Core',
+    icon: '🏢',
+    percentage: 92,
     color: '#4CAF50',
-    description: 'Public health centers'
+    description: 'Business district with excellent healthcare access'
   },
   {
-    id: '2',
-    name: 'Active Quarter',
-    icon: '🏃',
-    percentage: 87,
-    color: '#FF9800',
-    description: 'Community fitness'
+    id: '2', 
+    name: 'Marina Bay',
+    icon: '🌊',
+    percentage: 88,
+    color: '#2196F3',
+    description: 'Modern waterfront with clean air quality'
   },
   {
     id: '3',
-    name: 'Green Commons',
-    icon: '🌱',
-    percentage: 76,
-    color: '#8BC34A',
-    description: 'Air quality'
+    name: 'Chinatown',
+    icon: '🏮',
+    percentage: 85,
+    color: '#FF9800',
+    description: 'Historic area with traditional wellness practices'
   },
   {
     id: '4',
-    name: 'Nutrition Hub',
-    icon: '🍎',
-    percentage: 89,
-    color: '#F44336',
-    description: 'Food security'
+    name: 'Little India',
+    icon: '🕌',
+    percentage: 82,
+    color: '#9C27B0',
+    description: 'Vibrant community with diverse health services'
   },
   {
     id: '5',
-    name: 'Mental Wellness Zone',
-    icon: '💚',
-    percentage: 82,
-    color: '#9C27B0',
-    description: 'Community support'
+    name: 'Orchard Road',
+    icon: '🛍️',
+    percentage: 90,
+    color: '#E91E63',
+    description: 'Shopping district with premium medical facilities'
   },
   {
     id: '6',
-    name: 'Education Heights',
-    icon: '🎓',
-    percentage: 91,
-    color: '#2196F3',
-    description: 'Health literacy'
+    name: 'Sentosa',
+    icon: '🏝️',
+    percentage: 95,
+    color: '#00BCD4',
+    description: 'Resort island with recreational wellness programs'
   }
 ];
 
-interface UserData {
-  username: string;
-  email: string;
-  country: string;
-  homeAddress: string;
+function DistrictCard({ district }: { district: HealthDistrict }) {
+  const buildingHeight = (district.percentage / 100) * 80;
+  
+  return (
+    <View style={styles.districtCard}>
+      <View style={styles.buildingContainer}>
+        <View 
+          style={[
+            styles.building, 
+            { 
+              height: buildingHeight,
+              backgroundColor: district.color,
+            }
+          ]} 
+        />
+      </View>
+      <Text style={styles.percentage}>{district.percentage}%</Text>
+      <Text style={styles.districtName}>{district.name}</Text>
+      <Text style={styles.description}>{district.description}</Text>
+    </View>
+  );
 }
 
 function CountryDropdown({ 
@@ -113,35 +130,10 @@ function CountryDropdown({
 }) {
   const [isVisible, setIsVisible] = useState(false);
   const [inputValue, setInputValue] = useState(value);
-  const [filteredCountries, setFilteredCountries] = useState(COUNTRIES);
 
-  useEffect(() => {
-    setInputValue(value);
-  }, [value]);
-
-  useEffect(() => {
-    if (inputValue === '') {
-      setFilteredCountries(COUNTRIES);
-    } else {
-      const filtered = COUNTRIES.filter(country =>
-        country.toLowerCase().includes(inputValue.toLowerCase())
-      );
-      setFilteredCountries(filtered);
-    }
-  }, [inputValue]);
-
-  const handleInputChange = (text: string) => {
-    setInputValue(text);
-    setIsVisible(true);
-    
-    // Clear selection if input doesn't match exactly
-    const exactMatch = COUNTRIES.find(country => 
-      country.toLowerCase() === text.toLowerCase()
-    );
-    if (!exactMatch) {
-      onSelect('');
-    }
-  };
+  const filteredCountries = COUNTRIES.filter(country => 
+    country.toLowerCase().includes(inputValue.toLowerCase())
+  );
 
   const handleSelect = (country: string) => {
     setInputValue(country);
@@ -149,15 +141,31 @@ function CountryDropdown({
     setIsVisible(false);
   };
 
+  const handleInputChange = (text: string) => {
+    setInputValue(text);
+    setIsVisible(true);
+    
+    // Auto-select if exact match
+    const exactMatch = COUNTRIES.find(
+      country => country.toLowerCase() === text.toLowerCase()
+    );
+    if (exactMatch) {
+      onSelect(exactMatch);
+    }
+  };
+
   const handleFocus = () => {
     setIsVisible(true);
   };
 
   const handleBlur = () => {
-    setTimeout(() => {
-      setIsVisible(false);
-    }, 200);
+    // Delay hiding to allow for selection
+    setTimeout(() => setIsVisible(false), 150);
   };
+
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
 
   return (
     <View style={styles.countryDropdownWrapper}>
@@ -201,7 +209,7 @@ function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
   const [country, setCountry] = useState('');
   const [homeAddress, setHomeAddress] = useState('');
   const [loading, setLoading] = useState(false);
@@ -223,7 +231,7 @@ function AuthScreen() {
   };
 
   const handleSignup = async () => {
-    if (!email || !password || !username || !country || !homeAddress) {
+    if (!email || !password || !fullName || !country || !homeAddress) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
@@ -233,13 +241,11 @@ function AuthScreen() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // Store additional user data in Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        username,
-        email,
-        country,
-        homeAddress,
-        createdAt: new Date().toISOString()
+      // Create user profile in Firestore with enhanced schema
+      const userData = createUserData(user.uid, user.email!, fullName, country);
+      await setDoc(doc(db, COLLECTIONS.USERS, user.uid), {
+        ...userData,
+        homeAddress, // Additional field for signup
       });
 
       Alert.alert('Success', 'Account created successfully!');
@@ -252,7 +258,7 @@ function AuthScreen() {
   const resetForm = () => {
     setEmail('');
     setPassword('');
-    setUsername('');
+    setFullName('');
     setCountry('');
     setHomeAddress('');
   };
@@ -295,11 +301,11 @@ function AuthScreen() {
             {!isLogin && (
               <TextInput
                 style={styles.input}
-                placeholder="Username"
+                placeholder="Full Name"
                 placeholderTextColor="#B0BEC5"
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
+                value={fullName}
+                onChangeText={setFullName}
+                autoCapitalize="words"
               />
             )}
             
@@ -358,36 +364,9 @@ function AuthScreen() {
   );
 }
 
-function DistrictCard({ district }: { district: HealthDistrict }) {
-  const buildingHeight = (district.percentage / 100) * 80;
-  
-  return (
-    <View style={styles.districtCard}>
-      <View style={styles.districtHeader}>
-        <Text style={styles.districtIcon}>{district.icon}</Text>
-        <Text style={styles.districtName}>{district.name}</Text>
-      </View>
-      
-      <View style={styles.buildingContainer}>
-        <View 
-          style={[
-            styles.building, 
-            { 
-              height: buildingHeight,
-              backgroundColor: district.color 
-            }
-          ]}
-        />
-        <Text style={styles.percentage}>{district.percentage}%</Text>
-      </View>
-      
-      <Text style={styles.description}>{district.description}</Text>
-    </View>
-  );
-}
-
 function Dashboard({ user }: { user: User }) {
   const [activeTab, setActiveTab] = useState('overview');
+  const [showProfile, setShowProfile] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -406,9 +385,17 @@ function Dashboard({ user }: { user: User }) {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <Text style={styles.dashboardTitle}>🏙️ Health City</Text>
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-              <Text style={styles.logoutText}>Logout</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity 
+                style={styles.profileButton} 
+                onPress={() => setShowProfile(true)}
+              >
+                <Text style={styles.profileText}>👤 Profile</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                <Text style={styles.logoutText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
           </View>
           <Text style={styles.welcomeText}>Welcome, {user.email}</Text>
           <Text style={styles.tagline}>Transform community health data into a breathing cityscape</Text>
@@ -461,6 +448,19 @@ function Dashboard({ user }: { user: User }) {
         ) : (
           <MapScreen user={user} />
         )}
+
+        {/* User Profile Modal */}
+        <Modal
+          visible={showProfile}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowProfile(false)}
+        >
+          <UserProfile
+            user={user}
+            onClose={() => setShowProfile(false)}
+          />
+        </Modal>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -701,20 +701,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     alignItems: 'center',
   },
-  districtHeader: {
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  districtIcon: {
-    fontSize: 30,
-    marginBottom: 5,
-  },
-  districtName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-  },
   buildingContainer: {
     alignItems: 'center',
     height: 100,
@@ -784,5 +770,22 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: '#1976D2',
+  },
+  profileButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 15,
+  },
+  profileText: {
+    color: '#4CAF50',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  districtName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
   },
 });
