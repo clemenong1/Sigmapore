@@ -26,132 +26,9 @@ import { auth, db } from './src/config/firebase';
 import MapScreen from './src/components/MapScreen';
 import SingaporeMapScreen from './components/SingaporeMapScreen';
 import InfoScreen from './src/components/InfoScreen';
+import ReportScreen from './src/components/ReportScreen';
 import { styles } from './src/styles/styles';
 import { LineChart } from 'react-native-chart-kit';
-
-// Simple chart test component
-function TestChart() {
-  const chartData = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    datasets: [
-      {
-        data: [30, 29, 13, 17, 8, 6, 0],
-        color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`,
-        strokeWidth: 3
-      }
-    ]
-  };
-  
-  const chartConfig = {
-    backgroundColor: '#1A237E',
-    backgroundGradientFrom: '#0D1421',
-    backgroundGradientTo: '#1A237E',
-    decimalPlaces: 0,
-    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-    propsForDots: {
-      r: '6',
-      strokeWidth: '2',
-      stroke: '#4CAF50'
-    },
-    fillShadowGradientOpacity: 0.3,
-    fillShadowGradient: '#4CAF50',
-  };
-  
-  const screenWidth = Dimensions.get("window").width;
-  
-  return (
-    <ScrollView style={{flex: 1, backgroundColor: '#0D1421'}} contentContainerStyle={{paddingBottom: 20}}>
-      <View style={{padding: 20}}>
-        <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold'}}>📋 7-Day Dengue & Avg PSI</Text>
-      </View>
-      
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 15,
-        marginBottom: 15
-      }}>
-        <View style={{
-          width: (width - 45) / 2,
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          padding: 15,
-          borderRadius: 12,
-          alignItems: 'center',
-        }}>
-          <Text style={{fontSize: 24, marginBottom: 8}}>🦟</Text>
-          <Text style={{fontSize: 20, fontWeight: 'bold', color: '#4CAF50', marginBottom: 4}}>103</Text>
-          <Text style={{fontSize: 12, color: '#B0BEC5', textAlign: 'center'}}>7-Day Dengue Cases</Text>
-        </View>
-        <View style={{
-          width: (width - 45) / 2,
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          padding: 15,
-          borderRadius: 12,
-          alignItems: 'center',
-        }}>
-          <Text style={{fontSize: 24, marginBottom: 8}}>🌐</Text>
-          <Text style={{fontSize: 20, fontWeight: 'bold', color: '#4CAF50', marginBottom: 4}}>52</Text>
-          <Text style={{fontSize: 12, color: '#B0BEC5', textAlign: 'center'}}>Avg PSI (4 regions)</Text>
-        </View>
-      </View>
-      
-      <View style={{margin: 15}}>
-        <Text style={{fontSize: 16, fontWeight: 'bold', color: 'white', marginBottom: 10}}>📊 Dengue Cases Trend (7 Days)</Text>
-        <View style={{
-          backgroundColor: 'rgba(13, 20, 33, 0.7)',
-          padding: 16,
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: 'rgba(76, 175, 80, 0.3)',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-          elevation: 5,
-        }}>
-          <LineChart
-            data={chartData}
-            width={screenWidth - 40}
-            height={220}
-            chartConfig={chartConfig}
-            bezier
-            style={{
-              marginVertical: 8,
-              borderRadius: 16
-            }}
-            withInnerLines={true}
-            withOuterLines={true}
-            withVerticalLines={true}
-            withHorizontalLines={true}
-            withDots={true}
-            withShadow={true}
-            segments={5}
-          />
-        </View>
-      </View>
-      
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'center',
-        paddingHorizontal: 15,
-        marginBottom: 15
-      }}>
-        <View style={{
-          width: (width - 45) / 2,
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          padding: 15,
-          borderRadius: 12,
-          alignItems: 'center',
-        }}>
-          <Text style={{fontSize: 24, marginBottom: 8}}>📊</Text>
-          <Text style={{fontSize: 20, fontWeight: 'bold', color: '#4CAF50', marginBottom: 4}}>103</Text>
-          <Text style={{fontSize: 12, color: '#B0BEC5', textAlign: 'center'}}>Total Dengue Cases</Text>
-        </View>
-      </View>
-    </ScrollView>
-  );
-}
 
 const { width, height } = Dimensions.get('window');
 
@@ -675,6 +552,75 @@ function HomeScreen({ user }: { user: User }) {
 
   const formatNumber = (num: number) => num.toLocaleString('en-SG');
 
+  // Render dengue chart component
+  const renderDengueChart = () => {
+    const chartData = {
+      labels: weeklyDengueLabels.length > 0 ? weeklyDengueLabels : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      datasets: [
+        {
+          data: weeklyDengueData.length > 0 ? weeklyDengueData : [30, 29, 13, 17, 8, 6, 0],
+          color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`,
+          strokeWidth: 3
+        }
+      ]
+    };
+    
+    const chartConfig = {
+      backgroundColor: '#1A237E',
+      backgroundGradientFrom: '#0D1421',
+      backgroundGradientTo: '#1A237E',
+      decimalPlaces: 0,
+      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      propsForDots: {
+        r: '6',
+        strokeWidth: '2',
+        stroke: '#4CAF50'
+      },
+      fillShadowGradientOpacity: 0.3,
+      fillShadowGradient: '#4CAF50',
+    };
+    
+    const screenWidth = Dimensions.get("window").width;
+    
+    return (
+      <View style={{margin: 15}}>
+        <Text style={styles.sectionTitle}>📊 Dengue Cases Trend (7 Days)</Text>
+        <View style={{
+          backgroundColor: 'rgba(13, 20, 33, 0.7)',
+          padding: 16,
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: 'rgba(76, 175, 80, 0.3)',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.84,
+          elevation: 5,
+        }}>
+          <LineChart
+            data={chartData}
+            width={screenWidth - 40}
+            height={220}
+            chartConfig={chartConfig}
+            bezier
+            style={{
+              marginVertical: 8,
+              borderRadius: 16
+            }}
+            withInnerLines={true}
+            withOuterLines={true}
+            withVerticalLines={true}
+            withHorizontalLines={true}
+            withDots={true}
+            withShadow={true}
+            segments={5}
+          />
+        </View>
+      </View>
+    );
+  };
+
   return (
     <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
@@ -758,9 +704,26 @@ function HomeScreen({ user }: { user: User }) {
       </View>
       
       {/* Dengue Trend Chart */}
-      <View style={styles.todayStatsContainer}>
-        <Text style={styles.sectionTitle}>📊 Dengue Cases Trend (7 Days)</Text>
-        <TestChart />
+      {renderDengueChart()}
+      
+      {/* Total Dengue Cases */}
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'center',
+        paddingHorizontal: 15,
+        marginBottom: 15
+      }}>
+        <View style={{
+          width: (width - 45) / 2,
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          padding: 15,
+          borderRadius: 12,
+          alignItems: 'center',
+        }}>
+          <Text style={{fontSize: 24, marginBottom: 8}}>📊</Text>
+          <Text style={{fontSize: 20, fontWeight: 'bold', color: '#4CAF50', marginBottom: 4}}>{healthStats.weeklyDengue}</Text>
+          <Text style={{fontSize: 12, color: '#B0BEC5', textAlign: 'center'}}>Total Dengue Cases</Text>
+        </View>
       </View>
 
       {/* Demographics */}
@@ -801,7 +764,7 @@ function BottomNavigation({
   const tabs = [
     { id: 'home', label: 'Home', icon: '🏠' },
     { id: 'map', label: 'Map', icon: '🗺️' },
-    { id: 'test', label: 'Test', icon: '📊' },
+    { id: 'report', label: 'Reports', icon: '📋' },
     { id: 'info', label: 'Profile', icon: '👤' },
   ];
 
@@ -857,11 +820,9 @@ function Dashboard({ user }: { user: User }) {
       case 'map':
         return <SingaporeMapScreen user={user} />;
       case 'report':
-        return <InfoScreen user={user} />;
+        return <ReportScreen user={user} />;
       case 'info':
         return <InfoScreen user={user} />;
-      case 'test':
-        return <TestChart />;
       default:
         return <HomeScreen user={user} />;
     }
