@@ -18,7 +18,7 @@ import {
 } from 'firebase/firestore';
 import { db, COLLECTIONS } from '../config/firebase';
 import { mapStyles } from '../styles/styles';
-import ReportModal from './ReportModal';
+import ReportModal from '../components/ReportModal';
 
 const MapScreen = ({ user }) => {
   const [location, setLocation] = useState(null);

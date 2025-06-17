@@ -23,9 +23,9 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from './src/config/firebase';
-import MapScreen from './src/components/MapScreen';
-import SingaporeMapScreen from './components/SingaporeMapScreen';
-import InfoScreen from './src/components/InfoScreen';
+import MapScreen from './src/screens/MapScreen';
+import SingaporeMapScreen from './src/screens/SingaporeMapScreen';
+import InfoScreen from './src/screens/InfoScreen';
 import { styles } from './src/styles/styles';
 
 const { width, height } = Dimensions.get('window');

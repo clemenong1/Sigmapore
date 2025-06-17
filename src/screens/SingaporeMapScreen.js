@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { LinearGradient } from 'expo-linear-gradient';
-import { dengueService } from '../services/dengueService';
+import { dengueService } from '../../services/dengueService';
 
 const SingaporeMapScreen = ({ user }) => {
   const [clusters, setClusters] = useState([]);
