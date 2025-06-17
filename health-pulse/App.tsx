@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { 
   StyleSheet, 
@@ -8,11 +8,31 @@ import {
   TouchableOpacity, 
   ScrollView, 
   SafeAreaView,
-  Dimensions 
+  Dimensions,
+  Alert,
+  FlatList,
+  Modal
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  User
+} from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from './firebaseConfig';
 
 const { width, height } = Dimensions.get('window');
+
+const COUNTRIES = [
+  'China',
+  'India', 
+  'Indonesia',
+  'Malaysia',
+  'Singapore'
+];
 
 interface HealthDistrict {
   id: string;
@@ -74,9 +94,172 @@ const healthDistricts: HealthDistrict[] = [
   }
 ];
 
-function LoginScreen({ onLogin }: { onLogin: (city: string) => void }) {
-  const [city, setCity] = useState('');
-  const [community, setCommunity] = useState('');
+interface UserData {
+  username: string;
+  email: string;
+  country: string;
+  homeAddress: string;
+}
+
+function CountryDropdown({ 
+  value, 
+  onSelect, 
+  placeholder = "Select Country" 
+}: { 
+  value: string;
+  onSelect: (country: string) => void;
+  placeholder?: string;
+}) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [inputValue, setInputValue] = useState(value);
+  const [filteredCountries, setFilteredCountries] = useState(COUNTRIES);
+
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  useEffect(() => {
+    if (inputValue === '') {
+      setFilteredCountries(COUNTRIES);
+    } else {
+      const filtered = COUNTRIES.filter(country =>
+        country.toLowerCase().includes(inputValue.toLowerCase())
+      );
+      setFilteredCountries(filtered);
+    }
+  }, [inputValue]);
+
+  const handleInputChange = (text: string) => {
+    setInputValue(text);
+    setIsVisible(true);
+    
+    // Clear selection if input doesn't match exactly
+    const exactMatch = COUNTRIES.find(country => 
+      country.toLowerCase() === text.toLowerCase()
+    );
+    if (!exactMatch) {
+      onSelect('');
+    }
+  };
+
+  const handleSelect = (country: string) => {
+    setInputValue(country);
+    onSelect(country);
+    setIsVisible(false);
+  };
+
+  const handleFocus = () => {
+    setIsVisible(true);
+  };
+
+  const handleBlur = () => {
+    setTimeout(() => {
+      setIsVisible(false);
+    }, 200);
+  };
+
+  return (
+    <View style={styles.countryDropdownWrapper}>
+      <View style={styles.countryInputContainer}>
+        <TextInput
+          style={styles.countryInput}
+          placeholder={placeholder}
+          placeholderTextColor="#B0BEC5"
+          value={inputValue}
+          onChangeText={handleInputChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          autoCapitalize="words"
+        />
+        <Text style={[styles.countryArrow, isVisible && styles.countryArrowUp]}>
+          ▼
+        </Text>
+      </View>
+
+      {isVisible && filteredCountries.length > 0 && (
+        <View style={styles.countryDropdown}>
+          {filteredCountries.map((country, index) => (
+            <TouchableOpacity
+              key={country}
+              style={[
+                styles.countryOption,
+                index === filteredCountries.length - 1 && styles.lastCountryOption
+              ]}
+              onPress={() => handleSelect(country)}
+            >
+              <Text style={styles.countryOptionText}>{country}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+function AuthScreen() {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [country, setCountry] = useState('');
+  const [homeAddress, setHomeAddress] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      Alert.alert('Success', 'Logged in successfully!');
+    } catch (error: any) {
+      Alert.alert('Login Error', error.message);
+    }
+    setLoading(false);
+  };
+
+  const handleSignup = async () => {
+    if (!email || !password || !username || !country || !homeAddress) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Store additional user data in Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        username,
+        email,
+        country,
+        homeAddress,
+        createdAt: new Date().toISOString()
+      });
+
+      Alert.alert('Success', 'Account created successfully!');
+    } catch (error: any) {
+      Alert.alert('Signup Error', error.message);
+    }
+    setLoading(false);
+  };
+
+  const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setUsername('');
+    setCountry('');
+    setHomeAddress('');
+  };
+
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    resetForm();
+  };
 
   return (
     <LinearGradient
@@ -84,37 +267,91 @@ function LoginScreen({ onLogin }: { onLogin: (city: string) => void }) {
       style={styles.loginContainer}
     >
       <SafeAreaView style={styles.loginContent}>
-        <View style={styles.citySkylne}>
-          <Text style={styles.skylineText}>🏙️🏢🏗️🏘️🌃</Text>
-        </View>
-        
-        <Text style={styles.title}>🏙️ Health Pulse</Text>
-        <Text style={styles.subtitle}>A Living City Health Visualization</Text>
-        
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your city"
-            placeholderTextColor="#B0BEC5"
-            value={city}
-            onChangeText={setCity}
-          />
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <View style={styles.citySkylne}>
+            <Text style={styles.skylineText}>🏙️🏢🏗️🏘️🌃</Text>
+          </View>
           
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your community"
-            placeholderTextColor="#B0BEC5"
-            value={community}
-            onChangeText={setCommunity}
-          />
+          <Text style={styles.title}>🏙️ Health Pulse</Text>
+          <Text style={styles.subtitle}>A Living City Health Visualization</Text>
           
-          <TouchableOpacity
-            style={styles.enterButton}
-            onPress={() => onLogin(city || 'Singapore')}
-          >
-            <Text style={styles.enterButtonText}>Enter Health City</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.authToggle}>
+            <TouchableOpacity
+              style={[styles.toggleButton, isLogin && styles.activeToggle]}
+              onPress={() => setIsLogin(true)}
+            >
+              <Text style={[styles.toggleText, isLogin && styles.activeToggleText]}>Login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.toggleButton, !isLogin && styles.activeToggle]}
+              onPress={() => setIsLogin(false)}
+            >
+              <Text style={[styles.toggleText, !isLogin && styles.activeToggleText]}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.inputContainer}>
+            {!isLogin && (
+              <TextInput
+                style={styles.input}
+                placeholder="Username"
+                placeholderTextColor="#B0BEC5"
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+              />
+            )}
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#B0BEC5"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor="#B0BEC5"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+            
+            {!isLogin && (
+              <>
+                <CountryDropdown
+                  value={country}
+                  onSelect={setCountry}
+                  placeholder="Select Country"
+                />
+                
+                <TextInput
+                  style={styles.input}
+                  placeholder="Home Address"
+                  placeholderTextColor="#B0BEC5"
+                  value={homeAddress}
+                  onChangeText={setHomeAddress}
+                  multiline
+                  numberOfLines={2}
+                />
+              </>
+            )}
+            
+            <TouchableOpacity
+              style={[styles.enterButton, loading && styles.disabledButton]}
+              onPress={isLogin ? handleLogin : handleSignup}
+              disabled={loading}
+            >
+              <Text style={styles.enterButtonText}>
+                {loading ? 'Please wait...' : (isLogin ? 'Login to Health City' : 'Create Account')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -148,7 +385,15 @@ function DistrictCard({ district }: { district: HealthDistrict }) {
   );
 }
 
-function Dashboard({ city }: { city: string }) {
+function Dashboard({ user }: { user: User }) {
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error: any) {
+      Alert.alert('Logout Error', error.message);
+    }
+  };
+
   return (
     <LinearGradient
       colors={['#0D1421', '#1A237E']}
@@ -157,7 +402,13 @@ function Dashboard({ city }: { city: string }) {
       <SafeAreaView style={styles.dashboardContent}>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
-            <Text style={styles.dashboardTitle}>🏙️ {city} Health City</Text>
+            <View style={styles.headerTop}>
+              <Text style={styles.dashboardTitle}>🏙️ Health City</Text>
+              <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                <Text style={styles.logoutText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.welcomeText}>Welcome, {user.email}</Text>
             <Text style={styles.tagline}>Transform community health data into a breathing cityscape</Text>
           </View>
           
@@ -190,15 +441,35 @@ function Dashboard({ city }: { city: string }) {
 }
 
 export default function App() {
-  const [currentCity, setCurrentCity] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!currentCity) {
-    return <LoginScreen onLogin={setCurrentCity} />;
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  if (loading) {
+    return (
+      <LinearGradient
+        colors={['#1976D2', '#4CAF50']}
+        style={styles.loginContainer}
+      >
+        <SafeAreaView style={styles.loginContent}>
+          <Text style={styles.title}>🏙️ Health Pulse</Text>
+          <Text style={styles.subtitle}>Loading...</Text>
+        </SafeAreaView>
+      </LinearGradient>
+    );
   }
 
   return (
     <>
-      <Dashboard city={currentCity} />
+      {user ? <Dashboard user={user} /> : <AuthScreen />}
       <StatusBar style="light" />
     </>
   );
@@ -258,6 +529,48 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  
+  // Country Dropdown Styles
+  countryDropdownWrapper: {
+    marginBottom: 15,
+  },
+  countryInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    padding: 10,
+    borderRadius: 10,
+  },
+  countryInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+  },
+  countryArrow: {
+    fontSize: 12,
+    color: '#666',
+  },
+  countryArrowUp: {
+    transform: [{ rotate: '180deg' }],
+  },
+  countryDropdown: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    maxHeight: 200,
+    marginTop: 5,
+  },
+  countryOption: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  countryOptionText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  lastCountryOption: {
+    borderBottomWidth: 0,
   },
   
   // Dashboard Styles
@@ -362,5 +675,63 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#B0BEC5',
     textAlign: 'center',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  authToggle: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 25,
+    padding: 3,
+    marginBottom: 30,
+  },
+  toggleButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  activeToggle: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  },
+  toggleText: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  activeToggleText: {
+    color: '#1976D2',
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 10,
+  },
+  logoutButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 15,
+  },
+  logoutText: {
+    color: '#FF5722',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: '#4CAF50',
+    textAlign: 'center',
+    marginBottom: 5,
   },
 });
