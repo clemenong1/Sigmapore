@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import {
   StyleSheet,
@@ -30,12 +30,379 @@ import MapScreen from './src/components/MapScreen';
 import SingaporeMapScreen from './components/SingaporeMapScreen';
 import InfoScreen from './src/components/InfoScreen';
 import ReportScreen from './src/components/ReportScreen';
+import HomeScreen from './src/components/HomeScreen';
 import ChatbotButton from './components/ChatbotButton';
 import { styles, authStyles } from './src/styles/styles';
 import { LineChart } from 'react-native-chart-kit';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const { width, height } = Dimensions.get('window');
+
+// Create language context
+export const LanguageContext = createContext({
+  language: 'english',
+  setLanguage: (lang: string) => { },
+  translations: {} as Record<string, Record<string, string>>
+});
+
+// Define translations
+const translations = {
+  english: {
+    welcome: "Welcome",
+    healthPulse: "Singapore Health Pulse",
+    tagline: "Real-time health monitoring and reporting",
+    populationStats: "Population Stats",
+    totalPopulation: "Total Population",
+    todayStatistics: "Today's Statistics",
+    birthsToday: "Births Today",
+    deathsToday: "Deaths Today",
+    netMigration: "Net Migration",
+    populationGrowth: "Population Growth",
+    healthOverview: "Health Overview",
+    activeDengueCases: "Active Dengue Cases",
+    airQuality: "Air Quality",
+    lifeExpectancy: "Life Expectancy",
+    dengueAvgPsi: "7-Day Dengue & Avg PSI",
+    dengueCases: "7-Day Dengue Cases",
+    avgPsi: "Avg PSI (4 regions)",
+    dengueTrend: "Dengue Cases Trend (7 Days)",
+    totalDengueCases: "Total Dengue Cases",
+    demographics: "Demographics",
+    male: "Male",
+    female: "Female",
+    logout: "Logout",
+    language: "Language",
+    english: "English",
+    chinese: "Chinese",
+    malay: "Malay",
+    tamil: "Tamil",
+    hindi: "Hindi",
+
+    // Navigation bar
+    home: "Home",
+    map: "Map",
+    reports: "Reports",
+    profile: "Profile",
+
+    // Profile information
+    profileInformation: "Profile Information",
+    fullName: "Full Name",
+    username: "Username",
+    phoneNumber: "Phone Number",
+    country: "Country",
+    homeAddress: "Home Address",
+    email: "Email",
+    memberSince: "Member Since",
+    emailCannotBeChanged: "Email cannot be changed",
+    notProvided: "Not provided",
+    edit: "Edit",
+    cancel: "Cancel",
+    saveChanges: "Save Changes",
+    confirmLogout: "Confirm Logout",
+    areYouSureLogout: "Are you sure you want to logout?",
+    loading: "Loading...",
+    loadingProfile: "Loading profile...",
+    login: "Login",
+    signUp: "Sign Up",
+    password: "Password",
+    selectCountry: "Select your country",
+    pleaseWait: "Please wait...",
+    createAccount: "Create Account",
+
+    // Error messages
+    error: "Error",
+    fillAllFields: "Please fill in all fields",
+    loginError: "Login Error",
+    signupError: "Signup Error",
+    success: "Success",
+    accountCreated: "Account created successfully!",
+    accountCreatedWithError: "Your account was created successfully, but there was an issue saving your profile data. Error: {0}\n\nYou can update your profile later in the app."
+  },
+  chinese: {
+    welcome: "欢迎",
+    healthPulse: "新加坡健康脉搏",
+    tagline: "实时健康监测和报告",
+    populationStats: "人口统计",
+    totalPopulation: "总人口",
+    todayStatistics: "今日统计",
+    birthsToday: "今日出生",
+    deathsToday: "今日死亡",
+    netMigration: "净迁移",
+    populationGrowth: "人口增长",
+    healthOverview: "健康概览",
+    activeDengueCases: "活跃登革热病例",
+    airQuality: "空气质量",
+    lifeExpectancy: "预期寿命",
+    dengueAvgPsi: "7天登革热和平均PSI",
+    dengueCases: "7天登革热病例",
+    avgPsi: "平均PSI（4个地区）",
+    dengueTrend: "登革热病例趋势（7天）",
+    totalDengueCases: "登革热病例总数",
+    demographics: "人口统计学",
+    male: "男性",
+    female: "女性",
+    logout: "登出",
+    language: "语言",
+    english: "英语",
+    chinese: "中文",
+    malay: "马来语",
+    tamil: "泰米尔语",
+    hindi: "印地语",
+
+    // Navigation bar
+    home: "首页",
+    map: "地图",
+    reports: "报告",
+    profile: "个人资料",
+
+    // Profile information
+    profileInformation: "个人资料信息",
+    fullName: "全名",
+    username: "用户名",
+    phoneNumber: "电话号码",
+    country: "国家",
+    homeAddress: "家庭住址",
+    email: "电子邮件",
+    memberSince: "会员注册时间",
+    emailCannotBeChanged: "电子邮件无法更改",
+    notProvided: "未提供",
+    edit: "编辑",
+    cancel: "取消",
+    saveChanges: "保存更改",
+    confirmLogout: "确认登出",
+    areYouSureLogout: "您确定要登出吗？",
+    loading: "加载中...",
+    loadingProfile: "加载个人资料中...",
+    login: "登录",
+    signUp: "注册",
+    password: "密码",
+    selectCountry: "选择国家",
+    pleaseWait: "请稍候...",
+    createAccount: "创建账户",
+
+    // Error messages
+    error: "错误",
+    fillAllFields: "请填写所有字段",
+    loginError: "登录错误",
+    signupError: "注册错误",
+    success: "成功",
+    accountCreated: "账户创建成功！",
+    accountCreatedWithError: "您的账户已成功创建，但保存个人资料数据时出现问题。错误：{0}\n\n您可以稍后在应用中更新您的个人资料。"
+  },
+  malay: {
+    welcome: "Selamat Datang",
+    healthPulse: "Denyut Kesihatan Singapura",
+    tagline: "Pemantauan dan pelaporan kesihatan masa nyata",
+    populationStats: "Statistik Penduduk",
+    totalPopulation: "Jumlah Penduduk",
+    todayStatistics: "Statistik Hari Ini",
+    birthsToday: "Kelahiran Hari Ini",
+    deathsToday: "Kematian Hari Ini",
+    netMigration: "Migrasi Bersih",
+    populationGrowth: "Pertumbuhan Penduduk",
+    healthOverview: "Gambaran Kesihatan",
+    activeDengueCases: "Kes Denggi Aktif",
+    airQuality: "Kualiti Udara",
+    lifeExpectancy: "Jangka Hayat",
+    dengueAvgPsi: "Denggi 7 Hari & Purata PSI",
+    dengueCases: "Kes Denggi 7 Hari",
+    avgPsi: "Purata PSI (4 kawasan)",
+    dengueTrend: "Trend Kes Denggi (7 Hari)",
+    totalDengueCases: "Jumlah Kes Denggi",
+    demographics: "Demografi",
+    male: "Lelaki",
+    female: "Perempuan",
+    logout: "Log Keluar",
+    language: "Bahasa",
+    english: "Bahasa Inggeris",
+    chinese: "Bahasa Cina",
+    malay: "Bahasa Melayu",
+    tamil: "Bahasa Tamil",
+    hindi: "Bahasa Hindi",
+
+    // Navigation bar
+    home: "Laman Utama",
+    map: "Peta",
+    reports: "Laporan",
+    profile: "Profil",
+
+    // Profile information
+    profileInformation: "Maklumat Profil",
+    fullName: "Nama Penuh",
+    username: "Nama Pengguna",
+    phoneNumber: "Nombor Telefon",
+    country: "Negara",
+    homeAddress: "Alamat Rumah",
+    email: "E-mel",
+    memberSince: "Ahli Sejak",
+    emailCannotBeChanged: "E-mel tidak boleh diubah",
+    notProvided: "Tidak disediakan",
+    edit: "Sunting",
+    cancel: "Batal",
+    saveChanges: "Simpan Perubahan",
+    confirmLogout: "Sahkan Log Keluar",
+    areYouSureLogout: "Adakah anda pasti mahu log keluar?",
+    loading: "Memuatkan...",
+    loadingProfile: "Memuatkan profil...",
+    login: "Login",
+    signUp: "Daftar",
+    password: "Kata Laluan",
+    selectCountry: "Pilih negara",
+    pleaseWait: "Sila tunggu...",
+    createAccount: "Buat Akun",
+
+    // Error messages
+    error: "Ralat",
+    fillAllFields: "Sila isi semua medan",
+    loginError: "Ralat Log Masuk",
+    signupError: "Ralat Pendaftaran",
+    success: "Berjaya",
+    accountCreated: "Akaun berjaya dibuat!",
+    accountCreatedWithError: "Akaun anda telah berjaya dibuat, tetapi terdapat masalah menyimpan data profil anda. Ralat: {0}\n\nAnda boleh mengemaskini profil anda kemudian dalam aplikasi."
+  },
+  tamil: {
+    welcome: "வரவேற்கிறோம்",
+    healthPulse: "சிங்கப்பூர் சுகாதார துடிப்பு",
+    tagline: "நிகழ்நேர சுகாதார கண்காணிப்பு மற்றும் அறிக்கை",
+    populationStats: "மக்கள்தொகை புள்ளிவிவரங்கள்",
+    totalPopulation: "மொத்த மக்கள்தொகை",
+    todayStatistics: "இன்றைய புள்ளிவிவரங்கள்",
+    birthsToday: "இன்றைய பிறப்புகள்",
+    deathsToday: "இன்றைய இறப்புகள்",
+    netMigration: "நிகர இடம்பெயர்வு",
+    populationGrowth: "மக்கள்தொகை வளர்ச்சி",
+    healthOverview: "சுகாதார கண்ணோட்டம்",
+    activeDengueCases: "செயலில் உள்ள டெங்கு வழக்குகள்",
+    airQuality: "காற்று தரம்",
+    lifeExpectancy: "ஆயுள் எதிர்பார்ப்பு",
+    dengueAvgPsi: "7 நாள் டெங்கு & சராசரி PSI",
+    dengueCases: "7 நாள் டெங்கு வழக்குகள்",
+    avgPsi: "சராசரி PSI (4 பகுதிகள்)",
+    dengueTrend: "டெங்கு வழக்குகள் போக்கு (7 நாட்கள்)",
+    totalDengueCases: "மொத்த டெங்கு வழக்குகள்",
+    demographics: "மக்கள்தொகை",
+    male: "ஆண்",
+    female: "பெண்",
+    logout: "வெளியேறு",
+    language: "மொழி",
+    english: "ஆங்கிலம்",
+    chinese: "சீனம்",
+    malay: "மலாய்",
+    tamil: "தமிழ்",
+    hindi: "இந்தி",
+
+    // Navigation bar
+    home: "முகப்பு",
+    map: "வரைபடம்",
+    reports: "அறிக்கைகள்",
+    profile: "சுயவிவரம்",
+
+    // Profile information
+    profileInformation: "சுயவிவர தகவல்",
+    fullName: "முழு பெயர்",
+    username: "பயனர்பெயர்",
+    phoneNumber: "தொலைபேசி எண்",
+    country: "நாடு",
+    homeAddress: "வீட்டு முகவரி",
+    email: "மின்னஞ்சல்",
+    memberSince: "உறுப்பினராக இருந்து",
+    emailCannotBeChanged: "மின்னஞ்சலை மாற்ற முடியாது",
+    notProvided: "வழங்கப்படவில்லை",
+    edit: "திருத்து",
+    cancel: "ரத்து செய்",
+    saveChanges: "மாற்றங்களை சேமி",
+    confirmLogout: "வெளியேறுவதை உறுதிப்படுத்தவும்",
+    areYouSureLogout: "நீங்கள் நிச்சயமாக வெளியேற விரும்புகிறீர்களா?",
+    loading: "ஏற்றுகிறது...",
+    loadingProfile: "சுயவிவரம் ஏற்றப்படுகிறது...",
+    login: "உள்நுழைக",
+    signUp: "புதிய கணக்கு தயாரிக்க",
+    password: "கடவுச்சொல்",
+    selectCountry: "நாட்டை தேர்ந்தெடுக்க",
+    pleaseWait: "சரியாக நேரம் விட்டு வருகிறேன்...",
+    createAccount: "புதிய கணக்கு தயாரிக்க",
+
+    // Error messages
+    error: "பிழை",
+    fillAllFields: "அனைத்து புலங்களையும் நிரப்பவும்",
+    loginError: "உள்நுழைவு பிழை",
+    signupError: "பதிவு பிழை",
+    success: "வெற்றி",
+    accountCreated: "கணக்கு வெற்றிகரமாக உருவாக்கப்பட்டது!",
+    accountCreatedWithError: "உங்கள் கணக்கு வெற்றிகரமாக உருவாக்கப்பட்டது, ஆனால் உங்கள் சுயவிவர தரவைச் சேமிப்பதில் சிக்கல் இருந்தது. பிழை: {0}\n\nபயன்பாட்டில் பின்னர் உங்கள் சுயவிவரத்தைப் புதுப்பிக்கலாம்."
+  },
+  hindi: {
+    welcome: "स्वागत है",
+    healthPulse: "सिंगापुर स्वास्थ्य पल्स",
+    tagline: "रीयल-टाइम स्वास्थ्य निगरानी और रिपोर्टिंग",
+    populationStats: "जनसंख्या आंकड़े",
+    totalPopulation: "कुल जनसंख्या",
+    todayStatistics: "आज के आंकड़े",
+    birthsToday: "आज के जन्म",
+    deathsToday: "आज की मौतें",
+    netMigration: "शुद्ध प्रवास",
+    populationGrowth: "जनसंख्या वृद्धि",
+    healthOverview: "स्वास्थ्य अवलोकन",
+    activeDengueCases: "सक्रिय डेंगू मामले",
+    airQuality: "वायु गुणवत्ता",
+    lifeExpectancy: "जीवन प्रत्याशा",
+    dengueAvgPsi: "7-दिन डेंगू और औसत PSI",
+    dengueCases: "7-दिन डेंगू मामले",
+    avgPsi: "औसत PSI (4 क्षेत्र)",
+    dengueTrend: "डेंगू मामलों का रुझान (7 दिन)",
+    totalDengueCases: "कुल डेंगू मामले",
+    demographics: "जनसांख्यिकी",
+    male: "पुरुष",
+    female: "महिला",
+    logout: "लॉगआउट",
+    language: "भाषा",
+    english: "अंग्रे़ी",
+    chinese: "चीनी",
+    malay: "मलय",
+    tamil: "तमिल",
+    hindi: "हिंदी",
+
+    // Navigation bar
+    home: "होम",
+    map: "नक्शा",
+    reports: "रिपोर्ट",
+    profile: "प्रोफाइल",
+
+    // Profile information
+    profileInformation: "प्रोफाइल जानकारी",
+    fullName: "पूरा नाम",
+    username: "उपयोगकर्ता नाम",
+    phoneNumber: "फोन नंबर",
+    country: "देश",
+    homeAddress: "घर का पता",
+    email: "ईमेल",
+    memberSince: "कब से सदस्य हैं",
+    emailCannotBeChanged: "ईमेल बदला नहीं जा सकता",
+    notProvided: "प्रदान नहीं किया गया",
+    edit: "संपादित करें",
+    cancel: "रद्द करें",
+    saveChanges: "परिवर्तन सहेजें",
+    confirmLogout: "लॉगआउट की पुष्टि करें",
+    areYouSureLogout: "क्या आप वाकई लॉगआउट करना चाहते हैं?",
+    loading: "लोड हो रहा है...",
+    loadingProfile: "प्रोफ़ाइल लोड हो रही है...",
+    login: "लॉग इन",
+    signUp: "साइन अप",
+    password: "पासवर्ड",
+    selectCountry: "देश चुनें",
+    pleaseWait: "कृपया इंतजार करें...",
+    createAccount: "खाता बनाएं",
+
+    // Error messages
+    error: "त्रुटि",
+    fillAllFields: "कृपया सभी फ़ील्ड भरें",
+    loginError: "लॉगिन त्रुटि",
+    signupError: "साइनअप त्रुटि",
+    success: "सफलता",
+    accountCreated: "खाता सफलतापूर्वक बनाया गया!",
+    accountCreatedWithError: "आपका खाता सफलतापूर्वक बनाया गया था, लेकिन आपके प्रोफ़ाइल डेटा को सहेजने में समस्या थी। त्रुटि: {0}\n\nआप बाद में ऐप में अपनी प्रोफ़ाइल अपडेट कर सकते हैं।"
+  }
+};
 
 const COUNTRIES = [
   'China',
@@ -64,6 +431,10 @@ function CountryDropdown({
   const [isVisible, setIsVisible] = useState(false);
   const [inputValue, setInputValue] = useState(value);
   const [filteredCountries, setFilteredCountries] = useState(COUNTRIES);
+
+  // Get language context
+  const { language, translations } = useContext(LanguageContext);
+  const t = translations[language] || translations.english;
 
   useEffect(() => {
     setInputValue(value);
@@ -148,9 +519,13 @@ function AuthScreen() {
   const [homeAddress, setHomeAddress] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Get language context
+  const { language, setLanguage, translations } = useContext(LanguageContext);
+  const t = translations[language] || translations.english;
+
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(t.error, t.fillAllFields);
       return;
     }
 
@@ -158,14 +533,14 @@ function AuthScreen() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error: any) {
-      Alert.alert('Login Error', error.message);
+      Alert.alert(t.loginError, error.message);
     }
     setLoading(false);
   };
 
   const handleSignup = async () => {
     if (!email || !password || !username || !country || !homeAddress) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(t.error, t.fillAllFields);
       return;
     }
 
@@ -184,19 +559,19 @@ function AuthScreen() {
           createdAt: new Date().toISOString()
         });
 
-        Alert.alert('Success', 'Account created successfully!');
+        Alert.alert(t.success, t.accountCreated);
       } catch (firestoreError: any) {
         console.error('Firestore error:', firestoreError);
 
         // If Firestore fails, still complete signup but warn user
         Alert.alert(
-          'Account Created',
-          `Your account was created successfully, but there was an issue saving your profile data. Error: ${firestoreError.message}\n\nYou can update your profile later in the app.`
+          t.success,
+          t.accountCreatedWithError.replace('{0}', firestoreError.message)
         );
       }
     } catch (error: any) {
       console.error('Signup error:', error);
-      Alert.alert('Signup Error', error.message);
+      Alert.alert(t.signupError, error.message);
     }
     setLoading(false);
   };
@@ -242,7 +617,7 @@ function AuthScreen() {
             </View>
 
             <Text style={[styles.subtitle, { marginBottom: 30, maxWidth: 300, textAlign: 'center' }]}>
-              Transform community health data into a breathing cityscape
+              {t.tagline}
             </Text>
 
             <View style={styles.authToggle}>
@@ -251,7 +626,7 @@ function AuthScreen() {
                 onPress={() => !isLogin && toggleMode()}
               >
                 <Text style={[styles.toggleText, isLogin && styles.activeToggleText]}>
-                  Login
+                  {t.login}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -259,7 +634,7 @@ function AuthScreen() {
                 onPress={() => isLogin && toggleMode()}
               >
                 <Text style={[styles.toggleText, !isLogin && styles.activeToggleText]}>
-                  Sign Up
+                  {t.signUp}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -268,7 +643,7 @@ function AuthScreen() {
               {!isLogin && (
                 <TextInput
                   style={[styles.input, { width: '100%' }]}
-                  placeholder="Username"
+                  placeholder={t.username}
                   placeholderTextColor="#333333"
                   value={username}
                   onChangeText={setUsername}
@@ -278,7 +653,7 @@ function AuthScreen() {
 
               <TextInput
                 style={[styles.input, { width: '100%' }]}
-                placeholder="Email"
+                placeholder={t.email}
                 placeholderTextColor="#333333"
                 value={email}
                 onChangeText={setEmail}
@@ -288,7 +663,7 @@ function AuthScreen() {
 
               <TextInput
                 style={[styles.input, { width: '100%' }]}
-                placeholder="Password"
+                placeholder={t.password}
                 placeholderTextColor="#333333"
                 value={password}
                 onChangeText={setPassword}
@@ -301,13 +676,13 @@ function AuthScreen() {
                     <CountryDropdown
                       value={country}
                       onSelect={setCountry}
-                      placeholder="Select your country"
+                      placeholder={t.selectCountry}
                     />
                   </View>
 
                   <TextInput
                     style={[styles.input, { width: '100%' }]}
-                    placeholder="Home Address"
+                    placeholder={t.homeAddress}
                     placeholderTextColor="#333333"
                     value={homeAddress}
                     onChangeText={setHomeAddress}
@@ -322,7 +697,7 @@ function AuthScreen() {
                 disabled={loading}
               >
                 <Text style={styles.enterButtonText}>
-                  {loading ? 'Please wait...' : isLogin ? 'Login' : 'Create Account'}
+                  {loading ? t.pleaseWait : isLogin ? t.login : t.createAccount}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -405,279 +780,6 @@ const fetchWeeklyDengueData = async (): Promise<{ labels: string[]; data: number
   }
 };
 
-function HomeScreen({ user }: { user: User }) {
-  const [populationData, setPopulationData] = useState(getLivePopulationData());
-  const [healthStats, setHealthStats] = useState({
-    dengueCases: 0,
-    airQuality: 'Loading...',
-    hospitalLoad: 0,
-    weeklyDengue: 0,
-    avgPsi: 0
-  });
-  // State for dengue trend chart
-  const [weeklyDengueData, setWeeklyDengueData] = useState<number[]>([]);
-  const [weeklyDengueLabels, setWeeklyDengueLabels] = useState<string[]>([]);
-
-  // Update population counter every 10 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPopulationData(getLivePopulationData());
-    }, 10000);
-
-    // Load health statistics
-    loadHealthStats();
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadHealthStats = async () => {
-    try {
-      // Dynamically import stats module and fetch data
-      const stats = await import('./stats');
-      const [dengueData, psiData, covidData, weeklyResult] = await Promise.all([
-        stats.dengueService.getTotalCases(),
-        stats.psiService.fetchLatestPSI(),
-        stats.covidService.getCovidCases(),
-        fetchWeeklyDengueData()
-      ]);
-      // Set dengue trend data for chart
-      const weeklySum = weeklyResult?.sum ?? 0;
-      setWeeklyDengueData(weeklyResult?.data ?? []);
-      setWeeklyDengueLabels(weeklyResult?.labels ?? []);
-
-      // Debug output
-      console.log('Weekly dengue data:', weeklyResult?.data);
-      console.log('Weekly dengue labels:', weeklyResult?.labels);
-
-      // Compute average PSI for four main regions
-      const regions = psiData.regions || [];
-      const filtered = (regions as Array<{ id: string; psi: number }>).filter(r => ['north', 'south', 'east', 'west'].includes(r.id));
-      const avgPsi = filtered.reduce((sum: number, r) => sum + (r.psi || 0), 0) / (filtered.length || 1);
-
-      setHealthStats({
-        dengueCases: dengueData,
-        airQuality: psiData?.national?.healthLevel?.level || 'Good',
-        hospitalLoad: covidData.length,
-        weeklyDengue: weeklySum,
-        avgPsi: Math.round(avgPsi)
-      });
-    } catch (error) {
-      console.error('Error loading health stats:', error);
-    }
-  };
-
-  const formatNumber = (num: number) => num.toLocaleString('en-SG');
-
-  // Render dengue chart component
-  const renderDengueChart = () => {
-    // Process labels to remove time suffix (e.g., "16-Jun 11am" -> "16-Jun")
-    const processedLabels = weeklyDengueLabels.length > 0
-      ? weeklyDengueLabels.map(label => label.split(' ')[0])
-      : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const processedData = weeklyDengueData.length > 0
-      ? weeklyDengueData
-      : [30, 29, 13, 17, 8, 6, 0];
-    const chartData = {
-      labels: processedLabels,
-      datasets: [{
-        data: processedData,
-        color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`,
-        strokeWidth: 3
-      }]
-    };
-
-    const chartConfig = {
-      backgroundColor: '#0D1421',
-      backgroundGradientFrom: '#0D1421',
-      backgroundGradientTo: '#0D1421',
-      decimalPlaces: 0,
-      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-      propsForDots: {
-        r: '6',
-        strokeWidth: '2',
-        stroke: '#4CAF50'
-      },
-      fillShadowGradientOpacity: 0.3,
-      fillShadowGradient: '#4CAF50',
-    };
-
-    const screenWidth = Dimensions.get("window").width;
-
-    // Render dengue chart within scroll padding (20 each side) with proper bounds
-    return (
-      <View style={{ margin: 16 }}>
-        <Text style={styles.sectionTitle}>
-          <FontAwesome5 name="chart-bar" size={18} color="#4CAF50" solid /> Dengue Cases Trend (7 Days)
-        </Text>
-        <View style={[styles.chartContainer, { alignItems: 'center', justifyContent: 'center' }]}>
-          <LineChart
-            data={chartData}
-            // Chart width = screenWidth - margin*2 (15*2) - container padding*2 (16*2)
-            width={screenWidth - 62}
-            height={220}
-            chartConfig={{
-              ...chartConfig,
-              propsForLabels: { fontSize: 10 }
-            }}
-            bezier
-            style={{
-              marginVertical: 0,
-              borderRadius: 12,
-            }}
-            withInnerLines={true}
-            withOuterLines={true}
-            withVerticalLines={true}
-            withHorizontalLines={true}
-            withDots={true}
-            withShadow={true}
-            segments={5}
-          />
-        </View>
-      </View>
-    );
-  };
-
-  return (
-    <ScrollView
-      style={styles.dashboardContent}
-      contentContainerStyle={{ paddingBottom: 100 }}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.header}>
-        <Text style={styles.welcomeText}>Welcome, {user?.displayName || 'User'}</Text>
-        <Text style={styles.dashboardTitle}>Singapore Health Pulse</Text>
-        <Text style={styles.tagline}>Real-time health monitoring and reporting</Text>
-      </View>
-
-      {/* Population Stats */}
-      <View style={styles.populationContainer}>
-        <Text style={styles.sectionTitle}>
-          <FontAwesome5 name="users" size={18} color="#4CAF50" solid /> Population Stats
-        </Text>
-        <View style={styles.populationCard}>
-          <Text style={styles.populationNumber}>{formatNumber(populationData.currentPopulation)}</Text>
-          <Text style={styles.populationLabel}>Total Population</Text>
-        </View>
-      </View>
-
-      {/* Today's Statistics */}
-      <View style={styles.todayStatsContainer}>
-        <Text style={styles.sectionTitle}>
-          <FontAwesome5 name="chart-bar" size={18} color="#4CAF50" solid /> Today's Statistics
-        </Text>
-        <View style={styles.todayStatsGrid}>
-          <View style={styles.todayStatCard}>
-            <FontAwesome5 name="baby" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
-            <Text style={styles.todayStatNumber}>{populationData.today.births}</Text>
-            <Text style={styles.todayStatLabel}>Births Today</Text>
-          </View>
-          <View style={styles.todayStatCard}>
-            <FontAwesome5 name="dove" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
-            <Text style={styles.todayStatNumber}>{populationData.today.deaths}</Text>
-            <Text style={styles.todayStatLabel}>Deaths Today</Text>
-          </View>
-          <View style={styles.todayStatCard}>
-            <FontAwesome5 name="plane" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
-            <Text style={styles.todayStatNumber}>{populationData.today.migration}</Text>
-            <Text style={styles.todayStatLabel}>Net Migration</Text>
-          </View>
-          <View style={styles.todayStatCard}>
-            <FontAwesome5 name="chart-line" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
-            <Text style={styles.todayStatNumber}>{populationData.today.growth}</Text>
-            <Text style={styles.todayStatLabel}>Population Growth</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Health Overview */}
-      <View style={styles.todayStatsContainer}>
-        <Text style={styles.sectionTitle}>
-          <FontAwesome5 name="hospital" size={18} color="#4CAF50" solid /> Health Overview
-        </Text>
-        <View style={styles.todayStatsGrid}>
-          <View style={styles.todayStatCard}>
-            <FontAwesome5 name="virus" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
-            <Text style={styles.todayStatNumber}>{healthStats.dengueCases}</Text>
-            <Text style={styles.todayStatLabel}>Active Dengue Cases</Text>
-          </View>
-          <View style={styles.todayStatCard}>
-            <FontAwesome5 name="wind" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
-            <Text style={styles.todayStatNumber}>{healthStats.airQuality}</Text>
-            <Text style={styles.todayStatLabel}>Air Quality</Text>
-          </View>
-          <View style={styles.todayStatCard}>
-            <FontAwesome5 name="heartbeat" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
-            <Text style={styles.todayStatNumber}>{formatNumber(populationData.additionalStats.lifeExpectancy)}</Text>
-            <Text style={styles.todayStatLabel}>Life Expectancy</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Weekly Dengue & Avg PSI Stats */}
-      <View style={styles.todayStatsContainer}>
-        <Text style={styles.sectionTitle}>
-          <FontAwesome5 name="chart-line" size={18} color="#4CAF50" solid /> 7-Day Dengue & Avg PSI
-        </Text>
-        <View style={styles.todayStatsGrid}>
-          <View style={styles.todayStatCard}>
-            <FontAwesome5 name="bug" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
-            <Text style={styles.todayStatNumber}>{healthStats.weeklyDengue}</Text>
-            <Text style={styles.todayStatLabel}>7-Day Dengue Cases</Text>
-          </View>
-          <View style={styles.todayStatCard}>
-            <FontAwesome5 name="globe-asia" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
-            <Text style={styles.todayStatNumber}>{healthStats.avgPsi}</Text>
-            <Text style={styles.todayStatLabel}>Avg PSI (4 regions)</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Dengue Trend Chart */}
-      {renderDengueChart()}
-
-      {/* Total Dengue Cases */}
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'center',
-        paddingHorizontal: 15,
-        marginBottom: 15
-      }}>
-        <View style={{
-          width: (width - 45) / 2,
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          padding: 15,
-          borderRadius: 12,
-          alignItems: 'center',
-        }}>
-          <FontAwesome5 name="chart-pie" size={24} color="#4CAF50" style={{ marginBottom: 8 }} solid />
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#4CAF50', marginBottom: 4 }}>{healthStats.weeklyDengue}</Text>
-          <Text style={{ fontSize: 12, color: '#B0BEC5', textAlign: 'center' }}>Total Dengue Cases</Text>
-        </View>
-      </View>
-
-      {/* Demographics */}
-      <View style={styles.demographicsContainer}>
-        <Text style={styles.sectionTitle}>
-          <FontAwesome5 name="users" size={18} color="#4CAF50" solid /> Demographics
-        </Text>
-        <View style={styles.genderStats}>
-          <View style={styles.genderCard}>
-            <FontAwesome5 name="male" size={24} color="#4CAF50" style={styles.genderIcon} solid />
-            <Text style={styles.genderNumber}>{formatNumber(populationData.demographics.male.population)}</Text>
-            <Text style={styles.genderLabel}>Male ({populationData.demographics.male.percentage}%)</Text>
-          </View>
-          <View style={styles.genderCard}>
-            <FontAwesome5 name="female" size={24} color="#4CAF50" style={styles.genderIcon} solid />
-            <Text style={styles.genderNumber}>{formatNumber(populationData.demographics.female.population)}</Text>
-            <Text style={styles.genderLabel}>Female ({populationData.demographics.female.percentage}%)</Text>
-          </View>
-        </View>
-      </View>
-    </ScrollView>
-  );
-}
-
 function BottomNavigation({
   activeTab,
   onTabPress
@@ -685,11 +787,14 @@ function BottomNavigation({
   activeTab: string;
   onTabPress: (tab: string) => void;
 }) {
+  const { translations, language } = useContext(LanguageContext);
+  const t = translations[language];
+
   const tabs = [
-    { id: 'home', label: 'Home', icon: 'home' },
-    { id: 'map', label: 'Map', icon: 'map-marked-alt' },
-    { id: 'report', label: 'Reports', icon: 'clipboard-list' },
-    { id: 'info', label: 'Profile', icon: 'user' },
+    { id: 'home', label: t.home, icon: 'home' },
+    { id: 'map', label: t.map, icon: 'map-marked-alt' },
+    { id: 'report', label: t.reports, icon: 'clipboard-list' },
+    { id: 'info', label: t.profile, icon: 'user' },
   ];
 
   return (
@@ -784,6 +889,7 @@ function Dashboard({ user }: { user: User }) {
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [initializing, setInitializing] = useState(true);
+  const [language, setLanguage] = useState('english');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -804,9 +910,11 @@ export default function App() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#0D1421' }}>
-      <StatusBar style="light" backgroundColor="transparent" translucent={true} />
-      {user ? <Dashboard user={user} /> : <AuthScreen />}
-    </View>
+    <LanguageContext.Provider value={{ language, setLanguage, translations }}>
+      <View style={{ flex: 1, backgroundColor: '#0D1421' }}>
+        <StatusBar style="light" backgroundColor="transparent" translucent={true} />
+        {user ? <Dashboard user={user} /> : <AuthScreen />}
+      </View>
+    </LanguageContext.Provider>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
   SafeAreaView,
+  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { signOut } from 'firebase/auth';
@@ -15,6 +16,7 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { styles } from '../styles/styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { LanguageContext } from '../../App';
 
 const InfoScreen = ({ user }) => {
   const [userProfile, setUserProfile] = useState({
@@ -29,6 +31,11 @@ const InfoScreen = ({ user }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+
+  // Get language context
+  const { language, setLanguage, translations } = useContext(LanguageContext);
+  const t = translations[language] || translations.english;
 
   useEffect(() => {
     fetchUserProfile();
@@ -84,12 +91,12 @@ const InfoScreen = ({ user }) => {
 
   const handleLogout = async () => {
     Alert.alert(
-      'Confirm Logout',
-      'Are you sure you want to logout?',
+      t.confirmLogout,
+      t.areYouSureLogout,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: 'Logout',
+          text: t.logout,
           style: 'destructive',
           onPress: async () => {
             try {
@@ -113,12 +120,104 @@ const InfoScreen = ({ user }) => {
     });
   };
 
+  const handleLanguageChange = (selectedLanguage) => {
+    setLanguage(selectedLanguage);
+    setShowLanguageModal(false);
+  };
+
+  const renderLanguageModal = () => {
+    const languages = [
+      { code: 'english', name: 'English' },
+      { code: 'chinese', name: '中文 (Chinese)' },
+      { code: 'malay', name: 'Bahasa Melayu (Malay)' },
+      { code: 'tamil', name: 'தமிழ் (Tamil)' },
+      { code: 'hindi', name: 'हिंदी (Hindi)' }
+    ];
+
+    return (
+      <Modal
+        visible={showLanguageModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <TouchableOpacity
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          activeOpacity={1}
+          onPress={() => setShowLanguageModal(false)}
+        >
+          <View
+            style={{
+              width: '80%',
+              backgroundColor: '#0D1421',
+              borderRadius: 15,
+              padding: 20,
+              borderWidth: 1,
+              borderColor: 'rgba(76, 175, 80, 0.3)',
+            }}
+            onStartShouldSetResponder={() => true}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: 'bold',
+                color: 'white',
+                marginBottom: 15,
+                textAlign: 'center',
+              }}
+            >
+              {t.language}
+            </Text>
+
+            {languages.map((lang) => (
+              <TouchableOpacity
+                key={lang.code}
+                style={{
+                  paddingVertical: 12,
+                  borderBottomWidth: 1,
+                  borderBottomColor: 'rgba(255,255,255,0.1)',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+                onPress={() => handleLanguageChange(lang.code)}
+              >
+                <Text style={{ fontSize: 16, color: 'white' }}>{lang.name}</Text>
+                {language === lang.code && (
+                  <FontAwesome5 name="check" size={16} color="#4CAF50" />
+                )}
+              </TouchableOpacity>
+            ))}
+
+            <TouchableOpacity
+              style={{
+                marginTop: 20,
+                backgroundColor: 'rgba(76, 175, 80, 0.8)',
+                padding: 12,
+                borderRadius: 10,
+                alignItems: 'center',
+              }}
+              onPress={() => setShowLanguageModal(false)}
+            >
+              <Text style={{ color: 'white', fontWeight: 'bold' }}>{t.cancel}</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    );
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#0D1421' }}>
         <View style={[styles.screenContainer, { justifyContent: 'center', alignItems: 'center' }]}>
           <ActivityIndicator size="large" color="#4CAF50" />
-          <Text style={styles.loadingText}>Loading profile...</Text>
+          <Text style={styles.loadingText}>{t.loadingProfile}</Text>
         </View>
       </SafeAreaView>
     );
@@ -144,20 +243,20 @@ const InfoScreen = ({ user }) => {
           <View style={styles.profileSection}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>
-                <FontAwesome5 name="user-circle" size={18} color="#4CAF50" solid /> Profile Information
+                <FontAwesome5 name="user-circle" size={18} color="#4CAF50" solid /> {t.profileInformation}
               </Text>
               <TouchableOpacity
                 style={styles.editButton}
                 onPress={() => setIsEditing(!isEditing)}
               >
                 <Text style={styles.editButtonText}>
-                  {isEditing ? 'Cancel' : <><FontAwesome5 name="edit" size={14} color="white" /> Edit</>}
+                  {isEditing ? t.cancel : <><FontAwesome5 name="edit" size={14} color="white" /> {t.edit}</>}
                 </Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Full Name</Text>
+              <Text style={styles.fieldLabel}>{t.fullName}</Text>
               {isEditing ? (
                 <TextInput
                   style={styles.fieldInput}
@@ -170,13 +269,13 @@ const InfoScreen = ({ user }) => {
                 />
               ) : (
                 <Text style={styles.fieldValue}>
-                  {userProfile.fullName || 'Not provided'}
+                  {userProfile.fullName || t.notProvided}
                 </Text>
               )}
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Username</Text>
+              <Text style={styles.fieldLabel}>{t.username}</Text>
               {isEditing ? (
                 <TextInput
                   style={styles.fieldInput}
@@ -189,13 +288,13 @@ const InfoScreen = ({ user }) => {
                 />
               ) : (
                 <Text style={styles.fieldValue}>
-                  {userProfile.username || 'Not provided'}
+                  {userProfile.username || t.notProvided}
                 </Text>
               )}
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Phone Number</Text>
+              <Text style={styles.fieldLabel}>{t.phoneNumber}</Text>
               {isEditing ? (
                 <TextInput
                   style={styles.fieldInput}
@@ -209,13 +308,13 @@ const InfoScreen = ({ user }) => {
                 />
               ) : (
                 <Text style={styles.fieldValue}>
-                  {userProfile.phoneNumber || 'Not provided'}
+                  {userProfile.phoneNumber || t.notProvided}
                 </Text>
               )}
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Country</Text>
+              <Text style={styles.fieldLabel}>{t.country}</Text>
               {isEditing ? (
                 <TextInput
                   style={styles.fieldInput}
@@ -228,13 +327,13 @@ const InfoScreen = ({ user }) => {
                 />
               ) : (
                 <Text style={styles.fieldValue}>
-                  {userProfile.country || 'Not provided'}
+                  {userProfile.country || t.notProvided}
                 </Text>
               )}
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Home Address</Text>
+              <Text style={styles.fieldLabel}>{t.homeAddress}</Text>
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, styles.addressInput]}
@@ -248,19 +347,19 @@ const InfoScreen = ({ user }) => {
                 />
               ) : (
                 <Text style={styles.fieldValue}>
-                  {userProfile.homeAddress || 'Not provided'}
+                  {userProfile.homeAddress || t.notProvided}
                 </Text>
               )}
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Email</Text>
+              <Text style={styles.fieldLabel}>{t.email}</Text>
               <Text style={styles.fieldValue}>{userProfile.email}</Text>
-              <Text style={styles.fieldNote}>Email cannot be changed</Text>
+              <Text style={styles.fieldNote}>{t.emailCannotBeChanged}</Text>
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Member Since</Text>
+              <Text style={styles.fieldLabel}>{t.memberSince}</Text>
               <Text style={styles.fieldValue}>
                 {formatDate(userProfile.createdAt)}
               </Text>
@@ -276,13 +375,35 @@ const InfoScreen = ({ user }) => {
                   <ActivityIndicator size="small" color="white" />
                 ) : (
                   <Text style={styles.saveButtonText}>
-                    <FontAwesome5 name="save" size={16} color="white" solid /> Save Changes
+                    <FontAwesome5 name="save" size={16} color="white" solid /> {t.saveChanges}
                   </Text>
                 )}
               </TouchableOpacity>
             )}
           </View>
 
+          {/* Language Selection Button */}
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'rgba(76, 175, 80, 0.8)',
+              paddingVertical: 10,
+              paddingHorizontal: 25,
+              borderRadius: 20,
+              alignSelf: 'center',
+              marginTop: 30
+            }}
+            onPress={() => setShowLanguageModal(true)}
+          >
+            <Text style={{
+              color: 'white',
+              fontSize: 14,
+              fontWeight: 'bold',
+            }}>
+              <FontAwesome5 name="language" size={14} color="white" /> {t.language}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Logout Button */}
           <TouchableOpacity
             style={{
               backgroundColor: 'rgba(244, 67, 54, 0.8)',
@@ -300,11 +421,13 @@ const InfoScreen = ({ user }) => {
               fontSize: 14,
               fontWeight: 'bold',
             }}>
-              <FontAwesome5 name="sign-out-alt" size={14} color="white" /> Logout
+              <FontAwesome5 name="sign-out-alt" size={14} color="white" /> {t.logout}
             </Text>
           </TouchableOpacity>
         </ScrollView>
       </LinearGradient>
+
+      {renderLanguageModal()}
     </SafeAreaView>
   );
 };
