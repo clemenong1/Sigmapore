@@ -474,6 +474,7 @@ export const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
     padding: 20,
+    backgroundColor: '#0D1421',
   },
   loadingText: {
     marginTop: 10,
@@ -774,11 +775,15 @@ export const styles = StyleSheet.create({
 
   // Bottom Navigation styles
   bottomNavigation: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     backgroundColor: 'rgba(13, 20, 33, 0.95)',
-    paddingTop: 12,
+    paddingTop: 8,
     paddingHorizontal: 8,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 12,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 8,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },

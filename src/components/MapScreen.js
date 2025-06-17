@@ -6,6 +6,8 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
+  StyleSheet,
+  SafeAreaView,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -185,7 +187,7 @@ const MapScreen = ({ user }) => {
   }
 
   return (
-    <View style={mapStyles.container}>
+    <SafeAreaView style={[mapStyles.container, { backgroundColor: '#0D1421' }]}>
       {/* Header with instruction */}
       <View style={mapStyles.header}>
         <Text style={mapStyles.headerTitle}>📍 Tap a location to report!</Text>
@@ -198,7 +200,10 @@ const MapScreen = ({ user }) => {
         initialRegion={location || defaultLocation}
         showsUserLocation={true}
         showsMyLocationButton={true}
-        myLocationButtonTintColor="#4285F4"
+        zoomEnabled={true}
+        pitchEnabled={true}
+        rotateEnabled={true}
+        scrollEnabled={true}
         onPress={handleMapPress}
         mapType="standard"
       >
@@ -262,8 +267,20 @@ const MapScreen = ({ user }) => {
           </TouchableOpacity>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'transparent',  // show underlying gradient
+  },
+  mapContainer: {
+    flex: 1,
+    position: 'relative',
+    zIndex: 1,
+  },
+});
 
 export default MapScreen; 
