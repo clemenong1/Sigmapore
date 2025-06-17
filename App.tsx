@@ -11,9 +11,13 @@ import {
   Dimensions,
   Alert,
   FlatList,
-  Modal
+  Modal,
+  ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import * as Location from 'expo-location';
+import axios from 'axios';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -41,6 +45,25 @@ interface HealthDistrict {
   percentage: number;
   color: string;
   description: string;
+}
+
+interface HealthIndicator {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  active: boolean;
+}
+
+interface MapDataPoint {
+  id: string;
+  latitude: number;
+  longitude: number;
+  title: string;
+  description: string;
+  value: string;
+  color: string;
+  type: string;
 }
 
 const healthDistricts: HealthDistrict[] = [
@@ -94,12 +117,151 @@ const healthDistricts: HealthDistrict[] = [
   }
 ];
 
+const healthIndicators: HealthIndicator[] = [
+  { id: 'haze', name: 'Air Quality', icon: '🌫️', color: '#FF5722', active: true },
+  { id: 'dengue', name: 'Dengue Clusters', icon: '🦟', color: '#E91E63', active: false },
+  { id: 'temperature', name: 'Temperature', icon: '🌡️', color: '#FF9800', active: false },
+  { id: 'hospitals', name: 'Hospitals', icon: '🏥', color: '#4CAF50', active: false },
+];
+
 interface UserData {
   username: string;
   email: string;
   country: string;
   homeAddress: string;
 }
+
+// Singapore Government Data API Functions
+const fetchSingaporeHealthData = async (datasetId: string) => {
+  try {
+    const pollUrl = `https://api-open.data.gov.sg/v1/public/api/datasets/${datasetId}/poll-download`;
+    const pollResponse = await axios.get(pollUrl);
+    
+    if (pollResponse.data.code !== 0) {
+      throw new Error(pollResponse.data.errMsg);
+    }
+    
+    const dataUrl = pollResponse.data.data.url;
+    const dataResponse = await axios.get(dataUrl);
+    return dataResponse.data;
+  } catch (error) {
+    console.error('Error fetching Singapore data:', error);
+    return null;
+  }
+};
+
+const fetchAirQualityData = async (): Promise<MapDataPoint[]> => {
+  try {
+    // Using the real-time air quality API
+    const response = await axios.get('https://api.data.gov.sg/v1/environment/air-quality');
+    const data = response.data;
+    
+    if (data.items && data.items.length > 0) {
+      const readings = data.items[0].readings;
+      const points: MapDataPoint[] = [];
+      
+      // Convert air quality readings to map points
+      Object.keys(readings).forEach((key, index) => {
+        if (readings[key] && typeof readings[key] === 'object') {
+          // Sample coordinates for different regions of Singapore
+          const coordinates = [
+            { lat: 1.3521, lng: 103.8198 }, // Central
+            { lat: 1.3644, lng: 103.9915 }, // East
+            { lat: 1.4382, lng: 103.7890 }, // North
+            { lat: 1.3048, lng: 103.8318 }, // South
+            { lat: 1.3966, lng: 103.7764 }, // West
+          ];
+          
+          const coord = coordinates[index % coordinates.length];
+          
+          points.push({
+            id: `air-${index}`,
+            latitude: coord.lat,
+            longitude: coord.lng,
+            title: `Air Quality - ${key}`,
+            description: `PSI: ${readings[key].psi || 'N/A'}`,
+            value: readings[key].psi?.toString() || 'N/A',
+            color: getPSIColor(readings[key].psi || 0),
+            type: 'air-quality'
+          });
+        }
+      });
+      
+      return points;
+    }
+  } catch (error) {
+    console.error('Error fetching air quality data:', error);
+  }
+  
+  // Fallback sample data
+  return [
+    {
+      id: 'air-1',
+      latitude: 1.3521,
+      longitude: 103.8198,
+      title: 'Central Singapore',
+      description: 'PSI: 45',
+      value: '45',
+      color: '#4CAF50',
+      type: 'air-quality'
+    },
+    {
+      id: 'air-2',
+      latitude: 1.3644,
+      longitude: 103.9915,
+      title: 'East Singapore',
+      description: 'PSI: 52',
+      value: '52',
+      color: '#4CAF50',
+      type: 'air-quality'
+    }
+  ];
+};
+
+const fetchDengueData = async (): Promise<MapDataPoint[]> => {
+  try {
+    const response = await axios.get('https://api.data.gov.sg/v1/environment/dengue-clusters');
+    const data = response.data;
+    
+    if (data.items && data.items.length > 0) {
+      const clusters = data.items[0].clusters;
+      return clusters.map((cluster: any, index: number) => ({
+        id: `dengue-${index}`,
+        latitude: parseFloat(cluster.latitude),
+        longitude: parseFloat(cluster.longitude),
+        title: 'Dengue Cluster',
+        description: `Cases: ${cluster.case_size}`,
+        value: cluster.case_size.toString(),
+        color: '#E91E63',
+        type: 'dengue'
+      }));
+    }
+  } catch (error) {
+    console.error('Error fetching dengue data:', error);
+  }
+  
+  // Fallback sample data
+  return [
+    {
+      id: 'dengue-1',
+      latitude: 1.3400,
+      longitude: 103.8300,
+      title: 'Dengue Cluster',
+      description: 'Cases: 12',
+      value: '12',
+      color: '#E91E63',
+      type: 'dengue'
+    }
+  ];
+};
+
+const getPSIColor = (psi: number): string => {
+  if (psi <= 50) return '#4CAF50'; // Good - Green
+  if (psi <= 100) return '#FFEB3B'; // Moderate - Yellow
+  if (psi <= 200) return '#FF9800'; // Unhealthy - Orange
+  if (psi <= 300) return '#F44336'; // Very Unhealthy - Red
+  return '#9C27B0'; // Hazardous - Purple
+};
 
 function CountryDropdown({
   value,
@@ -273,7 +435,7 @@ function AuthScreen() {
           </View>
 
           <Text style={styles.title}>🏙️ SigmaPulse</Text>
-          <Text style={styles.subtitle}>A Living City Health Visualization</Text>
+          <Text style={styles.subtitle}>Singapore Health Visualization</Text>
 
           <View style={styles.authToggle}>
             <TouchableOpacity
@@ -357,6 +519,145 @@ function AuthScreen() {
   );
 }
 
+function SingaporeMap({ user }: { user: User }) {
+  const [mapData, setMapData] = useState<MapDataPoint[]>([]);
+  const [indicators, setIndicators] = useState<HealthIndicator[]>(healthIndicators);
+  const [loading, setLoading] = useState(true);
+  const [showIndicatorMenu, setShowIndicatorMenu] = useState(false);
+
+  useEffect(() => {
+    loadMapData();
+  }, [indicators]);
+
+  const loadMapData = async () => {
+    setLoading(true);
+    let allData: MapDataPoint[] = [];
+
+    // Load data based on active indicators
+    for (const indicator of indicators) {
+      if (indicator.active) {
+        switch (indicator.id) {
+          case 'haze':
+            const airData = await fetchAirQualityData();
+            allData = [...allData, ...airData];
+            break;
+          case 'dengue':
+            const dengueData = await fetchDengueData();
+            allData = [...allData, ...dengueData];
+            break;
+          // Add more indicators as needed
+        }
+      }
+    }
+
+    setMapData(allData);
+    setLoading(false);
+  };
+
+  const toggleIndicator = (indicatorId: string) => {
+    setIndicators(prev => 
+      prev.map(ind => 
+        ind.id === indicatorId ? { ...ind, active: !ind.active } : ind
+      )
+    );
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error: any) {
+      Alert.alert('Logout Error', error.message);
+    }
+  };
+
+  return (
+    <View style={styles.mapContainer}>
+      <SafeAreaView style={styles.mapContent}>
+        {/* Header */}
+        <View style={styles.mapHeader}>
+          <View style={styles.headerTop}>
+            <Text style={styles.mapTitle}>🏙️ Singapore Health Map</Text>
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+              <Text style={styles.logoutText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.welcomeText}>Welcome, {user.email}</Text>
+        </View>
+
+        {/* Map */}
+        <View style={styles.mapWrapper}>
+          <MapView
+            provider={PROVIDER_GOOGLE}
+            style={styles.map}
+            initialRegion={{
+              latitude: 1.3521,
+              longitude: 103.8198,
+              latitudeDelta: 0.1,
+              longitudeDelta: 0.1,
+            }}
+            showsUserLocation={true}
+            showsMyLocationButton={true}
+          >
+            {mapData.map((point) => (
+              <Marker
+                key={point.id}
+                coordinate={{
+                  latitude: point.latitude,
+                  longitude: point.longitude,
+                }}
+                title={point.title}
+                description={point.description}
+                pinColor={point.color}
+              />
+            ))}
+          </MapView>
+
+          {/* Loading Overlay */}
+          {loading && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#4CAF50" />
+              <Text style={styles.loadingText}>Loading health data...</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Indicator Controls */}
+        <View style={styles.indicatorControls}>
+          <TouchableOpacity
+            style={styles.indicatorMenuButton}
+            onPress={() => setShowIndicatorMenu(!showIndicatorMenu)}
+          >
+            <Text style={styles.indicatorMenuText}>Health Indicators ▼</Text>
+          </TouchableOpacity>
+
+          {showIndicatorMenu && (
+            <View style={styles.indicatorMenu}>
+              {indicators.map((indicator) => (
+                <TouchableOpacity
+                  key={indicator.id}
+                  style={[
+                    styles.indicatorItem,
+                    indicator.active && styles.activeIndicatorItem
+                  ]}
+                  onPress={() => toggleIndicator(indicator.id)}
+                >
+                  <Text style={styles.indicatorIcon}>{indicator.icon}</Text>
+                  <Text style={[
+                    styles.indicatorName,
+                    indicator.active && styles.activeIndicatorName
+                  ]}>
+                    {indicator.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+      </SafeAreaView>
+    </View>
+  );
+}
+
 function DistrictCard({ district }: { district: HealthDistrict }) {
   const buildingHeight = (district.percentage / 100) * 80;
 
@@ -386,6 +687,8 @@ function DistrictCard({ district }: { district: HealthDistrict }) {
 }
 
 function Dashboard({ user }: { user: User }) {
+  const [currentView, setCurrentView] = useState<'map' | 'districts'>('map');
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -393,6 +696,10 @@ function Dashboard({ user }: { user: User }) {
       Alert.alert('Logout Error', error.message);
     }
   };
+
+  if (currentView === 'map') {
+    return <SingaporeMap user={user} />;
+  }
 
   return (
     <LinearGradient
@@ -410,6 +717,25 @@ function Dashboard({ user }: { user: User }) {
             </View>
             <Text style={styles.welcomeText}>Welcome, {user.email}</Text>
             <Text style={styles.tagline}>Transform community health data into a breathing cityscape</Text>
+          </View>
+
+          <View style={styles.viewToggle}>
+            <TouchableOpacity
+              style={[styles.viewButton, currentView === 'map' && styles.activeViewButton]}
+              onPress={() => setCurrentView('map')}
+            >
+              <Text style={[styles.viewButtonText, currentView === 'map' && styles.activeViewButtonText]}>
+                🗺️ Live Map
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.viewButton, currentView === 'districts' && styles.activeViewButton]}
+              onPress={() => setCurrentView('districts')}
+            >
+              <Text style={[styles.viewButtonText, currentView === 'districts' && styles.activeViewButtonText]}>
+                🏘️ Districts
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.statsContainer}>
@@ -573,6 +899,95 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
 
+  // Map Styles
+  mapContainer: {
+    flex: 1,
+    backgroundColor: '#0D1421',
+  },
+  mapContent: {
+    flex: 1,
+  },
+  mapHeader: {
+    padding: 20,
+    backgroundColor: 'rgba(13, 20, 33, 0.9)',
+  },
+  mapTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  mapWrapper: {
+    flex: 1,
+    position: 'relative',
+  },
+  map: {
+    flex: 1,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: 'white',
+    marginTop: 10,
+    fontSize: 16,
+  },
+  indicatorControls: {
+    position: 'absolute',
+    top: 100,
+    right: 20,
+    zIndex: 1000,
+  },
+  indicatorMenuButton: {
+    backgroundColor: 'rgba(76, 175, 80, 0.9)',
+    padding: 12,
+    borderRadius: 8,
+    minWidth: 150,
+  },
+  indicatorMenuText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  indicatorMenu: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    marginTop: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  indicatorItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  activeIndicatorItem: {
+    backgroundColor: '#E8F5E8',
+  },
+  indicatorIcon: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  indicatorName: {
+    fontSize: 14,
+    color: '#333',
+  },
+  activeIndicatorName: {
+    color: '#4CAF50',
+    fontWeight: 'bold',
+  },
+
   // Dashboard Styles
   dashboardContainer: {
     flex: 1,
@@ -595,6 +1010,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#B0BEC5',
     textAlign: 'center',
+  },
+  viewToggle: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 25,
+    padding: 5,
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
+  viewButton: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  activeViewButton: {
+    backgroundColor: 'rgba(76, 175, 80, 0.8)',
+  },
+  viewButtonText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  activeViewButtonText: {
+    color: 'white',
   },
   statsContainer: {
     flexDirection: 'row',
