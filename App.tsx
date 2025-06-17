@@ -498,7 +498,7 @@ function HomeScreen({ user }: { user: User }) {
         <View style={styles.chartContainer}>
           <LineChart
             data={chartData}
-            width={screenWidth - 32}
+            width={screenWidth - 72}
             height={220}
             chartConfig={chartConfig}
             bezier
@@ -719,7 +719,7 @@ function Dashboard({ user }: { user: User }) {
   };
 
   return (
-    <View style={styles.dashboardContainer}>
+    <SafeAreaView style={styles.dashboardContainer}>
       <StatusBar style="light" backgroundColor="#0D1421" />
       <LinearGradient
         colors={['#0D1421', '#121E3A']}
@@ -731,7 +731,7 @@ function Dashboard({ user }: { user: User }) {
         activeTab={activeTab}
         onTabPress={(tab) => setActiveTab(tab)}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

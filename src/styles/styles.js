@@ -1155,7 +1155,6 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   chartContainer: {
-    marginHorizontal: 16,
     marginTop: 8,
     backgroundColor: 'rgba(13, 20, 33, 0.7)',
     padding: 16,
@@ -1167,6 +1166,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    overflow: 'visible',
   },
   noDataContainer: {
     justifyContent: 'center',

@@ -43,58 +43,9 @@ const MapScreen = ({ user }) => {
   }, []);
 
   const requestLocationPermission = async () => {
-    try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permission Denied',
-          'Location permission is required to show your current location and nearby health reports.',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                setLocation(defaultLocation);
-                setLoading(false);
-              }
-            }
-          ]
-        );
-        return;
-      }
-
-      getCurrentLocation();
-    } catch (error) {
-      console.warn('Location permission error:', error);
-      setLocation(defaultLocation);
-      setLoading(false);
-    }
-  };
-
-  const getCurrentLocation = async () => {
-    try {
-      let currentLocation = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-
-      const { latitude, longitude } = currentLocation.coords;
-      setLocation({
-        latitude,
-        longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      });
-      setLoading(false);
-    } catch (error) {
-      console.warn('Get location error:', error);
-      setLocation(defaultLocation);
-      setLoading(false);
-      
-      Alert.alert(
-        'Location Error',
-        'Unable to get your current location. Using default location.',
-        [{ text: 'OK' }]
-      );
-    }
+    // For demo purposes, ignore device geo and use default Singapore center
+    setLocation(defaultLocation);
+    setLoading(false);
   };
 
   const setupReportsListener = () => {
