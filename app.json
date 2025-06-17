@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "health-pulse",
-    "slug": "health-pulse",
+    "name": "SigmaPulse",
+    "slug": "SigmaPulse",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

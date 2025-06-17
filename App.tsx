@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView, 
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
   SafeAreaView,
   Dimensions,
   Alert,
@@ -14,10 +14,10 @@ import {
   Modal
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
   onAuthStateChanged,
   User
 } from 'firebase/auth';
@@ -28,7 +28,7 @@ const { width, height } = Dimensions.get('window');
 
 const COUNTRIES = [
   'China',
-  'India', 
+  'India',
   'Indonesia',
   'Malaysia',
   'Singapore'
@@ -101,11 +101,11 @@ interface UserData {
   homeAddress: string;
 }
 
-function CountryDropdown({ 
-  value, 
-  onSelect, 
-  placeholder = "Select Country" 
-}: { 
+function CountryDropdown({
+  value,
+  onSelect,
+  placeholder = "Select Country"
+}: {
   value: string;
   onSelect: (country: string) => void;
   placeholder?: string;
@@ -132,9 +132,9 @@ function CountryDropdown({
   const handleInputChange = (text: string) => {
     setInputValue(text);
     setIsVisible(true);
-    
+
     // Clear selection if input doesn't match exactly
-    const exactMatch = COUNTRIES.find(country => 
+    const exactMatch = COUNTRIES.find(country =>
       country.toLowerCase() === text.toLowerCase()
     );
     if (!exactMatch) {
@@ -231,7 +231,7 @@ function AuthScreen() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      
+
       // Store additional user data in Firestore
       await setDoc(doc(db, 'users', user.uid), {
         username,
@@ -271,10 +271,10 @@ function AuthScreen() {
           <View style={styles.citySkylne}>
             <Text style={styles.skylineText}>🏙️🏢🏗️🏘️🌃</Text>
           </View>
-          
-          <Text style={styles.title}>🏙️ Health Pulse</Text>
+
+          <Text style={styles.title}>🏙️ SigmaPulse</Text>
           <Text style={styles.subtitle}>A Living City Health Visualization</Text>
-          
+
           <View style={styles.authToggle}>
             <TouchableOpacity
               style={[styles.toggleButton, isLogin && styles.activeToggle]}
@@ -289,7 +289,7 @@ function AuthScreen() {
               <Text style={[styles.toggleText, !isLogin && styles.activeToggleText]}>Sign Up</Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.inputContainer}>
             {!isLogin && (
               <TextInput
@@ -301,7 +301,7 @@ function AuthScreen() {
                 autoCapitalize="none"
               />
             )}
-            
+
             <TextInput
               style={styles.input}
               placeholder="Email"
@@ -311,7 +311,7 @@ function AuthScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
             />
-            
+
             <TextInput
               style={styles.input}
               placeholder="Password"
@@ -320,7 +320,7 @@ function AuthScreen() {
               onChangeText={setPassword}
               secureTextEntry
             />
-            
+
             {!isLogin && (
               <>
                 <CountryDropdown
@@ -328,7 +328,7 @@ function AuthScreen() {
                   onSelect={setCountry}
                   placeholder="Select Country"
                 />
-                
+
                 <TextInput
                   style={styles.input}
                   placeholder="Home Address"
@@ -340,14 +340,14 @@ function AuthScreen() {
                 />
               </>
             )}
-            
+
             <TouchableOpacity
               style={[styles.enterButton, loading && styles.disabledButton]}
               onPress={isLogin ? handleLogin : handleSignup}
               disabled={loading}
             >
               <Text style={styles.enterButtonText}>
-                {loading ? 'Please wait...' : (isLogin ? 'Login to Health City' : 'Create Account')}
+                {loading ? 'Please wait...' : (isLogin ? 'Login to SigmaPulse' : 'Create Account')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -359,27 +359,27 @@ function AuthScreen() {
 
 function DistrictCard({ district }: { district: HealthDistrict }) {
   const buildingHeight = (district.percentage / 100) * 80;
-  
+
   return (
     <View style={styles.districtCard}>
       <View style={styles.districtHeader}>
         <Text style={styles.districtIcon}>{district.icon}</Text>
         <Text style={styles.districtName}>{district.name}</Text>
       </View>
-      
+
       <View style={styles.buildingContainer}>
-        <View 
+        <View
           style={[
-            styles.building, 
-            { 
+            styles.building,
+            {
               height: buildingHeight,
-              backgroundColor: district.color 
+              backgroundColor: district.color
             }
           ]}
         />
         <Text style={styles.percentage}>{district.percentage}%</Text>
       </View>
-      
+
       <Text style={styles.description}>{district.description}</Text>
     </View>
   );
@@ -403,7 +403,7 @@ function Dashboard({ user }: { user: User }) {
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
             <View style={styles.headerTop}>
-              <Text style={styles.dashboardTitle}>🏙️ Health City</Text>
+              <Text style={styles.dashboardTitle}>🏙️ SigmaPulse</Text>
               <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                 <Text style={styles.logoutText}>Logout</Text>
               </TouchableOpacity>
@@ -411,7 +411,7 @@ function Dashboard({ user }: { user: User }) {
             <Text style={styles.welcomeText}>Welcome, {user.email}</Text>
             <Text style={styles.tagline}>Transform community health data into a breathing cityscape</Text>
           </View>
-          
+
           <View style={styles.statsContainer}>
             <View style={styles.statCard}>
               <Text style={styles.statNumber}>2.8M</Text>
@@ -426,9 +426,9 @@ function Dashboard({ user }: { user: User }) {
               <Text style={styles.statLabel}>Overall Wellbeing</Text>
             </View>
           </View>
-          
+
           <Text style={styles.sectionTitle}>🏘️ Neighborhood Districts</Text>
-          
+
           <View style={styles.districtsGrid}>
             {healthDistricts.map((district) => (
               <DistrictCard key={district.id} district={district} />
@@ -460,7 +460,7 @@ export default function App() {
         style={styles.loginContainer}
       >
         <SafeAreaView style={styles.loginContent}>
-          <Text style={styles.title}>🏙️ Health Pulse</Text>
+          <Text style={styles.title}>🏙️ SigmaPulse</Text>
           <Text style={styles.subtitle}>Loading...</Text>
         </SafeAreaView>
       </LinearGradient>
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  
+
   // Country Dropdown Styles
   countryDropdownWrapper: {
     marginBottom: 15,
@@ -572,7 +572,7 @@ const styles = StyleSheet.create({
   lastCountryOption: {
     borderBottomWidth: 0,
   },
-  
+
   // Dashboard Styles
   dashboardContainer: {
     flex: 1,

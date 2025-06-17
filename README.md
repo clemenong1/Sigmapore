@@ -1,4 +1,4 @@
-# 🏙️ Health Pulse
+# 🏙️ SigmaPulse
 
 **A Living City Health Visualization** - Transform community health data into a breathing cityscape.
 
@@ -8,7 +8,7 @@ Built with **React Native + Expo** for Singapore Hackathon. ✅ **COMPLETE & REA
 
 ```bash
 git clone https://github.com/clemenong1/Sigmapore.git
-cd Sigmapore/health-pulse
+cd Sigmapore
 npx expo start
 ```
 
@@ -27,7 +27,7 @@ That's it! No bullshit setup like Flutter.
 - **Beautiful blue-to-green gradient** background
 - **City skyline emojis** (🏙️🏢🏗️🏘️🌃) for visual appeal
 - City/Community input fields with placeholder text
-- **"Enter Health City"** button with smooth transitions
+- **"Enter SigmaPulse"** button with smooth transitions
 - Defaults to "Singapore" if no city entered
 
 ### 🏙️ Community Health Dashboard
@@ -102,7 +102,7 @@ Perfect for hackathon presentations showing community health insights in an intu
 
 1. **Launch** → Beautiful gradient login screen
 2. **Enter city** → Input your location (defaults to Singapore)
-3. **Tap "Enter Health City"** → Navigate to dashboard
+3. **Tap "Enter SigmaPulse"** → Navigate to dashboard
 4. **View stats** → Population, age, wellbeing overview
 5. **Explore districts** → Scroll through 6 health neighborhoods
 6. **Visual feedback** → Buildings show health percentages instantly
