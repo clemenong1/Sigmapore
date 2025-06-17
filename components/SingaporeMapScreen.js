@@ -144,13 +144,13 @@ const SingaporeMapScreen = ({ user }) => {
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Singapore Dengue Clusters Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        #map { height: 100vh; width: 100%; }
+        html, body, #map { height: 100%; width: 100%; }
         .legend {
             position: absolute;
             bottom: 30px;
@@ -223,7 +223,16 @@ const SingaporeMapScreen = ({ user }) => {
     </div>
 
     <script>
-        const map = L.map('map').setView([1.3521, 103.8198], 11);
+        // Make map take full height
+        document.getElementById('map').style.height = window.innerHeight + 'px';
+        
+        const map = L.map('map', {
+            attributionControl: true,
+            zoomControl: true,
+            dragging: true,
+            tap: true
+        }).setView([1.3521, 103.8198], 11);
+        
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
@@ -263,6 +272,11 @@ const SingaporeMapScreen = ({ user }) => {
             });
             map.fitBounds(group.getBounds(), { padding: [20, 20] });
         }
+        
+        // Fix for touch events
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 500);
     </script>
 </body>
 </html>`;
@@ -656,6 +670,7 @@ const SingaporeMapScreen = ({ user }) => {
         <TouchableOpacity 
           style={styles.dropdownButton}
           onPress={() => setShowDropdown(true)}
+          activeOpacity={0.7}
         >
           <Text style={styles.dropdownButtonText}>
             {mapType === 'dengue' ? '🦟 Dengue Clusters' : 
@@ -680,6 +695,15 @@ const SingaporeMapScreen = ({ user }) => {
           onLoadEnd={() => setWebViewLoading(false)}
           javaScriptEnabled={true}
           domStorageEnabled={true}
+          bounces={false}
+          scrollEnabled={true}
+          containerStyle={{flex: 1}}
+          onError={(e) => console.error('WebView error:', e.nativeEvent)}
+          originWhitelist={['*']}
+          startInLoadingState={true}
+          scalesPageToFit={false}
+          mixedContentMode="always"
+          allowsInlineMediaPlayback={true}
         />
       </View>
 
@@ -741,6 +765,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    zIndex: 10,
   },
   dropdownButton: {
     flexDirection: 'row',
@@ -761,9 +786,11 @@ const styles = StyleSheet.create({
   mapContainer: {
     flex: 1,
     position: 'relative',
+    zIndex: 1,
   },
   webView: {
     flex: 1,
+    opacity: 0.99, // Fix for touch events on some devices
   },
   webViewLoading: {
     position: 'absolute',

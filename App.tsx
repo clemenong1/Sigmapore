@@ -820,7 +820,7 @@ function Dashboard({ user }: { user: User }) {
       case 'map':
         return <SingaporeMapScreen user={user} />;
       case 'report':
-        return <ReportScreen user={user} />;
+        return <MapScreen user={user} />;
       case 'info':
         return <InfoScreen user={user} />;
       default:
