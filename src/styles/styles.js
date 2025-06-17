@@ -564,6 +564,7 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
+    marginBottom: 10,
   },
   editButton: {
     backgroundColor: 'rgba(76, 175, 80, 0.8)',
@@ -765,6 +766,20 @@ export const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  lightButton: {
+    backgroundColor: '#f8f9fa',
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  lightButtonText: {
+    color: '#4CAF50',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -1128,6 +1143,28 @@ export const styles = StyleSheet.create({
   liveStatsSubtitle: {
     fontSize: 14,
     color: '#B0BEC5',
+  },
+  populationContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 15,
+    padding: 20,
+    marginHorizontal: 15,
+    marginVertical: 15,
+  },
+  populationCard: {
+    alignItems: 'center',
+    padding: 10,
+  },
+  populationNumber: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginVertical: 5,
+  },
+  populationLabel: {
+    fontSize: 14,
+    color: '#B0BEC5',
+    textAlign: 'center',
   },
   todayStatsContainer: {
     margin: 15,

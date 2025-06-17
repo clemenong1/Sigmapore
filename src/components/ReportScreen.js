@@ -8,12 +8,13 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
-import { 
-  collection, 
-  addDoc, 
+import {
+  collection,
+  addDoc,
   serverTimestamp,
   query,
   where,
@@ -23,16 +24,18 @@ import {
 } from 'firebase/firestore';
 import { db, COLLECTIONS } from '../config/firebase';
 import { styles } from '../styles/styles';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import CustomButton from './CustomButton';
 
 const REPORT_CATEGORIES = [
-  { id: 'air', title: 'Air Quality', icon: '🏭', description: 'Air pollution, smog, smoke' },
-  { id: 'water', title: 'Water Quality', icon: '💧', description: 'Drinking water, contamination' },
-  { id: 'waste', title: 'Waste Management', icon: '🗑️', description: 'Garbage, recycling issues' },
-  { id: 'noise', title: 'Noise Pollution', icon: '🔊', description: 'Loud noises, construction' },
-  { id: 'disease', title: 'Disease Outbreak', icon: '🦠', description: 'Illness, epidemic concerns' },
-  { id: 'mental', title: 'Mental Health', icon: '🧠', description: 'Stress, community wellbeing' },
-  { id: 'food', title: 'Food Safety', icon: '🍎', description: 'Food poisoning, nutrition' },
-  { id: 'other', title: 'Other Health Issue', icon: '⚕️', description: 'General health concerns' },
+  { id: 'air', title: 'Air Quality', icon: 'smog', description: 'Air pollution, smog, smoke' },
+  { id: 'water', title: 'Water Quality', icon: 'tint', description: 'Drinking water, contamination' },
+  { id: 'waste', title: 'Waste Management', icon: 'trash', description: 'Garbage, recycling issues' },
+  { id: 'noise', title: 'Noise Pollution', icon: 'volume-up', description: 'Loud noises, construction' },
+  { id: 'disease', title: 'Disease Outbreak', icon: 'virus', description: 'Illness, epidemic concerns' },
+  { id: 'mental', title: 'Mental Health', icon: 'brain', description: 'Stress, community wellbeing' },
+  { id: 'food', title: 'Food Safety', icon: 'apple-alt', description: 'Food poisoning, nutrition' },
+  { id: 'other', title: 'Other Health Issue', icon: 'first-aid', description: 'General health concerns' },
 ];
 
 const ReportScreen = ({ user }) => {
@@ -212,7 +215,7 @@ const ReportScreen = ({ user }) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diffInHours = (now - date) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 1) {
       return 'Just now';
     } else if (diffInHours < 24) {
@@ -222,11 +225,30 @@ const ReportScreen = ({ user }) => {
     }
   };
 
+  const customStyles = StyleSheet.create({
+    cancelButton: {
+      backgroundColor: '#f8f9fa',
+      paddingVertical: 15,
+      borderRadius: 10,
+      alignItems: 'center',
+      marginTop: 10,
+      borderWidth: 1,
+      borderColor: '#e9ecef',
+    },
+    cancelButtonText: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#666',
+    },
+  });
+
   return (
     <LinearGradient colors={['#0D1421', '#1A237E']} style={styles.screenContainer}>
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <View style={styles.reportHeader}>
-          <Text style={styles.reportTitle}>🏥 Submit Health Report</Text>
+          <Text style={styles.reportTitle}>
+            <FontAwesome5 name="hospital" size={20} color="#4CAF50" solid /> Submit Health Report
+          </Text>
           <Text style={styles.reportSubtitle}>
             Help improve community health by reporting health concerns in your area
           </Text>
@@ -234,7 +256,9 @@ const ReportScreen = ({ user }) => {
 
         {/* Location Status */}
         <View style={styles.locationContainer}>
-          <Text style={styles.locationLabel}>📍 Report Location</Text>
+          <Text style={styles.locationLabel}>
+            <FontAwesome5 name="map-marker-alt" size={16} color="#4CAF50" solid /> Report Location
+          </Text>
           {loading ? (
             <View style={styles.locationLoading}>
               <ActivityIndicator size="small" color="#4CAF50" />
@@ -246,7 +270,9 @@ const ReportScreen = ({ user }) => {
             </Text>
           ) : (
             <TouchableOpacity style={styles.locationButton} onPress={getCurrentLocation}>
-              <Text style={styles.locationButtonText}>📍 Get Location</Text>
+              <Text style={styles.locationButtonText}>
+                <FontAwesome5 name="map-marker-alt" size={14} color="#FFFFFF" solid /> Get Location
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -264,7 +290,13 @@ const ReportScreen = ({ user }) => {
                 ]}
                 onPress={() => setSelectedCategory(category)}
               >
-                <Text style={styles.categoryIcon}>{category.icon}</Text>
+                <FontAwesome5
+                  name={category.icon}
+                  size={30}
+                  color={selectedCategory?.id === category.id ? '#4CAF50' : '#B0BEC5'}
+                  style={styles.categoryIcon}
+                  solid
+                />
                 <Text style={styles.categoryTitle}>{category.title}</Text>
                 <Text style={styles.categoryDescription}>{category.description}</Text>
               </TouchableOpacity>
@@ -276,7 +308,7 @@ const ReportScreen = ({ user }) => {
         {selectedCategory && (
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Report Details</Text>
-            
+
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Report Title</Text>
               <TextInput
@@ -306,17 +338,13 @@ const ReportScreen = ({ user }) => {
               </Text>
             </View>
 
-            <TouchableOpacity
-              style={[styles.submitButton, submitting && styles.disabledButton]}
+            <CustomButton
+              title="Submit Report"
+              icon="clipboard-check"
               onPress={handleSubmitReport}
+              loading={submitting}
               disabled={submitting}
-            >
-              {submitting ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <Text style={styles.submitButtonText}>📋 Submit Report</Text>
-              )}
-            </TouchableOpacity>
+            />
           </View>
         )}
 
@@ -339,9 +367,13 @@ const ReportScreen = ({ user }) => {
                   <Text style={styles.recentReportStatus}>
                     Status: {report.status || 'Pending'}
                   </Text>
-                  <Text style={styles.recentReportCategory}>
-                    {REPORT_CATEGORIES.find(cat => cat.id === report.category)?.icon || '⚕️'}
-                  </Text>
+                  <FontAwesome5
+                    name={REPORT_CATEGORIES.find(cat => cat.id === report.category)?.icon || 'first-aid'}
+                    size={20}
+                    color="#4CAF50"
+                    style={styles.recentReportCategory}
+                    solid
+                  />
                 </View>
               </View>
             ))}

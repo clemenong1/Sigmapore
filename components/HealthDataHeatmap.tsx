@@ -6,9 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
-  Animated
+  Animated,
+  SafeAreaView
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const { width } = Dimensions.get('window');
 
@@ -128,12 +130,12 @@ const HealthDataHeatmap: React.FC<HeatmapProps> = ({ locationAnalysis, onClose }
     return (
       <View style={styles.heatmapContainer}>
         <Text style={styles.heatmapTitle}>Singapore Health Data - {selectedMetric.toUpperCase()}</Text>
-        
+
         <View style={styles.gridContainer}>
           {regionsData.map((region, index) => {
             const value = getMetricValue(region);
             const color = getColorForValue(value, selectedMetric);
-            
+
             return (
               <Animated.View
                 key={region.region}
@@ -183,25 +185,35 @@ const HealthDataHeatmap: React.FC<HeatmapProps> = ({ locationAnalysis, onClose }
   const renderDataBreakdown = () => {
     return (
       <View style={styles.dataBreakdown}>
-        <Text style={styles.breakdownTitle}>📊 Recommendation Based On:</Text>
-        
+        <Text style={styles.breakdownTitle}>
+          <FontAwesome5 name="chart-bar" size={16} color="#333" solid /> Recommendation Based On:
+        </Text>
+
         <View style={styles.dataRow}>
-          <Text style={styles.dataLabel}>🦟 Dengue Cases:</Text>
+          <Text style={styles.dataLabel}>
+            <FontAwesome5 name="bug" size={14} color="#dc2626" solid /> Dengue Cases:
+          </Text>
           <Text style={styles.dataValue}>{locationAnalysis.dengueRisk.casesNearby} cases nearby</Text>
         </View>
-        
+
         <View style={styles.dataRow}>
-          <Text style={styles.dataLabel}>🌬️ Air Quality:</Text>
+          <Text style={styles.dataLabel}>
+            <FontAwesome5 name="smog" size={14} color="#6b7280" solid /> Air Quality:
+          </Text>
           <Text style={styles.dataValue}>PSI {locationAnalysis.airQuality.psi} ({locationAnalysis.airQuality.level})</Text>
         </View>
-        
+
         <View style={styles.dataRow}>
-          <Text style={styles.dataLabel}>🏥 COVID Hospitals:</Text>
+          <Text style={styles.dataLabel}>
+            <FontAwesome5 name="hospital" size={14} color="#1d4ed8" solid /> COVID Hospitals:
+          </Text>
           <Text style={styles.dataValue}>{locationAnalysis.covidRisk.hospitalCases} cases in area hospitals</Text>
         </View>
-        
+
         <View style={styles.dataRow}>
-          <Text style={styles.dataLabel}>📈 Overall Assessment:</Text>
+          <Text style={styles.dataLabel}>
+            <FontAwesome5 name="chart-line" size={14} color="#333" solid /> Overall Assessment:
+          </Text>
           <Text style={[styles.dataValue, { color: getColorForValue(getRiskScore(locationAnalysis.overallRisk), 'overall') }]}>
             {locationAnalysis.overallRisk} Risk
           </Text>
@@ -212,10 +224,10 @@ const HealthDataHeatmap: React.FC<HeatmapProps> = ({ locationAnalysis, onClose }
 
   const renderMetricSelector = () => {
     const metrics = [
-      { key: 'overall', label: 'Overall', icon: '📊' },
-      { key: 'dengue', label: 'Dengue', icon: '🦟' },
-      { key: 'air', label: 'Air Quality', icon: '🌬️' },
-      { key: 'covid', label: 'COVID', icon: '🏥' }
+      { key: 'overall', label: 'Overall', icon: 'chart-bar' },
+      { key: 'dengue', label: 'Dengue', icon: 'bug' },
+      { key: 'air', label: 'Air Quality', icon: 'smog' },
+      { key: 'covid', label: 'COVID', icon: 'hospital' }
     ];
 
     return (
@@ -229,7 +241,12 @@ const HealthDataHeatmap: React.FC<HeatmapProps> = ({ locationAnalysis, onClose }
             ]}
             onPress={() => setSelectedMetric(metric.key as any)}
           >
-            <Text style={styles.metricIcon}>{metric.icon}</Text>
+            <FontAwesome5
+              name={metric.icon}
+              size={18}
+              color={selectedMetric === metric.key ? '#fff' : '#667eea'}
+              solid
+            />
             <Text style={[
               styles.metricLabel,
               selectedMetric === metric.key && styles.selectedMetricLabel
@@ -242,51 +259,95 @@ const HealthDataHeatmap: React.FC<HeatmapProps> = ({ locationAnalysis, onClose }
     );
   };
 
-  return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['#667eea', '#764ba2']}
-        style={styles.header}
-      >
-        <Text style={styles.headerTitle}>Health Data Transparency</Text>
-        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-          <Text style={styles.closeButtonText}>×</Text>
-        </TouchableOpacity>
-      </LinearGradient>
-
-      <ScrollView style={styles.content}>
-        {renderDataBreakdown()}
-        {renderMetricSelector()}
-        {renderHeatmapGrid()}
-        
-        <View style={styles.legend}>
-          <Text style={styles.legendTitle}>🎨 Color Legend:</Text>
-          <View style={styles.legendRow}>
-            <View style={[styles.legendColor, { backgroundColor: '#4CAF50' }]} />
-            <Text style={styles.legendText}>Low Risk / Good</Text>
+  const renderRecommendations = () => {
+    return (
+      <View style={styles.recommendationsContainer}>
+        <Text style={styles.recommendationsTitle}>
+          <FontAwesome5 name="lightbulb" size={16} color="#333" solid /> Health Recommendations
+        </Text>
+        <View style={styles.recommendationCard}>
+          <Text style={styles.recommendationText}>
+            Based on the current health data for {locationAnalysis.location}, we recommend:
+          </Text>
+          <View style={styles.recommendationItem}>
+            <FontAwesome5 name="check-circle" size={14} color="#4CAF50" style={styles.recommendationIcon} solid />
+            <Text style={styles.recommendationItemText}>
+              {locationAnalysis.dengueRisk.level === 'High' ? 'Use mosquito repellent when outdoors' : 'Normal mosquito precautions'}
+            </Text>
           </View>
-          <View style={styles.legendRow}>
-            <View style={[styles.legendColor, { backgroundColor: '#FF9800' }]} />
-            <Text style={styles.legendText}>Medium Risk / Moderate</Text>
+          <View style={styles.recommendationItem}>
+            <FontAwesome5 name="check-circle" size={14} color="#4CAF50" style={styles.recommendationIcon} solid />
+            <Text style={styles.recommendationItemText}>
+              {locationAnalysis.airQuality.psi > 100 ? 'Wear a mask outdoors if sensitive to air pollution' : 'Air quality is acceptable for outdoor activities'}
+            </Text>
           </View>
-          <View style={styles.legendRow}>
-            <View style={[styles.legendColor, { backgroundColor: '#FF5722' }]} />
-            <Text style={styles.legendText}>High Risk / Unhealthy</Text>
-          </View>
-          <View style={styles.legendRow}>
-            <View style={[styles.legendColor, { backgroundColor: '#F44336' }]} />
-            <Text style={styles.legendText}>Very High / Hazardous</Text>
+          <View style={styles.recommendationItem}>
+            <FontAwesome5 name="check-circle" size={14} color="#4CAF50" style={styles.recommendationIcon} solid />
+            <Text style={styles.recommendationItemText}>
+              {locationAnalysis.covidRisk.level === 'High' ? 'Practice social distancing in crowded areas' : 'Standard hygiene practices recommended'}
+            </Text>
           </View>
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <LinearGradient
+          colors={['#667eea', '#764ba2']}
+          style={styles.header}
+        >
+          <Text style={styles.headerTitle}>Health Data Heatmap</Text>
+          <Text style={styles.locationText}>{locationAnalysis.location}</Text>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>×</Text>
+          </TouchableOpacity>
+        </LinearGradient>
+
+        <ScrollView style={styles.content}>
+          {renderMetricSelector()}
+          {renderHeatmapGrid()}
+          {renderDataBreakdown()}
+
+          <View style={styles.legend}>
+            <Text style={styles.legendTitle}>
+              <FontAwesome5 name="palette" size={16} color="#333" solid /> Color Legend:
+            </Text>
+            <View style={styles.legendRow}>
+              <View style={[styles.legendColor, { backgroundColor: '#4CAF50' }]} />
+              <Text style={styles.legendText}>Low Risk / Good</Text>
+            </View>
+            <View style={styles.legendRow}>
+              <View style={[styles.legendColor, { backgroundColor: '#FF9800' }]} />
+              <Text style={styles.legendText}>Medium Risk / Moderate</Text>
+            </View>
+            <View style={styles.legendRow}>
+              <View style={[styles.legendColor, { backgroundColor: '#FF5722' }]} />
+              <Text style={styles.legendText}>High Risk / Unhealthy</Text>
+            </View>
+            <View style={styles.legendRow}>
+              <View style={[styles.legendColor, { backgroundColor: '#F44336' }]} />
+              <Text style={styles.legendText}>Very High / Hazardous</Text>
+            </View>
+          </View>
+
+          {renderRecommendations()}
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0D1421'
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa'
+    backgroundColor: '#fff'
   },
   header: {
     flexDirection: 'row',
@@ -302,6 +363,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF'
+  },
+  locationText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    marginBottom: 10
   },
   closeButton: {
     width: 30,
@@ -475,6 +541,50 @@ const styles = StyleSheet.create({
   legendText: {
     fontSize: 14,
     color: '#666'
+  },
+  recommendationsContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 15,
+    padding: 20,
+    marginVertical: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3
+  },
+  recommendationsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#333'
+  },
+  recommendationCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3
+  },
+  recommendationText: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 15
+  },
+  recommendationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5
+  },
+  recommendationIcon: {
+    marginRight: 10
+  },
+  recommendationItemText: {
+    fontSize: 14,
+    color: '#333'
   }
 });
 

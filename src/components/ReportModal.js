@@ -14,13 +14,14 @@ import {
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db, COLLECTIONS } from '../config/firebase';
 import { modalStyles } from '../styles/styles';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
-const ReportModal = ({ 
-  visible, 
-  onClose, 
-  location, 
+const ReportModal = ({
+  visible,
+  onClose,
+  location,
   user,
-  onReportSubmitted 
+  onReportSubmitted
 }) => {
   const [selectedSickness, setSelectedSickness] = useState([]);
   const [otherSickness, setOtherSickness] = useState('');
@@ -121,7 +122,7 @@ const ReportModal = ({
       };
 
       const docRef = await addDoc(collection(db, COLLECTIONS.REPORTS), reportData);
-      
+
       Alert.alert(
         'Success',
         'Health report submitted successfully!',
@@ -166,17 +167,19 @@ const ReportModal = ({
       >
         <View style={modalStyles.container}>
           <View style={modalStyles.header}>
-            <Text style={modalStyles.title}>Submit Health Report</Text>
-            <TouchableOpacity 
+            <Text style={modalStyles.title}>
+              <FontAwesome5 name="clipboard-list" size={18} color="#4CAF50" solid /> Submit Health Report
+            </Text>
+            <TouchableOpacity
               style={modalStyles.closeButton}
               onPress={onClose}
               disabled={loading}
             >
-              <Text style={modalStyles.closeButtonText}>×</Text>
+              <FontAwesome5 name="times" size={20} color="#fff" />
             </TouchableOpacity>
           </View>
 
-          <ScrollView 
+          <ScrollView
             style={modalStyles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
@@ -195,7 +198,7 @@ const ReportModal = ({
                     selectedSickness.includes(sickness) && modalStyles.checkboxSelected
                   ]}>
                     {selectedSickness.includes(sickness) && (
-                      <Text style={modalStyles.checkboxText}>✓</Text>
+                      <FontAwesome5 name="check" size={12} color="white" />
                     )}
                   </View>
                   <Text style={modalStyles.checkboxLabel}>{sickness}</Text>
@@ -239,7 +242,11 @@ const ReportModal = ({
                 ]}>
                   {peopleCount || 'Select number of people'}
                 </Text>
-                <Text style={modalStyles.dropdownArrow}>▼</Text>
+                <FontAwesome5
+                  name={showDropdown ? "chevron-up" : "chevron-down"}
+                  size={14}
+                  color="#666"
+                />
               </TouchableOpacity>
 
               {showDropdown && (
@@ -293,7 +300,7 @@ const ReportModal = ({
               <Text style={modalStyles.label}>Location</Text>
               <View style={modalStyles.locationContainer}>
                 <Text style={modalStyles.locationText}>
-                  📍 {formatLocation()}
+                  <FontAwesome5 name="map-marker-alt" size={16} color="#4CAF50" solid /> {formatLocation()}
                 </Text>
               </View>
               {errors.location && (
@@ -313,18 +320,18 @@ const ReportModal = ({
               </Text>
             </TouchableOpacity>
 
+            {/* Submit Button */}
             <TouchableOpacity
-              style={[
-                modalStyles.button,
-                loading && modalStyles.disabledButton
-              ]}
+              style={[modalStyles.submitButton, loading && modalStyles.disabledButton]}
               onPress={handleSubmit}
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator color="white" size="small" />
+                <ActivityIndicator size="small" color="white" />
               ) : (
-                <Text style={modalStyles.buttonText}>Submit Report</Text>
+                <Text style={modalStyles.submitButtonText}>
+                  <FontAwesome5 name="paper-plane" size={16} color="white" solid /> Submit Report
+                </Text>
               )}
             </TouchableOpacity>
           </View>

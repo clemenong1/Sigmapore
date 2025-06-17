@@ -11,16 +11,17 @@ import {
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { 
-  collection, 
-  onSnapshot, 
-  query, 
+import {
+  collection,
+  onSnapshot,
+  query,
   orderBy,
-  limit 
+  limit
 } from 'firebase/firestore';
 import { db, COLLECTIONS } from '../config/firebase';
 import { mapStyles } from '../styles/styles';
 import ReportModal from './ReportModal';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const MapScreen = ({ user }) => {
   const [location, setLocation] = useState(null);
@@ -43,7 +44,7 @@ const MapScreen = ({ user }) => {
   useEffect(() => {
     requestLocationPermission();
     let unsubscribe;
-    
+
     if (user) {
       unsubscribe = setupReportsListener();
     } else {
@@ -144,33 +145,33 @@ const MapScreen = ({ user }) => {
   const getMarkerIcon = (title) => {
     // Simple icon mapping based on report title keywords
     const titleLower = title.toLowerCase();
-    
+
     if (titleLower.includes('air') || titleLower.includes('pollution')) {
-      return '🏭';
+      return 'smog';
     } else if (titleLower.includes('water') || titleLower.includes('drinking')) {
-      return '💧';
+      return 'tint';
     } else if (titleLower.includes('waste') || titleLower.includes('garbage')) {
-      return '🗑️';
+      return 'trash';
     } else if (titleLower.includes('noise')) {
-      return '🔊';
+      return 'volume-up';
     } else if (titleLower.includes('disease') || titleLower.includes('illness')) {
-      return '🦠';
+      return 'virus';
     } else if (titleLower.includes('mental') || titleLower.includes('stress')) {
-      return '🧠';
+      return 'brain';
     } else if (titleLower.includes('food') || titleLower.includes('nutrition')) {
-      return '🍎';
+      return 'apple-alt';
     } else {
-      return '⚕️'; // Default health icon
+      return 'first-aid'; // Default health icon
     }
   };
 
   const formatDate = (timestamp) => {
     if (!timestamp) return 'Unknown time';
-    
+
     const date = new Date(timestamp);
     const now = new Date();
     const diffInHours = (now - date) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 24) {
       return `${Math.floor(diffInHours)}h ago`;
     } else {
@@ -241,108 +242,76 @@ const MapScreen = ({ user }) => {
   }
 
   return (
-    <View style={[mapStyles.container, { backgroundColor: '#f5f5f5' }]}>
-      {/* Header with instruction */}
-      <SafeAreaView style={{ backgroundColor: '#0D1421', zIndex: 1000 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+      <View style={[mapStyles.container, { backgroundColor: '#f5f5f5' }]}>
+        {/* Header with instruction */}
         <View style={mapStyles.header}>
-          <Text style={mapStyles.headerTitle}>📍 Tap a location to report!</Text>
+          <Text style={mapStyles.headerTitle}>
+            <FontAwesome5 name="map-marker-alt" size={18} color="#4CAF50" solid /> Tap a location to report!
+          </Text>
         </View>
-      </SafeAreaView>
-      
-      <MapView
-        ref={mapRef}
-        provider={PROVIDER_GOOGLE}
-        style={mapStyles.map}
-        initialRegion={location || defaultLocation}
-        showsUserLocation={false}
-        showsMyLocationButton={false}
-        zoomEnabled={true}
-        pitchEnabled={true}
-        rotateEnabled={true}
-        scrollEnabled={true}
-        onPress={handleMapPress}
-        onRegionChangeComplete={handleRegionChange}
-        mapType="standard"
-      >
-        {reports.map((report) => (
-          <Marker
-            key={report.id}
-            coordinate={{
-              latitude: report.latitude,
-              longitude: report.longitude,
-            }}
-            title={report.title}
-            description={`${report.description} • ${formatDate(report.timestamp)}`}
-            onPress={() => handleMarkerPress(report)}
-          >
-            <View style={{
-              backgroundColor: '#ff4444',
-              padding: 8,
-              borderRadius: 20,
-              borderWidth: 3,
-              borderColor: 'white',
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-              elevation: 5,
-            }}>
-              <Text style={{ fontSize: 20, color: 'white' }}>
-                {getMarkerIcon(report.title)}
-              </Text>
-            </View>
-          </Marker>
-        ))}
-      </MapView>
 
-      {/* Zoom Controls */}
-      <View style={mapStyles.zoomControls}>
-        <TouchableOpacity
-          style={[mapStyles.zoomButton, mapStyles.zoomButtonTop]}
-          onPress={handleZoomIn}
-          activeOpacity={0.8}
+        <MapView
+          ref={mapRef}
+          provider={PROVIDER_GOOGLE}
+          style={mapStyles.map}
+          initialRegion={location || defaultLocation}
+          onPress={handleMapPress}
+          showsUserLocation
+          showsMyLocationButton
         >
-          <Text style={mapStyles.zoomIcon}>+</Text>
-        </TouchableOpacity>
+          {reports
+            .filter(report => report.location)
+            .map(report => (
+              <Marker
+                key={report.id}
+                coordinate={{
+                  latitude: report.location.latitude,
+                  longitude: report.location.longitude,
+                }}
+                title={report.title}
+                description={report.description}
+                onPress={() => handleMarkerPress(report)}
+              >
+                <View style={mapStyles.markerContainer}>
+                  <FontAwesome5
+                    name={getMarkerIcon(report.title)}
+                    size={24}
+                    color="#4CAF50"
+                    solid
+                  />
+                </View>
+              </Marker>
+            ))}
+        </MapView>
+
+        {/* Floating Action Button */}
         <TouchableOpacity
-          style={[mapStyles.zoomButton, mapStyles.zoomButtonBottom]}
-          onPress={handleZoomOut}
-          activeOpacity={0.8}
+          style={mapStyles.fab}
+          onPress={handleFabPress}
         >
-          <Text style={mapStyles.zoomIcon}>−</Text>
+          <FontAwesome5 name="plus" size={24} color="white" style={mapStyles.fabIcon} solid />
         </TouchableOpacity>
+
+        {/* Report Modal */}
+        <ReportModal
+          visible={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          location={selectedLocation}
+          onSubmit={handleReportSubmitted}
+          user={user}
+        />
+
+        {error && (
+          <View style={mapStyles.errorContainer}>
+            <Text style={mapStyles.errorText}>{error}</Text>
+            <TouchableOpacity style={mapStyles.retryButton} onPress={retry}>
+              <Text style={mapStyles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
-
-      <TouchableOpacity
-        style={mapStyles.fab}
-        onPress={handleFabPress}
-        activeOpacity={0.8}
-      >
-        <Text style={mapStyles.fabIcon}>+</Text>
-      </TouchableOpacity>
-
-      <ReportModal
-        visible={showReportModal}
-        onClose={() => {
-          setShowReportModal(false);
-          setSelectedLocation(null);
-        }}
-        location={selectedLocation}
-        user={user}
-        onReportSubmitted={handleReportSubmitted}
-      />
-
-      {error && (
-        <View style={mapStyles.errorContainer}>
-          <Text style={mapStyles.errorText}>{error}</Text>
-          <TouchableOpacity style={mapStyles.retryButton} onPress={retry}>
-            <Text style={mapStyles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+    </SafeAreaView>
   );
 };
 

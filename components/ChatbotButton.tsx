@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import HealthChatbot from './HealthChatbot';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const { width, height } = Dimensions.get('window');
 
@@ -17,9 +18,9 @@ interface ChatbotButtonProps {
   userLocation?: string;
 }
 
-const ChatbotButton: React.FC<ChatbotButtonProps> = ({ 
-  openaiApiKey, 
-  userLocation 
+const ChatbotButton: React.FC<ChatbotButtonProps> = ({
+  openaiApiKey,
+  userLocation
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [pulseAnim] = useState(new Animated.Value(1));
@@ -66,7 +67,7 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({
             colors={['#667eea', '#764ba2']}
             style={styles.gradient}
           >
-            <Text style={styles.buttonText}>🤖</Text>
+            <FontAwesome5 name="robot" size={24} color="#FFFFFF" style={styles.buttonIcon} solid />
             <Text style={styles.labelText}>Health AI</Text>
           </LinearGradient>
         </TouchableOpacity>
@@ -77,6 +78,7 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({
         animationType="slide"
         presentationStyle="fullScreen"
         onRequestClose={closeChatbot}
+        statusBarTranslucent={true}
       >
         <HealthChatbot
           openaiApiKey={openaiApiKey}
@@ -91,7 +93,7 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({
 const styles = StyleSheet.create({
   floatingButton: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 25,
     right: 20,
     zIndex: 1000,
     shadowColor: '#000',
@@ -108,8 +110,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minWidth: 70
   },
-  buttonText: {
-    fontSize: 24,
+  buttonIcon: {
     textAlign: 'center'
   },
   labelText: {

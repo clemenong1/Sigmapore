@@ -12,7 +12,7 @@ import {
 import { WebView } from 'react-native-webview';
 import { LinearGradient } from 'expo-linear-gradient';
 import { dengueService, psiService, covidService } from '../stats';
-import { Ionicons } from '@expo/vector-icons';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const SingaporeMapScreen = ({ user }) => {
   const [clusters, setClusters] = useState([]);
@@ -64,9 +64,16 @@ const SingaporeMapScreen = ({ user }) => {
   const loadCovidData = async () => {
     try {
       const data = await covidService.getCovidCases();
-      setCovidData(data);
+      if (data && Array.isArray(data)) {
+        setCovidData(data);
+      } else {
+        console.error('Invalid COVID-19 data format:', data);
+        setCovidData([]);
+        Alert.alert('Error', 'Invalid COVID-19 data format');
+      }
     } catch (error) {
       console.error('Error loading COVID-19 data:', error);
+      setCovidData([]);
       Alert.alert('Error', 'Failed to load COVID-19 hospital data');
     }
   };
@@ -464,11 +471,11 @@ const SingaporeMapScreen = ({ user }) => {
           </script>
  </body>
  </html>`;
-   };
+  };
 
-   const generateCovidMapHTML = () => {
-     if (!covidData || covidData.length === 0) {
-       return `
+  const generateCovidMapHTML = () => {
+    if (!covidData || covidData.length === 0) {
+      return `
  <!DOCTYPE html>
  <html>
  <head>
@@ -490,20 +497,34 @@ const SingaporeMapScreen = ({ user }) => {
      <div>Loading COVID-19 hospital data...</div>
  </body>
  </html>`;
-     }
+    }
 
-     const hospitalData = covidData.map(hospital => ({
-       id: hospital.id,
-       name: hospital.hospital,
-       coordinates: hospital.coordinates,
-       totalCases: hospital.totalCases,
-       hospitalised: hospital.hospitalised,
-       discharged: hospital.discharged,
-       riskLevel: hospital.riskLevel,
-       color: covidService.getRiskColor(hospital.riskLevel)
-     }));
+    const hospitalData = covidData.map(hospital => ({
+      id: hospital.id || '',
+      name: hospital.hospital || 'Unknown Hospital',
+      coordinates: hospital.coordinates || [103.8198, 1.3521], // Default to Singapore center if no coordinates
+      totalCases: hospital.totalCases || 0,
+      hospitalised: hospital.hospitalised || 0,
+      discharged: hospital.discharged || 0,
+      riskLevel: hospital.riskLevel || 'Low',
+      color: covidService.getRiskColor(hospital.riskLevel || 'Low'),
+      lastUpdated: hospital.lastUpdated || 'Historical Data'
+    }));
 
-     return `
+    // Define the COVID hospital popup content template
+    const getHospitalPopupContent = (hospital) => {
+      return `
+      <div class="cluster-popup">
+        <div class="popup-title">${hospital.name}</div>
+        <div class="popup-cases">
+          <i class="fas fa-hospital"></i> Currently Hospitalised: ${hospital.hospitalised}
+        </div>
+        <div class="popup-date">Last updated: ${hospital.lastUpdated || 'Historical Data'}</div>
+      </div>
+      `;
+    };
+
+    return `
  <!DOCTYPE html>
  <html>
  <head>
@@ -612,25 +633,13 @@ const SingaporeMapScreen = ({ user }) => {
                  radius: Math.max(8, Math.min(20, hospital.totalCases * 0.5))
              }).addTo(map);
              
-             const popupContent = \`
-                 <div class="covid-popup">
-                     <div class="popup-title">\${hospital.name}</div>
-                     <div class="popup-cases" style="color: \${hospital.color};">
-                         Total Cases: \${hospital.totalCases}
-                     </div>
-                     <div class="popup-stats">
-                         🏥 Currently Hospitalised: \${hospital.hospitalised}
-                     </div>
-                     <div class="popup-stats">
-                         ✅ Discharged: \${hospital.discharged}
-                     </div>
-                     <div class="popup-risk" style="background-color: \${hospital.color}; color: white;">
-                         Risk Level: \${hospital.riskLevel}
-                     </div>
-                 </div>
-             \`;
-             
-             marker.bindPopup(popupContent);
+             marker.bindPopup(
+               '<div class="cluster-popup">' +
+               '<div class="popup-title">' + hospital.name + '</div>' +
+               '<div class="popup-cases"><i class="fas fa-hospital"></i> Currently Hospitalised: ' + hospital.hospitalised + '</div>' +
+               '<div class="popup-date">Last updated: ' + (hospital.lastUpdated || 'Historical Data') + '</div>' +
+               '</div>'
+             );
          });
 
          // Fit map to show all hospitals
@@ -645,9 +654,9 @@ const SingaporeMapScreen = ({ user }) => {
      </script>
  </body>
  </html>`;
-   };
+  };
 
-   const handleMapTypeChange = (type) => {
+  const handleMapTypeChange = (type) => {
     setMapType(type);
     setShowDropdown(false);
     setWebViewLoading(true);
@@ -665,106 +674,135 @@ const SingaporeMapScreen = ({ user }) => {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: '#0D1421' }]}>
-      {/* Header with dropdown */}
-      <SafeAreaView style={{ backgroundColor: '#0D1421', zIndex: 1000 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0D1421' }}>
+      <View style={[styles.container, { backgroundColor: '#0D1421' }]}>
+        {/* Header with dropdown */}
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.dropdownButton}
             onPress={() => setShowDropdown(true)}
             activeOpacity={0.7}
           >
             <Text style={styles.dropdownButtonText}>
-              {mapType === 'dengue' ? '🦟 Dengue Clusters' : 
-               mapType === 'psi' ? '🌫️ Air Quality (PSI)' : 
-               '🏥 COVID-19 Cases'}
+              {mapType === 'dengue' ? (
+                <><FontAwesome5 name="bug" size={16} color="#dc2626" solid /> Dengue Clusters</>
+              ) : mapType === 'psi' ? (
+                <><FontAwesome5 name="smog" size={16} color="#6b7280" solid /> Air Quality (PSI)</>
+              ) : (
+                <><FontAwesome5 name="hospital" size={16} color="#1d4ed8" solid /> COVID-19 Cases</>
+              )}
             </Text>
-            <Ionicons name="chevron-down" size={16} color="#666" />
+            <FontAwesome5 name="chevron-down" size={16} color="#666" />
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
 
-      {/* Map */}
-      <View style={styles.mapContainer}>
-        {webViewLoading && (
-          <View style={styles.webViewLoading}>
-            <ActivityIndicator size="large" color="#667eea" />
-            <Text style={styles.webViewLoadingText}>Loading map...</Text>
-          </View>
-        )}
-        <WebView
-          source={{ html: generateMapHTML() }}
-          style={styles.webView}
-          onLoadEnd={() => setWebViewLoading(false)}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          bounces={false}
-          scrollEnabled={true}
-          containerStyle={{flex: 1}}
-          onError={(e) => console.error('WebView error:', e.nativeEvent)}
-          originWhitelist={['*']}
-          startInLoadingState={true}
-          scalesPageToFit={false}
-          mixedContentMode="always"
-          allowsInlineMediaPlayback={true}
-        />
-      </View>
+        {/* Map */}
+        <View style={styles.mapContainer}>
+          {webViewLoading && (
+            <View style={styles.webViewLoading}>
+              <ActivityIndicator size="large" color="#667eea" />
+              <Text style={styles.webViewLoadingText}>Loading map...</Text>
+            </View>
+          )}
+          <WebView
+            source={{ html: generateMapHTML() }}
+            style={styles.webView}
+            onLoadEnd={() => setWebViewLoading(false)}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            bounces={false}
+            scrollEnabled={true}
+            containerStyle={{ flex: 1 }}
+            onError={(e) => console.error('WebView error:', e.nativeEvent)}
+            originWhitelist={['*']}
+            startInLoadingState={true}
+            scalesPageToFit={false}
+            mixedContentMode="always"
+            allowsInlineMediaPlayback={true}
+          />
+        </View>
 
-      {/* Dropdown Modal */}
-      <Modal
-        visible={showDropdown}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowDropdown(false)}
-      >
-        <TouchableOpacity 
-          style={styles.modalOverlay}
-          onPress={() => setShowDropdown(false)}
+        {/* Dropdown Modal */}
+        <Modal
+          visible={showDropdown}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowDropdown(false)}
         >
-          <View style={styles.dropdownModal}>
-            <TouchableOpacity
-              style={[styles.dropdownOption, mapType === 'dengue' && styles.selectedOption]}
-              onPress={() => handleMapTypeChange('dengue')}
-            >
-              <Text style={styles.dropdownOptionText}>🦟 Dengue Clusters</Text>
-              <Text style={styles.dropdownOptionDesc}>View dengue outbreak areas</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[styles.dropdownOption, mapType === 'psi' && styles.selectedOption]}
-              onPress={() => handleMapTypeChange('psi')}
-            >
-              <Text style={styles.dropdownOptionText}>🌫️ Air Quality (PSI)</Text>
-              <Text style={styles.dropdownOptionDesc}>View air pollution levels by region</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[styles.dropdownOption, mapType === 'covid' && styles.selectedOption]}
-              onPress={() => handleMapTypeChange('covid')}
-            >
-              <Text style={styles.dropdownOptionText}>🏥 COVID-19 Cases</Text>
-              <Text style={styles.dropdownOptionDesc}>View hospital admission locations</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.dropdownOption}
-              onPress={() => {/* Do nothing */}}
-            >
-              <Text style={styles.dropdownOptionText}>🚗 Traffic Accidents</Text>
-              <Text style={styles.dropdownOptionDesc}>View recent traffic incident locations</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.dropdownOption}
-              onPress={() => {/* Do nothing */}}
-            >
-              <Text style={styles.dropdownOptionText}>🏨 Hospital Vacancy</Text>
-              <Text style={styles.dropdownOptionDesc}>View available hospital bed capacity</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-    </View>
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            onPress={() => setShowDropdown(false)}
+          >
+            <View style={styles.dropdownModal}>
+              <TouchableOpacity
+                style={[styles.dropdownOption, mapType === 'dengue' && styles.selectedOption]}
+                onPress={() => handleMapTypeChange('dengue')}
+              >
+                <View style={styles.dropdownOptionContent}>
+                  <FontAwesome5 name="bug" size={20} color="#dc2626" style={styles.dropdownIcon} solid />
+                  <View>
+                    <Text style={styles.dropdownOptionText}>Dengue Clusters</Text>
+                    <Text style={styles.dropdownOptionDesc}>View dengue outbreak areas</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.dropdownOption, mapType === 'psi' && styles.selectedOption]}
+                onPress={() => handleMapTypeChange('psi')}
+              >
+                <View style={styles.dropdownOptionContent}>
+                  <FontAwesome5 name="smog" size={20} color="#6b7280" style={styles.dropdownIcon} solid />
+                  <View>
+                    <Text style={styles.dropdownOptionText}>Air Quality (PSI)</Text>
+                    <Text style={styles.dropdownOptionDesc}>View air pollution levels by region</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.dropdownOption, mapType === 'covid' && styles.selectedOption]}
+                onPress={() => handleMapTypeChange('covid')}
+              >
+                <View style={styles.dropdownOptionContent}>
+                  <FontAwesome5 name="hospital" size={20} color="#1d4ed8" style={styles.dropdownIcon} solid />
+                  <View>
+                    <Text style={styles.dropdownOptionText}>COVID-19 Cases</Text>
+                    <Text style={styles.dropdownOptionDesc}>View hospital admission locations</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.dropdownOption}
+                onPress={() => {/* Do nothing */ }}
+              >
+                <View style={styles.dropdownOptionContent}>
+                  <FontAwesome5 name="car-crash" size={20} color="#6b7280" style={styles.dropdownIcon} solid />
+                  <View>
+                    <Text style={styles.dropdownOptionText}>Traffic Accidents</Text>
+                    <Text style={styles.dropdownOptionDesc}>View recent traffic incident locations</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.dropdownOption}
+                onPress={() => {/* Do nothing */ }}
+              >
+                <View style={styles.dropdownOptionContent}>
+                  <FontAwesome5 name="hospital-alt" size={20} color="#6b7280" style={styles.dropdownIcon} solid />
+                  <View>
+                    <Text style={styles.dropdownOptionText}>Hospital Vacancy</Text>
+                    <Text style={styles.dropdownOptionDesc}>View available hospital bed capacity</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -874,6 +912,15 @@ const styles = StyleSheet.create({
   dropdownOptionDesc: {
     fontSize: 13,
     color: '#666',
+  },
+  dropdownOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dropdownIcon: {
+    marginRight: 12,
+    width: 24,
+    textAlign: 'center',
   },
 });
 

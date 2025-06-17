@@ -12,12 +12,14 @@ import {
   Animated,
   KeyboardAvoidingView,
   Platform,
-  Modal
+  Modal,
+  SafeAreaView
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { HealthChatbotService, ChatMessage } from '../stats/services/chatbotService';
 import HealthDataHeatmap from './HealthDataHeatmap';
 import MiniHeatmap from './MiniHeatmap';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,10 +29,10 @@ interface HealthChatbotProps {
   onClose: () => void;
 }
 
-const HealthChatbot: React.FC<HealthChatbotProps> = ({ 
-  openaiApiKey, 
-  userLocation, 
-  onClose 
+const HealthChatbot: React.FC<HealthChatbotProps> = ({
+  openaiApiKey,
+  userLocation,
+  onClose
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
@@ -46,13 +48,13 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
     // Initialize with welcome message
     const welcomeMessage: ChatMessage = {
       id: 'welcome',
-      text: `👋 Hi! I'm your Singapore Health Assistant!\n\nI can help you with:\n🦟 Dengue risk information\n🌬️ Air quality (PSI) data\n🏥 COVID-19 guidance\n✈️ Travel health advice\n📊 Health predictions\n\nTry asking: "What's the dengue risk in Woodlands?" or "I'm traveling to Tampines, any health advice?"`,
+      text: `Hi! I'm your Singapore Health Assistant!\n\nI can help you with:\n• Dengue risk information\n• Air quality (PSI) data\n• COVID-19 guidance\n• Travel health advice\n• Health predictions\n\nTry asking: "What's the dengue risk in Woodlands?" or "I'm traveling to Tampines, any health advice?"`,
       isUser: false,
       timestamp: new Date()
     };
-    
+
     setMessages([welcomeMessage]);
-    
+
     // Fade in animation
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -86,7 +88,7 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
 
     try {
       const response = await chatbotService.current.processMessage(userMessage, userLocation);
-      
+
       // Add typing delay for better UX
       setTimeout(() => {
         setMessages((prev) => [...prev, response]);
@@ -141,7 +143,7 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
 
   const renderMessage = (message: ChatMessage, index: number) => {
     const isUser = message.isUser;
-    
+
     return (
       <Animated.View
         key={message.id}
@@ -153,10 +155,10 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
       >
         {!isUser && (
           <View style={styles.botAvatar}>
-            <Text style={styles.botAvatarText}>🤖</Text>
+            <FontAwesome5 name="robot" size={20} color="#4CAF50" solid />
           </View>
         )}
-        
+
         <View style={[
           styles.messageBubble,
           isUser ? styles.userBubble : styles.botBubble
@@ -167,103 +169,103 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
           ]}>
             {message.text}
           </Text>
-          
+
           {/* ALWAYS show MiniHeatmap for ANY location-related response */}
-          {(message.locationData || message.predictionData || 
-           (message.metadata && (message.metadata.type === 'location_recommendation' || 
-                                message.metadata.type === 'travel_recommendation' || 
-                                message.metadata.type === 'prediction'))) && (
-            <View style={styles.metadataContainer}>
-              {/* Show real location data if available */}
-              {message.locationData && (
-                <MiniHeatmap
-                  locationData={message.locationData}
-                  onExpand={() => {
-                    setHeatmapData(message.locationData);
-                    setShowHeatmap(true);
-                  }}
-                />
-              )}
-              
-              {/* Show prediction data if available */}
-              {message.predictionData && (
-                <MiniHeatmap
-                  predictionData={message.predictionData}
-                  onExpand={() => {
-                    // Convert prediction data to location analysis format for HealthDataHeatmap
-                    const convertedData = {
-                      location: message.metadata?.location || 'Singapore',
-                      dengueRisk: { 
-                        level: message.predictionData.dengueRisk.predicted > 100 ? 'High' : 
-                               message.predictionData.dengueRisk.predicted > 50 ? 'Medium' : 'Low', 
-                        casesNearby: message.predictionData.dengueRisk.predicted 
-                      },
-                      airQuality: { 
-                        psi: message.predictionData.airQuality.predictedPSI, 
-                        level: message.predictionData.airQuality.predictedPSI > 100 ? 'Unhealthy' : 
-                               message.predictionData.airQuality.predictedPSI > 50 ? 'Moderate' : 'Good'
-                      },
-                      covidRisk: { 
-                        level: message.predictionData.covidRisk.predicted > 50 ? 'High' : 
-                               message.predictionData.covidRisk.predicted > 25 ? 'Medium' : 'Low', 
-                        hospitalCases: message.predictionData.covidRisk.predicted 
-                      },
-                      overallRisk: message.predictionData.overallRisk.level || 'Medium'
-                    };
-                    setHeatmapData(convertedData);
-                    setShowHeatmap(true);
-                  }}
-                />
-              )}
-              
-              {/* Fallback for metadata-only responses */}
-              {!message.locationData && !message.predictionData && message.metadata && 
-               (message.metadata.type === 'location_recommendation' || message.metadata.type === 'travel_recommendation') && (
-                <MiniHeatmap
-                  locationData={{
-                    location: message.metadata?.location || 'Singapore',
-                    dengueRisk: { level: message.metadata?.riskLevel || 'Low', casesNearby: Math.floor(Math.random() * 50) + 10 },
-                    airQuality: { psi: Math.floor(Math.random() * 40) + 40, level: 'Moderate' },
-                    covidRisk: { level: 'Low', hospitalCases: Math.floor(Math.random() * 20) + 5 },
-                    overallRisk: message.metadata?.riskLevel || 'Low'
-                  }}
-                  onExpand={() => {
-                    setHeatmapData({
-                      location: message.metadata?.location || 'Singapore',
-                      dengueRisk: { level: message.metadata?.riskLevel || 'Low', casesNearby: 25 },
-                      airQuality: { psi: 55, level: 'Moderate' },
-                      covidRisk: { level: 'Low', hospitalCases: 15 },
-                      overallRisk: message.metadata?.riskLevel || 'Low'
-                    });
-                    setShowHeatmap(true);
-                  }}
-                />
-              )}
-              
-              {/* Fallback for prediction metadata only */}
-              {!message.predictionData && message.metadata && message.metadata.type === 'prediction' && (
-                <MiniHeatmap
-                  predictionData={{
-                    dengueRisk: { predicted: Math.floor(Math.random() * 100) + 50, trend: 'increasing', confidence: Math.floor(Math.random() * 20) + 70 },
-                    airQuality: { predictedPSI: Math.floor(Math.random() * 50) + 40, trend: 'stable', confidence: Math.floor(Math.random() * 15) + 75 },
-                    covidRisk: { predicted: Math.floor(Math.random() * 30) + 20, trend: 'decreasing', confidence: Math.floor(Math.random() * 20) + 65 },
-                    overallRisk: { level: 'Medium', confidence: Math.floor(Math.random() * 15) + 75 }
-                  }}
-                  onExpand={() => {
-                    setHeatmapData({
-                      location: message.metadata?.location || 'Singapore',
-                      dengueRisk: { level: 'Medium', casesNearby: 45 },
-                      airQuality: { psi: 65, level: 'Moderate' },
-                      covidRisk: { level: 'Low', hospitalCases: 25 },
-                      overallRisk: 'Medium'
-                    });
-                    setShowHeatmap(true);
-                  }}
-                />
-              )}
-            </View>
-          )}
-          
+          {(message.locationData || message.predictionData ||
+            (message.metadata && (message.metadata.type === 'location_recommendation' ||
+              message.metadata.type === 'travel_recommendation' ||
+              message.metadata.type === 'prediction'))) && (
+              <View style={styles.metadataContainer}>
+                {/* Show real location data if available */}
+                {message.locationData && (
+                  <MiniHeatmap
+                    locationData={message.locationData}
+                    onExpand={() => {
+                      setHeatmapData(message.locationData);
+                      setShowHeatmap(true);
+                    }}
+                  />
+                )}
+
+                {/* Show prediction data if available */}
+                {message.predictionData && (
+                  <MiniHeatmap
+                    predictionData={message.predictionData}
+                    onExpand={() => {
+                      // Convert prediction data to location analysis format for HealthDataHeatmap
+                      const convertedData = {
+                        location: message.metadata?.location || 'Singapore',
+                        dengueRisk: {
+                          level: message.predictionData.dengueRisk.predicted > 100 ? 'High' :
+                            message.predictionData.dengueRisk.predicted > 50 ? 'Medium' : 'Low',
+                          casesNearby: message.predictionData.dengueRisk.predicted
+                        },
+                        airQuality: {
+                          psi: message.predictionData.airQuality.predictedPSI,
+                          level: message.predictionData.airQuality.predictedPSI > 100 ? 'Unhealthy' :
+                            message.predictionData.airQuality.predictedPSI > 50 ? 'Moderate' : 'Good'
+                        },
+                        covidRisk: {
+                          level: message.predictionData.covidRisk.predicted > 50 ? 'High' :
+                            message.predictionData.covidRisk.predicted > 25 ? 'Medium' : 'Low',
+                          hospitalCases: message.predictionData.covidRisk.predicted
+                        },
+                        overallRisk: message.predictionData.overallRisk.level || 'Medium'
+                      };
+                      setHeatmapData(convertedData);
+                      setShowHeatmap(true);
+                    }}
+                  />
+                )}
+
+                {/* Fallback for metadata-only responses */}
+                {!message.locationData && !message.predictionData && message.metadata &&
+                  (message.metadata.type === 'location_recommendation' || message.metadata.type === 'travel_recommendation') && (
+                    <MiniHeatmap
+                      locationData={{
+                        location: message.metadata?.location || 'Singapore',
+                        dengueRisk: { level: message.metadata?.riskLevel || 'Low', casesNearby: Math.floor(Math.random() * 50) + 10 },
+                        airQuality: { psi: Math.floor(Math.random() * 40) + 40, level: 'Moderate' },
+                        covidRisk: { level: 'Low', hospitalCases: Math.floor(Math.random() * 20) + 5 },
+                        overallRisk: message.metadata?.riskLevel || 'Low'
+                      }}
+                      onExpand={() => {
+                        setHeatmapData({
+                          location: message.metadata?.location || 'Singapore',
+                          dengueRisk: { level: message.metadata?.riskLevel || 'Low', casesNearby: 25 },
+                          airQuality: { psi: 55, level: 'Moderate' },
+                          covidRisk: { level: 'Low', hospitalCases: 15 },
+                          overallRisk: message.metadata?.riskLevel || 'Low'
+                        });
+                        setShowHeatmap(true);
+                      }}
+                    />
+                  )}
+
+                {/* Fallback for prediction metadata only */}
+                {!message.predictionData && message.metadata && message.metadata.type === 'prediction' && (
+                  <MiniHeatmap
+                    predictionData={{
+                      dengueRisk: { predicted: Math.floor(Math.random() * 100) + 50, trend: 'increasing', confidence: Math.floor(Math.random() * 20) + 70 },
+                      airQuality: { predictedPSI: Math.floor(Math.random() * 50) + 40, trend: 'stable', confidence: Math.floor(Math.random() * 15) + 75 },
+                      covidRisk: { predicted: Math.floor(Math.random() * 30) + 20, trend: 'decreasing', confidence: Math.floor(Math.random() * 20) + 65 },
+                      overallRisk: { level: 'Medium', confidence: Math.floor(Math.random() * 15) + 75 }
+                    }}
+                    onExpand={() => {
+                      setHeatmapData({
+                        location: message.metadata?.location || 'Singapore',
+                        dengueRisk: { level: 'Medium', casesNearby: 45 },
+                        airQuality: { psi: 65, level: 'Moderate' },
+                        covidRisk: { level: 'Low', hospitalCases: 25 },
+                        overallRisk: 'Medium'
+                      });
+                      setShowHeatmap(true);
+                    }}
+                  />
+                )}
+              </View>
+            )}
+
           <Text style={[
             styles.timestampText,
             isUser ? styles.userTimestamp : styles.botTimestamp
@@ -287,141 +289,157 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
 
   const renderTypingIndicator = () => {
     if (!isTyping) return null;
-    
+
     return (
       <View style={[styles.messageContainer, styles.botMessage]}>
         <View style={styles.botAvatar}>
-          <Text style={styles.botAvatarText}>🤖</Text>
+          <FontAwesome5 name="robot" size={20} color="#4CAF50" solid />
         </View>
-                 <View style={[styles.messageBubble, styles.botBubble, styles.typingBubble]}>
-           <View style={styles.typingIndicator}>
-             <View style={styles.typingDot} />
-             <View style={styles.typingDot} />
-             <View style={styles.typingDot} />
-           </View>
-         </View>
+        <View style={[styles.messageBubble, styles.botBubble, styles.typingBubble]}>
+          <View style={styles.typingIndicator}>
+            <View style={styles.typingDot} />
+            <View style={styles.typingDot} />
+            <View style={styles.typingDot} />
+          </View>
+        </View>
       </View>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['#667eea', '#764ba2']}
-        style={styles.header}
-      >
-        <Text style={styles.headerTitle}>Health Assistant</Text>
-        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-          <Text style={styles.closeButtonText}>×</Text>
-        </TouchableOpacity>
-      </LinearGradient>
-
-      <KeyboardAvoidingView 
-        style={styles.chatContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
-      >
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.messagesContainer}
-          contentContainerStyle={styles.messagesContent}
-          showsVerticalScrollIndicator={false}
-          onContentSizeChange={scrollToBottom}
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <LinearGradient
+          colors={['#667eea', '#764ba2']}
+          style={styles.header}
         >
-          {messages.map((message, index) => renderMessage(message, index))}
-          {renderTypingIndicator()}
-          {messages.length === 1 && (
-            <View style={styles.quickRepliesContainer}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {[
-                  "What's the air quality tomorrow?",
-                  "Predict dengue risk for next week",
-                  "COVID forecast for weekend",
-                  "Health data transparency",
-                  "Show me the health heatmap"
-                ].map((reply, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.quickReplyButton}
-                    onPress={() => {
-                      setInputText(reply);
-                    }}
-                  >
-                    <Text style={styles.quickReplyText}>{reply}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </ScrollView>
-
-        <View style={styles.inputContainer}>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.textInput}
-              value={inputText}
-              onChangeText={setInputText}
-              placeholder="Ask about health conditions, travel advice..."
-              placeholderTextColor="#B0BEC5"
-              multiline
-              maxLength={500}
-              editable={!isLoading}
-            />
-            <TouchableOpacity
-              style={[
-                styles.sendButton,
-                (!inputText.trim() || isLoading) && styles.sendButtonDisabled
-              ]}
-              onPress={sendMessage}
-              disabled={!inputText.trim() || isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
-              ) : (
-                <Text style={styles.sendButtonText}>➤</Text>
-              )}
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>Health Assistant</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>×</Text>
             </TouchableOpacity>
           </View>
-          
-          {!openaiApiKey && (
-            <Text style={styles.apiKeyWarning}>
-              💡 Add OpenAI API key for enhanced AI responses
-            </Text>
-          )}
-        </View>
-      </KeyboardAvoidingView>
+        </LinearGradient>
 
-      {/* Heatmap Modal */}
-      <Modal
-        visible={showHeatmap}
-        animationType="slide"
-        presentationStyle="fullScreen"
-      >
-        {heatmapData && (
-          <HealthDataHeatmap
-            locationAnalysis={heatmapData}
-            onClose={() => setShowHeatmap(false)}
-          />
-        )}
-      </Modal>
-    </View>
+        <KeyboardAvoidingView
+          style={styles.chatContainer}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
+        >
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.messagesContainer}
+            contentContainerStyle={styles.messagesContent}
+            showsVerticalScrollIndicator={false}
+            onContentSizeChange={scrollToBottom}
+          >
+            {messages.map((message, index) => renderMessage(message, index))}
+            {renderTypingIndicator()}
+            {messages.length === 1 && (
+              <View style={styles.quickRepliesContainer}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {[
+                    "What's the air quality tomorrow?",
+                    "Predict dengue risk for next week",
+                    "COVID forecast for weekend",
+                    "Health data transparency",
+                    "Show me the health heatmap"
+                  ].map((reply, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.quickReplyButton}
+                      onPress={() => {
+                        setInputText(reply);
+                      }}
+                    >
+                      <Text style={styles.quickReplyText}>{reply}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+          </ScrollView>
+
+          <View style={styles.inputContainer}>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.textInput}
+                value={inputText}
+                onChangeText={setInputText}
+                placeholder="Ask about health conditions, travel advice..."
+                placeholderTextColor="#B0BEC5"
+                multiline
+                maxLength={500}
+                editable={!isLoading}
+              />
+              <TouchableOpacity
+                style={[
+                  styles.sendButton,
+                  (!inputText.trim() || isLoading) && styles.sendButtonDisabled
+                ]}
+                onPress={sendMessage}
+                disabled={!inputText.trim() || isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Text style={styles.sendButtonText}>➤</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {!openaiApiKey && (
+              <Text style={styles.apiKeyWarning}>
+                💡 Add OpenAI API key for enhanced AI responses
+              </Text>
+            )}
+          </View>
+        </KeyboardAvoidingView>
+
+        {/* Heatmap Modal */}
+        <Modal
+          visible={showHeatmap}
+          animationType="slide"
+          presentationStyle="fullScreen"
+        >
+          {heatmapData && (
+            <HealthDataHeatmap
+              locationAnalysis={heatmapData}
+              onClose={() => setShowHeatmap(false)}
+            />
+          )}
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0D1421'
+  },
   container: {
     flex: 1,
     backgroundColor: '#0D1421'
   },
   header: {
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? 20 : 10,
+    paddingBottom: 15,
+    marginBottom: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 5
+  },
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20
   },
   headerTitle: {
     fontSize: 20,
@@ -474,9 +492,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10
-  },
-  botAvatarText: {
-    fontSize: 18
   },
   messageBubble: {
     maxWidth: width * 0.75,
@@ -568,24 +583,26 @@ const styles = StyleSheet.create({
   inputContainer: {
     paddingHorizontal: 15,
     paddingVertical: 10,
-    backgroundColor: '#0D1421',
+    backgroundColor: 'rgba(13, 20, 33, 0.95)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(76, 175, 80, 0.3)'
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: Platform.OS === 'ios' ? 20 : 0
   },
   inputWrapper: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 25,
+    borderRadius: 20,
     paddingHorizontal: 15,
-    paddingVertical: 5
+    paddingVertical: 8,
+    alignItems: 'center'
   },
   textInput: {
     flex: 1,
     fontSize: 16,
     color: '#FFFFFF',
     maxHeight: 100,
-    paddingVertical: 10
+    paddingTop: 8,
+    paddingBottom: 8
   },
   sendButton: {
     width: 40,

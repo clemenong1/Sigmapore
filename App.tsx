@@ -1,25 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView, 
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
   SafeAreaView,
   Dimensions,
   Alert,
   FlatList,
   Modal,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
   onAuthStateChanged,
   User
 } from 'firebase/auth';
@@ -30,14 +31,15 @@ import SingaporeMapScreen from './components/SingaporeMapScreen';
 import InfoScreen from './src/components/InfoScreen';
 import ReportScreen from './src/components/ReportScreen';
 import ChatbotButton from './components/ChatbotButton';
-import { styles } from './src/styles/styles';
+import { styles, authStyles } from './src/styles/styles';
 import { LineChart } from 'react-native-chart-kit';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const { width, height } = Dimensions.get('window');
 
 const COUNTRIES = [
   'China',
-  'India', 
+  'India',
   'Indonesia',
   'Malaysia',
   'Singapore'
@@ -50,11 +52,11 @@ interface UserData {
   homeAddress: string;
 }
 
-function CountryDropdown({ 
-  value, 
-  onSelect, 
-  placeholder = "Select Country" 
-}: { 
+function CountryDropdown({
+  value,
+  onSelect,
+  placeholder = "Select Country"
+}: {
   value: string;
   onSelect: (country: string) => void;
   placeholder?: string;
@@ -78,68 +80,60 @@ function CountryDropdown({
     }
   }, [inputValue]);
 
-  const handleInputChange = (text: string) => {
-    setInputValue(text);
-    setIsVisible(true);
-    
-    // Clear selection if input doesn't match exactly
-    const exactMatch = COUNTRIES.find(country => 
-      country.toLowerCase() === text.toLowerCase()
-    );
-    if (!exactMatch) {
-      onSelect('');
-    }
-  };
-
   const handleSelect = (country: string) => {
     setInputValue(country);
     onSelect(country);
     setIsVisible(false);
   };
 
-  const handleFocus = () => {
-    setIsVisible(true);
-  };
-
-  const handleBlur = () => {
-    setTimeout(() => {
-      setIsVisible(false);
-    }, 200);
-  };
-
   return (
     <View style={styles.countryDropdownWrapper}>
-      <View style={styles.countryInputContainer}>
-        <TextInput
-          style={styles.countryInput}
-          placeholder={placeholder}
-          placeholderTextColor="#B0BEC5"
-          value={inputValue}
-          onChangeText={handleInputChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          autoCapitalize="words"
-        />
+      <TouchableOpacity
+        style={styles.countryInputContainer}
+        onPress={() => setIsVisible(!isVisible)}
+        activeOpacity={0.7}
+      >
+        <Text
+          style={[
+            styles.countryInput,
+            !inputValue && { color: '#B0BEC5' }
+          ]}
+        >
+          {inputValue || placeholder}
+        </Text>
         <Text style={[styles.countryArrow, isVisible && styles.countryArrowUp]}>
           ▼
         </Text>
-      </View>
+      </TouchableOpacity>
 
-      {isVisible && filteredCountries.length > 0 && (
-        <View style={styles.countryDropdown}>
-          {filteredCountries.map((country, index) => (
-            <TouchableOpacity
-              key={country}
-              style={[
-                styles.countryOption,
-                index === filteredCountries.length - 1 && styles.lastCountryOption
-              ]}
-              onPress={() => handleSelect(country)}
-            >
-              <Text style={styles.countryOptionText}>{country}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+      {isVisible && (
+        <>
+          <TouchableOpacity
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'transparent',
+            }}
+            onPress={() => setIsVisible(false)}
+          />
+          <View style={[styles.countryDropdown, { zIndex: 1 }]}>
+            {filteredCountries.map((country, index) => (
+              <TouchableOpacity
+                key={country}
+                style={[
+                  styles.countryOption,
+                  index === filteredCountries.length - 1 && styles.lastCountryOption
+                ]}
+                onPress={() => handleSelect(country)}
+              >
+                <Text style={styles.countryOptionText}>{country}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </>
       )}
     </View>
   );
@@ -179,7 +173,7 @@ function AuthScreen() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      
+
       // Store additional user data in Firestore
       try {
         await setDoc(doc(db, 'users', user.uid), {
@@ -193,10 +187,10 @@ function AuthScreen() {
         Alert.alert('Success', 'Account created successfully!');
       } catch (firestoreError: any) {
         console.error('Firestore error:', firestoreError);
-        
+
         // If Firestore fails, still complete signup but warn user
         Alert.alert(
-          'Account Created', 
+          'Account Created',
           `Your account was created successfully, but there was an issue saving your profile data. Error: ${firestoreError.message}\n\nYou can update your profile later in the app.`
         );
       }
@@ -222,110 +216,119 @@ function AuthScreen() {
 
   return (
     <LinearGradient
-      colors={['#1976D2', '#4CAF50']}
-      style={styles.loginContainer}
+      colors={['#1976D2', '#4CAF50', '#00796B']}
+      style={[styles.loginContainer, { paddingTop: 0, paddingBottom: 0 }]}
     >
-      <SafeAreaView style={styles.loginContent}>
-        <KeyboardAvoidingView 
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      <View style={styles.loginContent}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          <ScrollView 
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-          <View style={styles.citySkylne}>
-            <Text style={styles.skylineText}>🏙️</Text>
-          </View>
-          
-          <Text style={styles.title}>Health Pulse</Text>
-          <Text style={styles.subtitle}>
-            Transform community health data into a breathing cityscape
-          </Text>
+          <View style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%'
+          }}>
+            <View style={[styles.citySkylne, { alignItems: 'center' }]}>
+              <Image
+                source={require('./assets/Screenshot_2025-06-18_at_3.30.31_AM-removebg-preview.png')}
+                style={{
+                  width: 300,
+                  height: 200,
+                  marginBottom: -50
+                }}
+                resizeMode="contain"
+              />
+            </View>
 
-          <View style={styles.authToggle}>
-            <TouchableOpacity
-              style={[styles.toggleButton, isLogin && styles.activeToggle]}
-              onPress={() => !isLogin && toggleMode()}
-            >
-              <Text style={[styles.toggleText, isLogin && styles.activeToggleText]}>
-                Login
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.toggleButton, !isLogin && styles.activeToggle]}
-              onPress={() => isLogin && toggleMode()}
-            >
-              <Text style={[styles.toggleText, !isLogin && styles.activeToggleText]}>
-                Sign Up
-              </Text>
-            </TouchableOpacity>
-          </View>
+            <Text style={[styles.subtitle, { marginBottom: 30, maxWidth: 300, textAlign: 'center' }]}>
+              Transform community health data into a breathing cityscape
+            </Text>
 
-          <View style={styles.inputContainer}>
-            {!isLogin && (
+            <View style={styles.authToggle}>
+              <TouchableOpacity
+                style={[styles.toggleButton, isLogin && styles.activeToggle]}
+                onPress={() => !isLogin && toggleMode()}
+              >
+                <Text style={[styles.toggleText, isLogin && styles.activeToggleText]}>
+                  Login
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.toggleButton, !isLogin && styles.activeToggle]}
+                onPress={() => isLogin && toggleMode()}
+              >
+                <Text style={[styles.toggleText, !isLogin && styles.activeToggleText]}>
+                  Sign Up
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={[styles.inputContainer, { alignItems: 'center' }]}>
+              {!isLogin && (
+                <TextInput
+                  style={[styles.input, { width: '100%' }]}
+                  placeholder="Username"
+                  placeholderTextColor="#333333"
+                  value={username}
+                  onChangeText={setUsername}
+                  autoCapitalize="none"
+                />
+              )}
+
               <TextInput
-                style={styles.input}
-                placeholder="Username"
-                placeholderTextColor="#B0BEC5"
-                value={username}
-                onChangeText={setUsername}
+                style={[styles.input, { width: '100%' }]}
+                placeholder="Email"
+                placeholderTextColor="#333333"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
                 autoCapitalize="none"
               />
-            )}
-            
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor="#B0BEC5"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor="#B0BEC5"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
 
-            {!isLogin && (
-              <>
-                <CountryDropdown
-                  value={country}
-                  onSelect={setCountry}
-                  placeholder="Select your country"
-                />
-                
-                <TextInput
-                  style={styles.input}
-                  placeholder="Home Address"
-                  placeholderTextColor="#B0BEC5"
-                  value={homeAddress}
-                  onChangeText={setHomeAddress}
-                  multiline
-                />
-              </>
-            )}
+              <TextInput
+                style={[styles.input, { width: '100%' }]}
+                placeholder="Password"
+                placeholderTextColor="#333333"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
 
-            <TouchableOpacity
-              style={[styles.enterButton, loading && styles.disabledButton]}
-              onPress={isLogin ? handleLogin : handleSignup}
-              disabled={loading}
-            >
-              <Text style={styles.enterButtonText}>
-                {loading ? 'Please wait...' : isLogin ? 'Login' : 'Create Account'}
-              </Text>
-            </TouchableOpacity>
+              {!isLogin && (
+                <>
+                  <View style={{ width: '100%' }}>
+                    <CountryDropdown
+                      value={country}
+                      onSelect={setCountry}
+                      placeholder="Select your country"
+                    />
+                  </View>
+
+                  <TextInput
+                    style={[styles.input, { width: '100%' }]}
+                    placeholder="Home Address"
+                    placeholderTextColor="#333333"
+                    value={homeAddress}
+                    onChangeText={setHomeAddress}
+                    multiline
+                  />
+                </>
+              )}
+
+              <TouchableOpacity
+                style={[styles.enterButton, loading && styles.disabledButton, { width: '100%' }]}
+                onPress={isLogin ? handleLogin : handleSignup}
+                disabled={loading}
+              >
+                <Text style={styles.enterButtonText}>
+                  {loading ? 'Please wait...' : isLogin ? 'Login' : 'Create Account'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+      </View>
     </LinearGradient>
   );
 }
@@ -335,7 +338,7 @@ const getLivePopulationData = () => {
   const currentTime = new Date();
   const startOfYear = new Date(currentTime.getFullYear(), 0, 1);
   const dayOfYear = Math.floor((currentTime.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
-  
+
   // Base data from the website
   const baseData = {
     currentPopulation: 6480987,
@@ -344,7 +347,7 @@ const getLivePopulationData = () => {
     migrationPerDay: 219,
     growthPerDay: 289
   };
-  
+
   // Calculate year-to-date numbers
   const yearToDate = {
     births: Math.floor(baseData.birthsPerDay * dayOfYear),
@@ -352,13 +355,13 @@ const getLivePopulationData = () => {
     migration: Math.floor(baseData.migrationPerDay * dayOfYear),
     growth: Math.floor(baseData.growthPerDay * dayOfYear)
   };
-  
+
   // Simulate live counter with small variations
   const variation = (base: number, percentage: number = 0.001) => {
     const change = Math.floor(base * percentage * (Math.random() - 0.5));
     return base + change;
   };
-  
+
   return {
     currentPopulation: variation(baseData.currentPopulation + yearToDate.growth),
     demographics: {
@@ -441,7 +444,7 @@ function HomeScreen({ user }: { user: User }) {
       const weeklySum = weeklyResult?.sum ?? 0;
       setWeeklyDengueData(weeklyResult?.data ?? []);
       setWeeklyDengueLabels(weeklyResult?.labels ?? []);
-      
+
       // Debug output
       console.log('Weekly dengue data:', weeklyResult?.data);
       console.log('Weekly dengue labels:', weeklyResult?.labels);
@@ -503,8 +506,10 @@ function HomeScreen({ user }: { user: User }) {
 
     // Render dengue chart within scroll padding (20 each side) with proper bounds
     return (
-      <View style={{ marginHorizontal: 15, marginTop: 0 }}>
-        <Text style={styles.sectionTitle}>📊 Dengue Cases Trend (7 Days)</Text>
+      <View style={{ margin: 16 }}>
+        <Text style={styles.sectionTitle}>
+          <FontAwesome5 name="chart-bar" size={18} color="#4CAF50" solid /> Dengue Cases Trend (7 Days)
+        </Text>
         <View style={[styles.chartContainer, { alignItems: 'center', justifyContent: 'center' }]}>
           <LineChart
             data={chartData}
@@ -534,47 +539,51 @@ function HomeScreen({ user }: { user: User }) {
   };
 
   return (
-    <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic">
-      <SafeAreaView style={{ flex: 0 }}>
-        <View style={styles.header}>
-          <Text style={styles.dashboardTitle}>🇸🇬 Singapore Health Pulse</Text>
-          <Text style={styles.welcomeText}>Welcome, {user.email}</Text>
-          <Text style={styles.tagline}>Live population and health monitoring</Text>
-        </View>
-      </SafeAreaView>
+    <ScrollView
+      style={styles.dashboardContent}
+      contentContainerStyle={{ paddingBottom: 100 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.header}>
+        <Text style={styles.welcomeText}>Welcome, {user?.displayName || 'User'}</Text>
+        <Text style={styles.dashboardTitle}>Singapore Health Pulse</Text>
+        <Text style={styles.tagline}>Real-time health monitoring and reporting</Text>
+      </View>
 
-      {/* Live Population Counter */}
-      <View style={styles.liveStatsContainer}>
-        <Text style={styles.liveStatsTitle}>🔴 LIVE Singapore Population</Text>
-        <Text style={styles.livePopulationNumber}>
-          {formatNumber(populationData.currentPopulation)}
+      {/* Population Stats */}
+      <View style={styles.populationContainer}>
+        <Text style={styles.sectionTitle}>
+          <FontAwesome5 name="users" size={18} color="#4CAF50" solid /> Population Stats
         </Text>
-        <Text style={styles.liveStatsSubtitle}>
-          Growing by {populationData.today.growth} people today
-        </Text>
+        <View style={styles.populationCard}>
+          <Text style={styles.populationNumber}>{formatNumber(populationData.currentPopulation)}</Text>
+          <Text style={styles.populationLabel}>Total Population</Text>
+        </View>
       </View>
 
       {/* Today's Statistics */}
       <View style={styles.todayStatsContainer}>
-        <Text style={styles.sectionTitle}>📊 Today's Statistics</Text>
+        <Text style={styles.sectionTitle}>
+          <FontAwesome5 name="chart-bar" size={18} color="#4CAF50" solid /> Today's Statistics
+        </Text>
         <View style={styles.todayStatsGrid}>
           <View style={styles.todayStatCard}>
-            <Text style={styles.todayStatIcon}>👶</Text>
+            <FontAwesome5 name="baby" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
             <Text style={styles.todayStatNumber}>{populationData.today.births}</Text>
             <Text style={styles.todayStatLabel}>Births Today</Text>
           </View>
           <View style={styles.todayStatCard}>
-            <Text style={styles.todayStatIcon}>🕊️</Text>
+            <FontAwesome5 name="dove" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
             <Text style={styles.todayStatNumber}>{populationData.today.deaths}</Text>
             <Text style={styles.todayStatLabel}>Deaths Today</Text>
           </View>
           <View style={styles.todayStatCard}>
-            <Text style={styles.todayStatIcon}>✈️</Text>
+            <FontAwesome5 name="plane" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
             <Text style={styles.todayStatNumber}>{populationData.today.migration}</Text>
             <Text style={styles.todayStatLabel}>Net Migration</Text>
           </View>
           <View style={styles.todayStatCard}>
-            <Text style={styles.todayStatIcon}>📈</Text>
+            <FontAwesome5 name="chart-line" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
             <Text style={styles.todayStatNumber}>{populationData.today.growth}</Text>
             <Text style={styles.todayStatLabel}>Population Growth</Text>
           </View>
@@ -582,44 +591,51 @@ function HomeScreen({ user }: { user: User }) {
       </View>
 
       {/* Health Overview */}
-      <View style={styles.healthOverviewContainer}>
-        <Text style={styles.sectionTitle}>🏥 Health Overview</Text>
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{healthStats.dengueCases}</Text>
-            <Text style={styles.statLabel}>Active Dengue Cases</Text>
+      <View style={styles.todayStatsContainer}>
+        <Text style={styles.sectionTitle}>
+          <FontAwesome5 name="hospital" size={18} color="#4CAF50" solid /> Health Overview
+        </Text>
+        <View style={styles.todayStatsGrid}>
+          <View style={styles.todayStatCard}>
+            <FontAwesome5 name="virus" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
+            <Text style={styles.todayStatNumber}>{healthStats.dengueCases}</Text>
+            <Text style={styles.todayStatLabel}>Active Dengue Cases</Text>
           </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{healthStats.airQuality}</Text>
-            <Text style={styles.statLabel}>Air Quality</Text>
+          <View style={styles.todayStatCard}>
+            <FontAwesome5 name="wind" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
+            <Text style={styles.todayStatNumber}>{healthStats.airQuality}</Text>
+            <Text style={styles.todayStatLabel}>Air Quality</Text>
           </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{formatNumber(populationData.additionalStats.lifeExpectancy)}</Text>
-            <Text style={styles.statLabel}>Life Expectancy</Text>
+          <View style={styles.todayStatCard}>
+            <FontAwesome5 name="heartbeat" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
+            <Text style={styles.todayStatNumber}>{formatNumber(populationData.additionalStats.lifeExpectancy)}</Text>
+            <Text style={styles.todayStatLabel}>Life Expectancy</Text>
           </View>
         </View>
       </View>
 
       {/* Weekly Dengue & Avg PSI Stats */}
       <View style={styles.todayStatsContainer}>
-        <Text style={styles.sectionTitle}>📈 7-Day Dengue & Avg PSI</Text>
+        <Text style={styles.sectionTitle}>
+          <FontAwesome5 name="chart-line" size={18} color="#4CAF50" solid /> 7-Day Dengue & Avg PSI
+        </Text>
         <View style={styles.todayStatsGrid}>
           <View style={styles.todayStatCard}>
-            <Text style={styles.todayStatIcon}>🦟</Text>
+            <FontAwesome5 name="bug" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
             <Text style={styles.todayStatNumber}>{healthStats.weeklyDengue}</Text>
             <Text style={styles.todayStatLabel}>7-Day Dengue Cases</Text>
           </View>
           <View style={styles.todayStatCard}>
-            <Text style={styles.todayStatIcon}>🌐</Text>
+            <FontAwesome5 name="globe-asia" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
             <Text style={styles.todayStatNumber}>{healthStats.avgPsi}</Text>
             <Text style={styles.todayStatLabel}>Avg PSI (4 regions)</Text>
           </View>
         </View>
       </View>
-      
+
       {/* Dengue Trend Chart */}
       {renderDengueChart()}
-      
+
       {/* Total Dengue Cases */}
       <View style={{
         flexDirection: 'row',
@@ -634,23 +650,25 @@ function HomeScreen({ user }: { user: User }) {
           borderRadius: 12,
           alignItems: 'center',
         }}>
-          <Text style={{fontSize: 24, marginBottom: 8}}>📊</Text>
-          <Text style={{fontSize: 20, fontWeight: 'bold', color: '#4CAF50', marginBottom: 4}}>{healthStats.weeklyDengue}</Text>
-          <Text style={{fontSize: 12, color: '#B0BEC5', textAlign: 'center'}}>Total Dengue Cases</Text>
+          <FontAwesome5 name="chart-pie" size={24} color="#4CAF50" style={{ marginBottom: 8 }} solid />
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#4CAF50', marginBottom: 4 }}>{healthStats.weeklyDengue}</Text>
+          <Text style={{ fontSize: 12, color: '#B0BEC5', textAlign: 'center' }}>Total Dengue Cases</Text>
         </View>
       </View>
 
       {/* Demographics */}
       <View style={styles.demographicsContainer}>
-        <Text style={styles.sectionTitle}>👥 Demographics</Text>
+        <Text style={styles.sectionTitle}>
+          <FontAwesome5 name="users" size={18} color="#4CAF50" solid /> Demographics
+        </Text>
         <View style={styles.genderStats}>
           <View style={styles.genderCard}>
-            <Text style={styles.genderIcon}>👨</Text>
+            <FontAwesome5 name="male" size={24} color="#4CAF50" style={styles.genderIcon} solid />
             <Text style={styles.genderNumber}>{formatNumber(populationData.demographics.male.population)}</Text>
             <Text style={styles.genderLabel}>Male ({populationData.demographics.male.percentage}%)</Text>
           </View>
           <View style={styles.genderCard}>
-            <Text style={styles.genderIcon}>👩</Text>
+            <FontAwesome5 name="female" size={24} color="#4CAF50" style={styles.genderIcon} solid />
             <Text style={styles.genderNumber}>{formatNumber(populationData.demographics.female.population)}</Text>
             <Text style={styles.genderLabel}>Female ({populationData.demographics.female.percentage}%)</Text>
           </View>
@@ -660,61 +678,61 @@ function HomeScreen({ user }: { user: User }) {
   );
 }
 
-function BottomNavigation({ 
-  activeTab, 
-  onTabPress 
-}: { 
-  activeTab: string; 
-  onTabPress: (tab: string) => void; 
+function BottomNavigation({
+  activeTab,
+  onTabPress
+}: {
+  activeTab: string;
+  onTabPress: (tab: string) => void;
 }) {
   const tabs = [
-    { id: 'home', label: 'Home', icon: '🏠' },
-    { id: 'map', label: 'Map', icon: '🗺️' },
-    { id: 'report', label: 'Reports', icon: '📋' },
-    { id: 'info', label: 'Profile', icon: '👤' },
+    { id: 'home', label: 'Home', icon: 'home' },
+    { id: 'map', label: 'Map', icon: 'map-marked-alt' },
+    { id: 'report', label: 'Reports', icon: 'clipboard-list' },
+    { id: 'info', label: 'Profile', icon: 'user' },
   ];
 
   return (
-    <SafeAreaView style={{ backgroundColor: '#0D1421' }}>
-      <View style={{
-        flexDirection: 'row',
-        backgroundColor: 'rgba(13, 20, 33, 0.95)',
-        paddingTop: 8,
-        paddingBottom: 8,
-        borderTopWidth: 1,
-        borderTopColor: 'rgba(76, 175, 80, 0.3)',
-      }}>
-        {tabs.map((tab) => (
-          <TouchableOpacity
-            key={tab.id}
+    <View style={{
+      flexDirection: 'row',
+      backgroundColor: 'rgba(13, 20, 33, 0.95)',
+      paddingTop: 8,
+      paddingBottom: 8,
+      borderTopWidth: 1,
+      borderTopColor: 'rgba(76, 175, 80, 0.3)',
+    }}>
+      {tabs.map((tab) => (
+        <TouchableOpacity
+          key={tab.id}
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            paddingVertical: 6,
+            backgroundColor: activeTab === tab.id ? 'rgba(76, 175, 80, 0.2)' : 'transparent',
+            borderRadius: 8,
+            margin: 2,
+          }}
+          onPress={() => onTabPress(tab.id)}
+        >
+          <FontAwesome5
+            name={tab.icon}
+            size={22}
             style={{
-              flex: 1,
-              alignItems: 'center',
-              paddingVertical: 6,
-              backgroundColor: activeTab === tab.id ? 'rgba(76, 175, 80, 0.2)' : 'transparent',
-              borderRadius: 8,
-              margin: 2,
-            }}
-            onPress={() => onTabPress(tab.id)}
-          >
-            <Text style={{
-              fontSize: 24,
               marginBottom: 2,
               color: activeTab === tab.id ? '#4CAF50' : '#B0BEC5',
-            }}>
-              {tab.icon}
-            </Text>
-            <Text style={{
-              fontSize: 12,
-              color: activeTab === tab.id ? '#4CAF50' : '#B0BEC5',
-              fontWeight: activeTab === tab.id ? '600' : '400',
-            }}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </SafeAreaView>
+            }}
+            solid
+          />
+          <Text style={{
+            fontSize: 12,
+            color: activeTab === tab.id ? '#4CAF50' : '#B0BEC5',
+            fontWeight: activeTab === tab.id ? '600' : '400',
+          }}>
+            {tab.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
   );
 }
 
@@ -724,41 +742,41 @@ function Dashboard({ user }: { user: User }) {
   const renderActiveScreen = () => {
     switch (activeTab) {
       case 'home':
-        return <HomeScreen user={user} />;
+        return <SafeAreaView style={{ flex: 1 }}><HomeScreen user={user} /></SafeAreaView>;
       case 'map':
-        return <SingaporeMapScreen user={user} />;
+        return <SafeAreaView style={{ flex: 1 }}><SingaporeMapScreen user={user} /></SafeAreaView>;
       case 'report':
-        return <MapScreen user={user} />;
+        return <SafeAreaView style={{ flex: 1 }}><MapScreen user={user} /></SafeAreaView>;
       case 'info':
-        return <InfoScreen user={user} />;
+        return <SafeAreaView style={{ flex: 1 }}><InfoScreen user={user} /></SafeAreaView>;
       default:
-        return <HomeScreen user={user} />;
+        return <SafeAreaView style={{ flex: 1 }}><HomeScreen user={user} /></SafeAreaView>;
     }
   };
 
   return (
-    <View style={[styles.dashboardContainer, { backgroundColor: '#0D1421' }]}>
-      <StatusBar style="light" backgroundColor="#0D1421" />
+    <View style={[styles.dashboardContainer, { backgroundColor: '#0D1421', flex: 1 }]}>
+      <StatusBar style="light" backgroundColor="transparent" translucent={true} />
       <LinearGradient
         colors={['#0D1421', '#121E3A']}
-        style={{flex: 1}}
+        style={{ flex: 1 }}
       >
-        <View style={{ flex: 1 }}>
-          {renderActiveScreen()}
-          
-          {/* Health AI Chatbot Button - Only show on home screen */}
-          {activeTab === 'home' && (
-            <ChatbotButton 
-              openaiApiKey={process.env.EXPO_PUBLIC_OPENAI_API_KEY}
-              userLocation="Singapore"
-            />
-          )}
-        </View>
+        {renderActiveScreen()}
+
+        {/* Health AI Chatbot Button - Only show on home screen */}
+        {activeTab === 'home' && (
+          <ChatbotButton
+            openaiApiKey={process.env.EXPO_PUBLIC_OPENAI_API_KEY}
+            userLocation="Singapore"
+          />
+        )}
       </LinearGradient>
-      <BottomNavigation
-        activeTab={activeTab}
-        onTabPress={(tab) => setActiveTab(tab)}
-      />
+      <SafeAreaView style={{ backgroundColor: 'rgba(13, 20, 33, 0.95)' }}>
+        <BottomNavigation
+          activeTab={activeTab}
+          onTabPress={(tab) => setActiveTab(tab)}
+        />
+      </SafeAreaView>
     </View>
   );
 }
@@ -778,16 +796,17 @@ export default function App() {
 
   if (initializing) {
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0D1421'}}>
-        <Text style={{color: 'white', fontSize: 18}}>Loading...</Text>
+      <View style={{ flex: 1, backgroundColor: '#0D1421', justifyContent: 'center', alignItems: 'center' }}>
+        <StatusBar style="light" backgroundColor="transparent" translucent={true} />
+        <Text style={{ color: 'white', fontSize: 18 }}>Loading...</Text>
       </View>
     );
   }
 
   return (
-    <>
-      <StatusBar style="light" backgroundColor="#0D1421" />
+    <View style={{ flex: 1, backgroundColor: '#0D1421' }}>
+      <StatusBar style="light" backgroundColor="transparent" translucent={true} />
       {user ? <Dashboard user={user} /> : <AuthScreen />}
-    </>
+    </View>
   );
 }
