@@ -375,14 +375,6 @@ const getLivePopulationData = () => {
 // Fetch weekly dengue cases and labels
 const fetchWeeklyDengueData = async (): Promise<{ labels: string[]; data: number[]; sum: number } | null> => {
   try {
-    // For testing purposes, use hardcoded data to ensure chart works
-    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const data = [30, 29, 13, 17, 8, 6, 0];
-    const sum = data.reduce((acc, n) => acc + n, 0);
-    console.log('Using hardcoded dengue data for testing:', { labels, data, sum });
-    return { labels, data, sum };
-    
-    /*
     const response = await fetch('https://www.nea.gov.sg/dengue-zika/dengue/dengue-cases');
     const html = await response.text();
     const tableMatch = html.match(/Number of Reported Cases[\s\S]*?<table[\s\S]*?>([\s\S]*?)<\/table>/i);
@@ -392,9 +384,9 @@ const fetchWeeklyDengueData = async (): Promise<{ labels: string[]; data: number
     const labels = Array.from(tableHtml.matchAll(/<th[^>]*>([^<]+)<\/th>/g)).map(m => m[1].trim()).slice(0, 7);
     // Extract daily counts
     const data = Array.from(tableHtml.matchAll(/<td[^>]*>(\d+)<\/td>/g)).map(m => parseInt(m[1], 10)).slice(0, 7);
+    // Calculate sum of weekly cases
     const sum = data.reduce((acc, n) => acc + n, 0);
     return { labels, data, sum };
-    */
   } catch (error) {
     console.error('Error fetching weekly dengue data:', error);
     return null;
@@ -466,17 +458,22 @@ function HomeScreen({ user }: { user: User }) {
 
   // Render dengue chart component
   const renderDengueChart = () => {
+    // Process labels to remove time suffix (e.g., "16-Jun 11am" -> "16-Jun")
+    const processedLabels = weeklyDengueLabels.length > 0
+      ? weeklyDengueLabels.map(label => label.split(' ')[0])
+      : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const processedData = weeklyDengueData.length > 0
+      ? weeklyDengueData
+      : [30, 29, 13, 17, 8, 6, 0];
     const chartData = {
-      labels: weeklyDengueLabels.length > 0 ? weeklyDengueLabels : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      datasets: [
-        {
-          data: weeklyDengueData.length > 0 ? weeklyDengueData : [30, 29, 13, 17, 8, 6, 0],
-          color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`,
-          strokeWidth: 3
-        }
-      ]
+      labels: processedLabels,
+      datasets: [{
+        data: processedData,
+        color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`,
+        strokeWidth: 3
+      }]
     };
-    
+
     const chartConfig = {
       backgroundColor: '#1A237E',
       backgroundGradientFrom: '#0D1421',
@@ -492,27 +489,16 @@ function HomeScreen({ user }: { user: User }) {
       fillShadowGradientOpacity: 0.3,
       fillShadowGradient: '#4CAF50',
     };
-    
+
     const screenWidth = Dimensions.get("window").width;
-    
+
     return (
-      <View style={{margin: 15}}>
+      <View style={{margin: 16}}>
         <Text style={styles.sectionTitle}>📊 Dengue Cases Trend (7 Days)</Text>
-        <View style={{
-          backgroundColor: 'rgba(13, 20, 33, 0.7)',
-          padding: 16,
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: 'rgba(76, 175, 80, 0.3)',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-          elevation: 5,
-        }}>
+        <View style={styles.chartContainer}>
           <LineChart
             data={chartData}
-            width={screenWidth - 40}
+            width={screenWidth - 32}
             height={220}
             chartConfig={chartConfig}
             bezier
