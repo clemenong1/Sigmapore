@@ -10,9 +10,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { LinearGradient } from 'expo-linear-gradient';
-import { dengueService } from '../services/dengueService';
-import psiService from '../services/psiService';
-import covidService from '../services/covidService';
+import { dengueService, psiService, covidService } from '../stats';
 import { Ionicons } from '@expo/vector-icons';
 
 const SingaporeMapScreen = ({ user }) => {

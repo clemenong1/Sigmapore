@@ -1059,4 +1059,123 @@ export const styles = StyleSheet.create({
   lastCountryOption: {
     borderBottomWidth: 0,
   },
+
+  // New styles from the code block
+  liveStatsContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    margin: 15,
+    padding: 20,
+    borderRadius: 15,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(76, 175, 80, 0.3)',
+  },
+  liveStatsTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FF5722',
+    marginBottom: 10,
+    letterSpacing: 1,
+  },
+  livePopulationNumber: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginBottom: 5,
+  },
+  liveStatsSubtitle: {
+    fontSize: 14,
+    color: '#B0BEC5',
+  },
+  todayStatsContainer: {
+    margin: 15,
+    marginTop: 0,
+  },
+  todayStatsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  todayStatCard: {
+    width: (width - 45) / 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  todayStatIcon: {
+    fontSize: 24,
+    marginBottom: 8,
+  },
+  todayStatNumber: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginBottom: 4,
+  },
+  todayStatLabel: {
+    fontSize: 12,
+    color: '#B0BEC5',
+    textAlign: 'center',
+  },
+  healthOverviewContainer: {
+    margin: 15,
+    marginTop: 0,
+  },
+  demographicsContainer: {
+    margin: 15,
+    marginTop: 0,
+  },
+  genderStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  genderCard: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  genderIcon: {
+    fontSize: 30,
+    marginBottom: 10,
+  },
+  genderNumber: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginBottom: 4,
+  },
+  genderLabel: {
+    fontSize: 12,
+    color: '#B0BEC5',
+    textAlign: 'center',
+  },
+  chartContainer: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    backgroundColor: 'rgba(13, 20, 33, 0.7)',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(76, 175, 80, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  noDataContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 220,
+  },
+  noDataText: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '500',
+  }
 }); 
