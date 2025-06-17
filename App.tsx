@@ -27,6 +27,7 @@ import MapScreen from './src/components/MapScreen';
 import SingaporeMapScreen from './components/SingaporeMapScreen';
 import InfoScreen from './src/components/InfoScreen';
 import ReportScreen from './src/components/ReportScreen';
+import ChatbotButton from './components/ChatbotButton';
 import { styles } from './src/styles/styles';
 import { LineChart } from 'react-native-chart-kit';
 
@@ -725,7 +726,15 @@ function Dashboard({ user }: { user: User }) {
         colors={['#0D1421', '#121E3A']}
         style={{flex: 1}}
       >
-        {renderActiveScreen()}
+        <View style={{ flex: 1 }}>
+          {renderActiveScreen()}
+          
+          {/* Health AI Chatbot Button */}
+          <ChatbotButton 
+            openaiApiKey={process.env.EXPO_PUBLIC_OPENAI_API_KEY}
+            userLocation="Singapore"
+          />
+        </View>
       </LinearGradient>
       <BottomNavigation
         activeTab={activeTab}
