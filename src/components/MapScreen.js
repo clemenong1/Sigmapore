@@ -29,6 +29,7 @@ const MapScreen = ({ user }) => {
   const [error, setError] = useState(null);
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [currentRegion, setCurrentRegion] = useState(null);
   const mapRef = useRef(null);
 
   // Singapore default location
@@ -41,16 +42,64 @@ const MapScreen = ({ user }) => {
 
   useEffect(() => {
     requestLocationPermission();
-    setupReportsListener();
-  }, []);
+    let unsubscribe;
+    
+    if (user) {
+      unsubscribe = setupReportsListener();
+    } else {
+      // Clear reports when user logs out
+      setReports([]);
+      setError(null);
+    }
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [user]);
 
   const requestLocationPermission = async () => {
     // For demo purposes, ignore device geo and use default Singapore center
     setLocation(defaultLocation);
+    setCurrentRegion(defaultLocation);
     setLoading(false);
   };
 
+  const handleZoomIn = () => {
+    if (currentRegion && mapRef.current) {
+      const newRegion = {
+        ...currentRegion,
+        latitudeDelta: currentRegion.latitudeDelta * 0.5,
+        longitudeDelta: currentRegion.longitudeDelta * 0.5,
+      };
+      setCurrentRegion(newRegion);
+      mapRef.current.animateToRegion(newRegion, 300);
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (currentRegion && mapRef.current) {
+      const newRegion = {
+        ...currentRegion,
+        latitudeDelta: Math.min(currentRegion.latitudeDelta * 2, 0.5),
+        longitudeDelta: Math.min(currentRegion.longitudeDelta * 2, 0.5),
+      };
+      setCurrentRegion(newRegion);
+      mapRef.current.animateToRegion(newRegion, 300);
+    }
+  };
+
+  const handleRegionChange = (region) => {
+    setCurrentRegion(region);
+  };
+
   const setupReportsListener = () => {
+    if (!user) {
+      console.log('User not authenticated, skipping reports listener setup');
+      return;
+    }
+
     try {
       const reportsQuery = query(
         collection(db, COLLECTIONS.REPORTS),
@@ -76,7 +125,12 @@ const MapScreen = ({ user }) => {
         },
         (error) => {
           console.error('Error fetching reports:', error);
-          setError('Failed to load reports. Please check your connection.');
+          if (error.code === 'permission-denied') {
+            console.log('Permission denied - user may not be authenticated');
+            setError('Authentication required to view reports.');
+          } else {
+            setError('Failed to load reports. Please check your connection.');
+          }
         }
       );
 
@@ -187,24 +241,27 @@ const MapScreen = ({ user }) => {
   }
 
   return (
-    <SafeAreaView style={[mapStyles.container, { backgroundColor: '#0D1421' }]}>
+    <View style={[mapStyles.container, { backgroundColor: '#f5f5f5' }]}>
       {/* Header with instruction */}
-      <View style={mapStyles.header}>
-        <Text style={mapStyles.headerTitle}>📍 Tap a location to report!</Text>
-      </View>
+      <SafeAreaView style={{ backgroundColor: '#0D1421', zIndex: 1000 }}>
+        <View style={mapStyles.header}>
+          <Text style={mapStyles.headerTitle}>📍 Tap a location to report!</Text>
+        </View>
+      </SafeAreaView>
       
       <MapView
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={mapStyles.map}
         initialRegion={location || defaultLocation}
-        showsUserLocation={true}
-        showsMyLocationButton={true}
+        showsUserLocation={false}
+        showsMyLocationButton={false}
         zoomEnabled={true}
         pitchEnabled={true}
         rotateEnabled={true}
         scrollEnabled={true}
         onPress={handleMapPress}
+        onRegionChangeComplete={handleRegionChange}
         mapType="standard"
       >
         {reports.map((report) => (
@@ -240,6 +297,24 @@ const MapScreen = ({ user }) => {
         ))}
       </MapView>
 
+      {/* Zoom Controls */}
+      <View style={mapStyles.zoomControls}>
+        <TouchableOpacity
+          style={[mapStyles.zoomButton, mapStyles.zoomButtonTop]}
+          onPress={handleZoomIn}
+          activeOpacity={0.8}
+        >
+          <Text style={mapStyles.zoomIcon}>+</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[mapStyles.zoomButton, mapStyles.zoomButtonBottom]}
+          onPress={handleZoomOut}
+          activeOpacity={0.8}
+        >
+          <Text style={mapStyles.zoomIcon}>−</Text>
+        </TouchableOpacity>
+      </View>
+
       <TouchableOpacity
         style={mapStyles.fab}
         onPress={handleFabPress}
@@ -267,7 +342,7 @@ const MapScreen = ({ user }) => {
           </TouchableOpacity>
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 

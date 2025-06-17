@@ -319,7 +319,7 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
       <KeyboardAvoidingView 
         style={styles.chatContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
       >
         <ScrollView
           ref={scrollViewRef}
@@ -330,9 +330,30 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
         >
           {messages.map((message, index) => renderMessage(message, index))}
           {renderTypingIndicator()}
+          {messages.length === 1 && (
+            <View style={styles.quickRepliesContainer}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {[
+                  "What's the air quality tomorrow?",
+                  "Predict dengue risk for next week",
+                  "COVID forecast for weekend",
+                  "Health data transparency",
+                  "Show me the health heatmap"
+                ].map((reply, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.quickReplyButton}
+                    onPress={() => {
+                      setInputText(reply);
+                    }}
+                  >
+                    <Text style={styles.quickReplyText}>{reply}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
         </ScrollView>
-
-        {messages.length === 1 && renderQuickReplies()}
 
         <View style={styles.inputContainer}>
           <View style={styles.inputWrapper}>
@@ -341,7 +362,7 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
               value={inputText}
               onChangeText={setInputText}
               placeholder="Ask about health conditions, travel advice..."
-              placeholderTextColor="#999"
+              placeholderTextColor="#B0BEC5"
               multiline
               maxLength={500}
               editable={!isLoading}
@@ -390,7 +411,7 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa'
+    backgroundColor: '#0D1421'
   },
   header: {
     flexDirection: 'row',
@@ -421,14 +442,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold'
   },
   chatContainer: {
-    flex: 1
+    flex: 1,
+    justifyContent: 'flex-end'
   },
   messagesContainer: {
     flex: 1,
     paddingHorizontal: 15
   },
   messagesContent: {
-    paddingVertical: 15
+    flexGrow: 1,
+    justifyContent: 'flex-end',
+    paddingVertical: 10,
+    paddingBottom: 0
   },
   messageContainer: {
     flexDirection: 'row',
@@ -464,7 +489,7 @@ const styles = StyleSheet.create({
     marginLeft: 50
   },
   botBubble: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -482,7 +507,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF'
   },
   botText: {
-    color: '#333333'
+    color: '#FFFFFF'
   },
   timestampText: {
     fontSize: 11,
@@ -494,7 +519,7 @@ const styles = StyleSheet.create({
     textAlign: 'right'
   },
   botTimestamp: {
-    color: '#666666'
+    color: '#B0BEC5'
   },
   metadataContainer: {
     marginTop: 8
@@ -522,36 +547,35 @@ const styles = StyleSheet.create({
   },
   quickRepliesContainer: {
     paddingHorizontal: 15,
-    paddingVertical: 10
+    paddingTop: 10,
+    paddingBottom: 15,
+    marginBottom: 0
   },
   quickReplyButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 8,
     marginRight: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2
+    borderWidth: 1,
+    borderColor: 'rgba(76, 175, 80, 0.3)'
   },
   quickReplyText: {
-    color: '#667eea',
+    color: '#4CAF50',
     fontSize: 14,
     fontWeight: '500'
   },
   inputContainer: {
     paddingHorizontal: 15,
     paddingVertical: 10,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#0D1421',
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0'
+    borderTopColor: 'rgba(76, 175, 80, 0.3)'
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 25,
     paddingHorizontal: 15,
     paddingVertical: 5
@@ -559,7 +583,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: 16,
-    color: '#333333',
+    color: '#FFFFFF',
     maxHeight: 100,
     paddingVertical: 10
   },
@@ -582,7 +606,7 @@ const styles = StyleSheet.create({
   },
   apiKeyWarning: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0BEC5',
     textAlign: 'center',
     marginTop: 8,
     fontStyle: 'italic'

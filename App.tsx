@@ -11,7 +11,9 @@ import {
   Dimensions,
   Alert,
   FlatList,
-  Modal
+  Modal,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { 
@@ -224,10 +226,15 @@ function AuthScreen() {
       style={styles.loginContainer}
     >
       <SafeAreaView style={styles.loginContent}>
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+        <KeyboardAvoidingView 
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         >
+          <ScrollView 
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
           <View style={styles.citySkylne}>
             <Text style={styles.skylineText}>🏙️</Text>
           </View>
@@ -317,6 +324,7 @@ function AuthScreen() {
             </TouchableOpacity>
           </View>
         </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -476,9 +484,9 @@ function HomeScreen({ user }: { user: User }) {
     };
 
     const chartConfig = {
-      backgroundColor: '#1A237E',
+      backgroundColor: '#0D1421',
       backgroundGradientFrom: '#0D1421',
-      backgroundGradientTo: '#1A237E',
+      backgroundGradientTo: '#0D1421',
       decimalPlaces: 0,
       color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
       labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
@@ -493,19 +501,24 @@ function HomeScreen({ user }: { user: User }) {
 
     const screenWidth = Dimensions.get("window").width;
 
+    // Render dengue chart within scroll padding (20 each side) with proper bounds
     return (
-      <View style={{margin: 16}}>
+      <View style={{ marginHorizontal: 15, marginTop: 0 }}>
         <Text style={styles.sectionTitle}>📊 Dengue Cases Trend (7 Days)</Text>
-        <View style={styles.chartContainer}>
+        <View style={[styles.chartContainer, { alignItems: 'center', justifyContent: 'center' }]}>
           <LineChart
             data={chartData}
-            width={screenWidth - 72}
+            // Chart width = screenWidth - margin*2 (15*2) - container padding*2 (16*2)
+            width={screenWidth - 62}
             height={220}
-            chartConfig={chartConfig}
+            chartConfig={{
+              ...chartConfig,
+              propsForLabels: { fontSize: 10 }
+            }}
             bezier
             style={{
-              marginVertical: 8,
-              borderRadius: 16
+              marginVertical: 0,
+              borderRadius: 12,
             }}
             withInnerLines={true}
             withOuterLines={true}
@@ -521,12 +534,14 @@ function HomeScreen({ user }: { user: User }) {
   };
 
   return (
-    <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Text style={styles.dashboardTitle}>🇸🇬 Singapore Health Pulse</Text>
-        <Text style={styles.welcomeText}>Welcome, {user.email}</Text>
-        <Text style={styles.tagline}>Live population and health monitoring</Text>
-      </View>
+    <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic">
+      <SafeAreaView style={{ flex: 0 }}>
+        <View style={styles.header}>
+          <Text style={styles.dashboardTitle}>🇸🇬 Singapore Health Pulse</Text>
+          <Text style={styles.welcomeText}>Welcome, {user.email}</Text>
+          <Text style={styles.tagline}>Live population and health monitoring</Text>
+        </View>
+      </SafeAreaView>
 
       {/* Live Population Counter */}
       <View style={styles.liveStatsContainer}>
@@ -660,44 +675,46 @@ function BottomNavigation({
   ];
 
   return (
-    <View style={{
-      flexDirection: 'row',
-      backgroundColor: 'rgba(13, 20, 33, 0.95)',
-      paddingTop: 8,
-      paddingBottom: 8,
-      borderTopWidth: 1,
-      borderTopColor: 'rgba(76, 175, 80, 0.3)',
-    }}>
-      {tabs.map((tab) => (
-        <TouchableOpacity
-          key={tab.id}
-          style={{
-            flex: 1,
-            alignItems: 'center',
-            paddingVertical: 6,
-            backgroundColor: activeTab === tab.id ? 'rgba(76, 175, 80, 0.2)' : 'transparent',
-            borderRadius: 8,
-            margin: 2,
-          }}
-          onPress={() => onTabPress(tab.id)}
-        >
-          <Text style={{
-            fontSize: 24,
-            marginBottom: 2,
-            color: activeTab === tab.id ? '#4CAF50' : '#B0BEC5',
-          }}>
-            {tab.icon}
-          </Text>
-          <Text style={{
-            fontSize: 12,
-            color: activeTab === tab.id ? '#4CAF50' : '#B0BEC5',
-            fontWeight: activeTab === tab.id ? '600' : '400',
-          }}>
-            {tab.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
+    <SafeAreaView style={{ backgroundColor: '#0D1421' }}>
+      <View style={{
+        flexDirection: 'row',
+        backgroundColor: 'rgba(13, 20, 33, 0.95)',
+        paddingTop: 8,
+        paddingBottom: 8,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(76, 175, 80, 0.3)',
+      }}>
+        {tabs.map((tab) => (
+          <TouchableOpacity
+            key={tab.id}
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              paddingVertical: 6,
+              backgroundColor: activeTab === tab.id ? 'rgba(76, 175, 80, 0.2)' : 'transparent',
+              borderRadius: 8,
+              margin: 2,
+            }}
+            onPress={() => onTabPress(tab.id)}
+          >
+            <Text style={{
+              fontSize: 24,
+              marginBottom: 2,
+              color: activeTab === tab.id ? '#4CAF50' : '#B0BEC5',
+            }}>
+              {tab.icon}
+            </Text>
+            <Text style={{
+              fontSize: 12,
+              color: activeTab === tab.id ? '#4CAF50' : '#B0BEC5',
+              fontWeight: activeTab === tab.id ? '600' : '400',
+            }}>
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -720,7 +737,7 @@ function Dashboard({ user }: { user: User }) {
   };
 
   return (
-    <SafeAreaView style={styles.dashboardContainer}>
+    <View style={[styles.dashboardContainer, { backgroundColor: '#0D1421' }]}>
       <StatusBar style="light" backgroundColor="#0D1421" />
       <LinearGradient
         colors={['#0D1421', '#121E3A']}
@@ -729,18 +746,20 @@ function Dashboard({ user }: { user: User }) {
         <View style={{ flex: 1 }}>
           {renderActiveScreen()}
           
-          {/* Health AI Chatbot Button */}
-          <ChatbotButton 
-            openaiApiKey={process.env.EXPO_PUBLIC_OPENAI_API_KEY}
-            userLocation="Singapore"
-          />
+          {/* Health AI Chatbot Button - Only show on home screen */}
+          {activeTab === 'home' && (
+            <ChatbotButton 
+              openaiApiKey={process.env.EXPO_PUBLIC_OPENAI_API_KEY}
+              userLocation="Singapore"
+            />
+          )}
         </View>
       </LinearGradient>
       <BottomNavigation
         activeTab={activeTab}
         onTabPress={(tab) => setActiveTab(tab)}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

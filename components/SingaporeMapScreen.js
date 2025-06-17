@@ -665,22 +665,24 @@ const SingaporeMapScreen = ({ user }) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { backgroundColor: '#0D1421' }]}>
       {/* Header with dropdown */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.dropdownButton}
-          onPress={() => setShowDropdown(true)}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.dropdownButtonText}>
-            {mapType === 'dengue' ? '🦟 Dengue Clusters' : 
-             mapType === 'psi' ? '🌫️ Air Quality (PSI)' : 
-             '🏥 COVID-19 Cases'}
-          </Text>
-          <Ionicons name="chevron-down" size={16} color="#666" />
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView style={{ backgroundColor: '#0D1421', zIndex: 1000 }}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.dropdownButton}
+            onPress={() => setShowDropdown(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.dropdownButtonText}>
+              {mapType === 'dengue' ? '🦟 Dengue Clusters' : 
+               mapType === 'psi' ? '🌫️ Air Quality (PSI)' : 
+               '🏥 COVID-19 Cases'}
+            </Text>
+            <Ionicons name="chevron-down" size={16} color="#666" />
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
 
       {/* Map */}
       <View style={styles.mapContainer}>
@@ -743,10 +745,26 @@ const SingaporeMapScreen = ({ user }) => {
               <Text style={styles.dropdownOptionText}>🏥 COVID-19 Cases</Text>
               <Text style={styles.dropdownOptionDesc}>View hospital admission locations</Text>
             </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.dropdownOption}
+              onPress={() => {/* Do nothing */}}
+            >
+              <Text style={styles.dropdownOptionText}>🚗 Traffic Accidents</Text>
+              <Text style={styles.dropdownOptionDesc}>View recent traffic incident locations</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.dropdownOption}
+              onPress={() => {/* Do nothing */}}
+            >
+              <Text style={styles.dropdownOptionText}>🏨 Hospital Vacancy</Text>
+              <Text style={styles.dropdownOptionDesc}>View available hospital bed capacity</Text>
+            </TouchableOpacity>
           </View>
         </TouchableOpacity>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -756,11 +774,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   header: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(13, 20, 33, 0.95)',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

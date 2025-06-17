@@ -83,6 +83,43 @@ export const mapStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  zoomControls: {
+    position: 'absolute',
+    top: 100,
+    left: 13,
+    zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  zoomButton: {
+    width: 22,
+    height: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderWidth: 1,
+    borderColor: '#888',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#aaa',
+  },
+  zoomButtonTop: {
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+  },
+  zoomButtonBottom: {
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
+    borderBottomWidth: 0,
+  },
+  zoomIcon: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'black',
+    textAlign: 'center',
+  },
 });
 
 export const modalStyles = StyleSheet.create({
@@ -976,7 +1013,7 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 15,
     fontSize: 16,
-    color: '#333',
+    color: '#000',
   },
   enterButton: {
     backgroundColor: '#4CAF50',
@@ -1037,7 +1074,7 @@ export const styles = StyleSheet.create({
   countryInput: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: '#000',
   },
   countryArrow: {
     fontSize: 12,
@@ -1161,7 +1198,7 @@ export const styles = StyleSheet.create({
   },
   chartContainer: {
     marginTop: 8,
-    backgroundColor: 'rgba(13, 20, 33, 0.7)',
+    backgroundColor: '#0D1421',
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
@@ -1171,7 +1208,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    overflow: 'visible',
+    overflow: 'hidden',
   },
   noDataContainer: {
     justifyContent: 'center',
