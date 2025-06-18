@@ -49,6 +49,13 @@ const QuizScreen = ({ user }) => {
     }
   }, [user]);
 
+  // Automatically fetch leaderboard data when modal is opened
+  useEffect(() => {
+    if (showLeaderboard && user?.uid) {
+      fetchLeaderboard();
+    }
+  }, [showLeaderboard]);
+
   const initializeQuiz = async () => {
     try {
       setLoading(true);
@@ -80,7 +87,6 @@ const QuizScreen = ({ user }) => {
         where('date', '==', today)
       );
       
-      console.log('Checking quiz status for user:', user.uid, 'date:', today);
       const querySnapshot = await getDocs(q);
       
       const hasAnswered = !querySnapshot.empty;
@@ -91,9 +97,6 @@ const QuizScreen = ({ user }) => {
         setSelectedAnswer(todayAnswer.selectedAnswer);
         setShowResult(true);
         setIsCorrect(todayAnswer.isCorrect);
-        console.log('User has already answered today:', todayAnswer);
-      } else {
-        console.log('User has not answered today');
       }
     } catch (error) {
       console.error('Error checking daily quiz status:', error);
@@ -116,9 +119,6 @@ const QuizScreen = ({ user }) => {
           correctAnswers: userData.correctAnswers || 0
         };
         setUserStats(stats);
-        console.log('Fetched user stats:', stats);
-      } else {
-        console.log('User document does not exist, will create on first quiz submission');
       }
     } catch (error) {
       console.error('Error fetching user stats:', error);
@@ -126,54 +126,50 @@ const QuizScreen = ({ user }) => {
   };
 
   const fetchLeaderboard = async () => {
-    if (!showLeaderboard || !user?.uid) return;
-    
-    console.log('Starting fetchLeaderboard...');
     setLoadingLeaderboard(true);
     setLeaderboardError(null);
     
     try {
-      console.log('Fetching leaderboard data...');
-      
       // Check if user is authenticated
       if (!user || !user.uid) {
         console.warn('User not authenticated for leaderboard');
         setLeaderboardData([]);
+        setLeaderboardError('Please log in to view the leaderboard');
         return;
       }
 
       const usersRef = collection(db, 'users');
-      const q = query(
-        usersRef,
-        orderBy('quizPoints', 'desc'),
-        limit(50) // Limit to top 50 users to prevent performance issues
-      );
       
-      const querySnapshot = await getDocs(q);
+      // Simple query to get all users (no orderBy to avoid index requirements)
+      const querySnapshot = await getDocs(usersRef);
       
-      console.log('Found users in database:', querySnapshot.size);
+      if (querySnapshot.empty) {
+        setLeaderboardData([]);
+        return;
+      }
       
       const users = [];
-      querySnapshot.forEach((doc) => {
-
+              querySnapshot.forEach((doc) => {
         try {
           const userData = doc.data();
+          
           // Include users with valid data
-          if (userData && (userData.username || userData.email)) {
-            users.push({
+          if (userData && typeof userData === 'object') {
+            const user = {
               id: doc.id,
               username: userData.username || userData.email?.split('@')[0] || 'Anonymous',
-              quizPoints: Number(userData.quizPoints) || 0,
-              totalQuizAnswers: Number(userData.totalQuizAnswers) || 0,
-              correctAnswers: Number(userData.correctAnswers) || 0
-            });
+              quizPoints: parseInt(userData.quizPoints) || 0,
+              totalQuizAnswers: parseInt(userData.totalQuizAnswers) || 0,
+              correctAnswers: parseInt(userData.correctAnswers) || 0
+            };
+            users.push(user);
           }
         } catch (docError) {
-          console.warn('Error processing user document:', docError);
+          console.warn('Error processing user document:', doc.id, docError);
         }
       });
 
-      // Additional sort to ensure proper ordering
+      // Sort by quiz points (desc), then by total answers (desc) as tiebreaker
       users.sort((a, b) => {
         if (b.quizPoints !== a.quizPoints) {
           return b.quizPoints - a.quizPoints;
@@ -181,47 +177,29 @@ const QuizScreen = ({ user }) => {
         return b.totalQuizAnswers - a.totalQuizAnswers;
       });
       
-      console.log('Leaderboard data fetched:', users.length, 'users');
-      setLeaderboardData(users || []);
+      setLeaderboardData(users);
 
     } catch (error) {
       console.error('Leaderboard error:', error);
-      setLeaderboardError('Failed to load rankings');
-      setLeaderboardData([]); 
-      // More specific error handling
-      if (error.code === 'permission-denied') {
-        Alert.alert('Access Denied', 'You need to be logged in to view the leaderboard.');
-      } else if (error.code === 'unavailable') {
-        Alert.alert('Network Error', 'Please check your internet connection and try again.');
-      } else {
-        Alert.alert('Error', 'Failed to load leaderboard. Please try again.');
-      }
+      setLeaderboardError('Failed to load rankings: ' + error.message);
+      setLeaderboardData([]);
     } finally {
       setLoadingLeaderboard(false);
     }
   };
 
-  const openLeaderboard = async () => {
-    try {
-      if (!user || !user.uid) {
-        Alert.alert('Login Required', 'Please log in to view the leaderboard.');
-        return;
-      }
-      
-      console.log('Opening leaderboard...');
-      setShowLeaderboard(true);
-      await fetchLeaderboard();
-    } catch (error) {
-      console.error('Error opening leaderboard:', error);
-      setShowLeaderboard(false);
-      Alert.alert('Error', 'Failed to open leaderboard: ' + error.message);
+  const openLeaderboard = () => {
+    if (!user || !user.uid) {
+      Alert.alert('Login Required', 'Please log in to view the leaderboard.');
+      return;
     }
+    
+    setShowLeaderboard(true);
   };
 
   const handleAnswerSelect = (answerIndex) => {
     if (hasAnsweredToday || submitting) return;
 
-    console.log('Answer selected:', answerIndex);
     setSelectedAnswer(answerIndex);
     
     // Animate button selection
@@ -241,11 +219,8 @@ const QuizScreen = ({ user }) => {
 
   const submitAnswer = async () => {
     if (selectedAnswer === null || submitting || !user?.uid) {
-      console.log('Cannot submit:', { selectedAnswer, submitting, userUid: user?.uid });
       return;
     }
-
-    console.log('Submitting answer:', selectedAnswer);
     setSubmitting(true);
     
     const today = getTodayDateString();
@@ -265,7 +240,6 @@ const QuizScreen = ({ user }) => {
 
       const docId = `${user.uid}_${today}`;
       await setDoc(doc(db, COLLECTIONS.QUIZ_ANSWERS, docId), quizAnswerData);
-      console.log('Quiz answer saved successfully');
 
       // Update user stats
       const userDocRef = doc(db, COLLECTIONS.USERS, user.uid);
@@ -279,7 +253,6 @@ const QuizScreen = ({ user }) => {
 
       if (userDoc.exists()) {
         await updateDoc(userDocRef, newStats);
-        console.log('User stats updated');
       } else {
         // Create user document
         const newUserData = {
@@ -289,7 +262,6 @@ const QuizScreen = ({ user }) => {
           createdAt: new Date().toISOString()
         };
         await setDoc(userDocRef, newUserData);
-        console.log('User document created');
         
         // Prompt user to complete profile
         setTimeout(() => {
@@ -351,6 +323,8 @@ const QuizScreen = ({ user }) => {
     }
   };
 
+
+
   const LeaderboardModal = () => {
     if (!showLeaderboard) return null;
     
@@ -367,12 +341,21 @@ const QuizScreen = ({ user }) => {
               <View style={{ flex: 1, backgroundColor: '#0D1421', borderRadius: 20, padding: 20 }}>
                 <View style={styles.leaderboardHeader}>
                   <Text style={styles.leaderboardTitle}>🏆 Quiz Leaderboard</Text>
-                  <TouchableOpacity
-                    style={styles.leaderboardCloseButton}
-                    onPress={() => setShowLeaderboard(false)}
-                  >
-                    <Text style={styles.leaderboardCloseButtonText}>✕</Text>
-                  </TouchableOpacity>
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <TouchableOpacity
+                      style={[styles.leaderboardCloseButton, { backgroundColor: '#4CAF50' }]}
+                      onPress={fetchLeaderboard}
+                      disabled={loadingLeaderboard}
+                    >
+                      <Text style={styles.leaderboardCloseButtonText}>🔄</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.leaderboardCloseButton}
+                      onPress={() => setShowLeaderboard(false)}
+                    >
+                      <Text style={styles.leaderboardCloseButtonText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
                 
                 <Text style={styles.leaderboardSubtitle}>Top Quiz Champions</Text>
@@ -381,6 +364,22 @@ const QuizScreen = ({ user }) => {
                   <View style={styles.leaderboardLoading}>
                     <ActivityIndicator size="large" color="#4CAF50" />
                     <Text style={styles.leaderboardLoadingText}>Loading rankings...</Text>
+                  </View>
+                ) : leaderboardError ? (
+                  <View style={styles.leaderboardEmpty}>
+                    <Text style={styles.leaderboardEmptyText}>Error loading leaderboard</Text>
+                    <Text style={styles.leaderboardEmptySubtext}>{leaderboardError}</Text>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: '#4CAF50',
+                        padding: 10,
+                        borderRadius: 10,
+                        marginTop: 15
+                      }}
+                      onPress={fetchLeaderboard}
+                    >
+                      <Text style={{ color: 'white', fontWeight: 'bold' }}>Try Again</Text>
+                    </TouchableOpacity>
                   </View>
                 ) : !leaderboardData || leaderboardData.length === 0 ? (
                   <View style={styles.leaderboardEmpty}>
@@ -542,7 +541,6 @@ const QuizScreen = ({ user }) => {
         {hasAnsweredToday ? (
           /* Already Answered */
           <View style={styles.quizCompletedContainer}>
-            {console.log('Quiz completed state:', { hasAnsweredToday, selectedAnswer, isCorrect })}
             <FontAwesome5 
               name={isCorrect ? "check-circle" : "times-circle"} 
               size={48} 
