@@ -11,8 +11,8 @@ import {
   FlatList,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy, limit, deleteDoc } from 'firebase/firestore';
+import { auth, db, COLLECTIONS } from '../config/firebase';
 import { styles } from '../styles/styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
