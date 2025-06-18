@@ -134,7 +134,6 @@ export const mapStyles = StyleSheet.create({
     },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-
   },
 });
 
