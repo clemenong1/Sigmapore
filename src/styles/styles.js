@@ -172,6 +172,24 @@ export const modalStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e9ecef',
   },
+  submitButton: {
+    flex: 1,
+    backgroundColor: '#4CAF50',
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginHorizontal: 5,
+    shadowColor: '#4CAF50',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  submitButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+  },
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -1087,6 +1105,33 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: '#B0BEC5',
   },
+
+  // Population Stats Styles
+  populationContainer: {
+    margin: 15,
+    marginTop: 0,
+  },
+  populationCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 15,
+    padding: 25,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(76, 175, 80, 0.3)',
+  },
+  populationNumber: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginBottom: 8,
+    letterSpacing: 1,
+  },
+  populationLabel: {
+    fontSize: 16,
+    color: '#B0BEC5',
+    textAlign: 'center',
+  },
+
   todayStatsContainer: {
     margin: 15,
     marginTop: 0,
