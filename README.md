@@ -8,7 +8,7 @@ A comprehensive React Native application that leverages real Singapore health da
 
 ## 🌟 Elevator Pitch
 
-SigmaHealth uses real Singapore dengue, PSI and COVID data with AI chatbot guidance and community reporting to create a crowdsourced health monitoring system that turns citizens into sensors.
+SigmaHealth uses real Singapore dengue, PSI, and COVID data with AI chatbot guidance and community reporting to create a crowdsourced health monitoring system that turns citizens into sensors.
 
 ## 🚀 Quick Start
 
