@@ -11,15 +11,15 @@ import {
   FlatList,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, addDoc, deleteDoc } from 'firebase/firestore';
 import { auth, db, COLLECTIONS } from '../config/firebase';
 import { styles } from '../styles/styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const QuizScreen = ({ user }) => {
   const [dailyQuestion, setDailyQuestion] = useState({
-    question: "What is the recommended daily water intake for adults?",
-    answers: ["2 liters", "1 liter", "3 liters", "500ml"],
+    question: "How many hours of sleep do adults need per night for optimal health?",
+    answers: ["7-9 hours", "5-6 hours", "10-12 hours", "4-5 hours"],
     correctAnswer: 0
   });
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -288,6 +288,30 @@ const QuizScreen = ({ user }) => {
     }
   };
 
+  const resetTodayQuiz = async () => {
+    if (!user?.uid) return;
+    
+    try {
+      const today = getTodayDateString();
+      const docId = `${user.uid}_${today}`;
+      
+      // Delete today's quiz answer
+      await deleteDoc(doc(db, COLLECTIONS.QUIZ_ANSWERS, docId));
+      
+      // Reset local state
+      setHasAnsweredToday(false);
+      setSelectedAnswer(null);
+      setShowResult(false);
+      setIsCorrect(false);
+      
+      Alert.alert('Success', 'Today\'s quiz has been reset for testing!');
+      
+    } catch (error) {
+      console.error('Error resetting quiz:', error);
+      Alert.alert('Error', 'Failed to reset quiz: ' + error.message);
+    }
+  };
+
   const LeaderboardModal = () => (
     <Modal
       animationType="slide"
@@ -511,6 +535,22 @@ const QuizScreen = ({ user }) => {
             ]}>
               {isCorrect ? '✓ Correct! +10 points' : '✗ Incorrect'}
             </Text>
+            
+            {/* Reset Button for Testing */}
+            <TouchableOpacity
+              style={{
+                marginTop: 20,
+                backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                borderRadius: 20,
+              }}
+              onPress={resetTodayQuiz}
+            >
+              <Text style={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>
+                🔄 Reset Quiz (Testing)
+              </Text>
+            </TouchableOpacity>
           </View>
         ) : (
           /* Quiz Question */
