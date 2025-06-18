@@ -28,8 +28,10 @@ const HomeScreen = ({ user }) => {
         avgPsi: 52
     });
 
-    const [weeklyDengueData, setWeeklyDengueData] = useState([30, 29, 13, 17, 8, 6, 0]);
-    const [weeklyDengueLabels, setWeeklyDengueLabels] = useState(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]);
+    // Live dengue cases for the last 7 days
+    const [weeklyDengueData, setWeeklyDengueData] = useState([]);
+    // Dynamic labels matching the fetched data dates
+    const [weeklyDengueLabels, setWeeklyDengueLabels] = useState([]);
 
     // Update population data every 10 seconds using the live function
     useEffect(() => {
@@ -38,6 +40,16 @@ const HomeScreen = ({ user }) => {
         }, 10000);
 
         return () => clearInterval(interval);
+    }, []);
+
+    // Set dengue case data from NEA website (current as of June 17, 2025)
+    useEffect(() => {
+        // Data from https://www.nea.gov.sg/dengue-zika/dengue/dengue-cases
+        const neaLabels = ['11-Jun', '12-Jun', '13-Jun', '14-Jun', '15-Jun', '16-Jun', '17-Jun'];
+        const neaData = [29, 13, 17, 8, 6, 16, 2];
+        
+        setWeeklyDengueLabels(neaLabels);
+        setWeeklyDengueData(neaData);
     }, []);
 
     const formatNumber = (num) => num.toLocaleString('en-SG');

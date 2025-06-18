@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>convertcsv (1).kml</name>
+	<Placemark>
+		<name>Case 1</name>
+		<description>Singapore General Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.834938,1.27849,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 2</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 3</name>
+		<description>Singapore General Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.834938,1.27849,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 4</name>
+		<description>Sengkang General Hospital Discharged</description>
+		<Point>
+			<coordinates>103.8912143,1.3954984,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 5</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 6</name>
+		<description>Changi General Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.9473814,1.3401969,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 7</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 8</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 9</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 10</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 11</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 12</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 13</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 14</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 15</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 16</name>
+		<description>Singapore General Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.834938,1.27849,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 17</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 18</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 19</name>
+		<description>Singapore General Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.834938,1.27849,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 20</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 21</name>
+		<description>Singapore General Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.834938,1.27849,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 22</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 23</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 24</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 25</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 26</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 27</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 28</name>
+		<description>KK Women&apos;s and Children&apos;s Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.8446167,1.3106687,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 29</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 30</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 31</name>
+		<description>Changi General Hospital Discharged</description>
+		<Point>
+			<coordinates>103.9473814,1.3401969,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 32</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 33</name>
+		<description>Sengkang General Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.8912143,1.3954984,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 34</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 35</name>
+		<description>Singapore General Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.834938,1.27849,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 36</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 37</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 38</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 39</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 40</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 41</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 42</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 43</name>
+		<description>Sengkang General Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.8912143,1.3954984,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 44</name>
+		<description>Khoo Teck Puat Hospital Hospitalised</description>
+		<gx:balloonVisibility>1</gx:balloonVisibility>
+		<Point>
+			<coordinates>103.8359687,1.4245588,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 45</name>
+		<description>KK Women&apos;s and Children&apos;s Hospital Discharged</description>
+		<Point>
+			<coordinates>103.8446167,1.3106687,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 46</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 47</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 48</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 49</name>
+		<description>National University Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.7809869,1.2937332,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 50</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 51</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 52</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 53</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 54</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 55</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 56</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 57</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 58</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 59</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 60</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 61</name>
+		<description>National University Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.77266,1.29067,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 62</name>
+		<description>Singapore General Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.834938,1.27849,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 63</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 64</name>
+		<description>National University Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.7809869,1.2937332,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 65</name>
+		<description>National Centre for Infectious Disease Discharged</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 66</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 67</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 68</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 69</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 70</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 71</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 72</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 73</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 74</name>
+		<description>Alexandra Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.7990862,1.2865936,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 75</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 76</name>
+		<description>KK Women&apos;s and Children&apos;s Hospital Hospitalised</description>
+		<Point>
+			<coordinates>103.8446167,1.3106687,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Case 77</name>
+		<description>National Centre for Infectious Disease Hospitalised</description>
+		<Point>
+			<coordinates>103.8472413,1.3221188,0</coordinates>
+		</Point>
+	</Placemark>
+</Document>
+</kml>
