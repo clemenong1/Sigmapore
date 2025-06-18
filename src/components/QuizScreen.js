@@ -12,14 +12,14 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import { auth, db, COLLECTIONS } from '../config/firebase';
 import { styles } from '../styles/styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const QuizScreen = ({ user }) => {
   const [dailyQuestion, setDailyQuestion] = useState({
-    question: "What is the vaccination for COVID-19?",
-    answers: ["Pfizer", "Measles", "Mumps", "Tetanus"],
+    question: "What is the recommended daily water intake for adults?",
+    answers: ["2 liters", "1 liter", "3 liters", "500ml"],
     correctAnswer: 0
   });
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -41,53 +41,84 @@ const QuizScreen = ({ user }) => {
   const animatedValues = dailyQuestion.answers.map(() => new Animated.Value(1));
 
   useEffect(() => {
-    checkDailyQuizStatus();
-    fetchUserStats();
-  }, []);
+    if (user?.uid) {
+      initializeQuiz();
+    } else {
+      setLoading(false);
+      Alert.alert('Authentication Error', 'Please log in to access the quiz.');
+    }
+  }, [user]);
+
+  const initializeQuiz = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([
+        checkDailyQuizStatus(),
+        fetchUserStats()
+      ]);
+    } catch (error) {
+      console.error('Error initializing quiz:', error);
+      Alert.alert('Error', 'Failed to load quiz. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getTodayDateString = () => {
     return new Date().toISOString().split('T')[0];
   };
 
   const checkDailyQuizStatus = async () => {
+    if (!user?.uid) return;
+    
     try {
       const today = getTodayDateString();
-      const quizAnswersRef = collection(db, 'quizAnswers');
+      const quizAnswersRef = collection(db, COLLECTIONS.QUIZ_ANSWERS);
       const q = query(
         quizAnswersRef,
         where('userId', '==', user.uid),
         where('date', '==', today)
       );
       
+      console.log('Checking quiz status for user:', user.uid, 'date:', today);
       const querySnapshot = await getDocs(q);
-      setHasAnsweredToday(!querySnapshot.empty);
       
-      if (!querySnapshot.empty) {
+      const hasAnswered = !querySnapshot.empty;
+      setHasAnsweredToday(hasAnswered);
+      
+      if (hasAnswered) {
         const todayAnswer = querySnapshot.docs[0].data();
         setSelectedAnswer(todayAnswer.selectedAnswer);
         setShowResult(true);
         setIsCorrect(todayAnswer.isCorrect);
+        console.log('User has already answered today:', todayAnswer);
+      } else {
+        console.log('User has not answered today');
       }
     } catch (error) {
       console.error('Error checking daily quiz status:', error);
-      Alert.alert('Error', 'Failed to load quiz status');
-    } finally {
-      setLoading(false);
+      // Don't show error alert here, just log it
     }
   };
 
   const fetchUserStats = async () => {
+    if (!user?.uid) return;
+    
     try {
-      const userDocRef = doc(db, 'users', user.uid);
+      const userDocRef = doc(db, COLLECTIONS.USERS, user.uid);
       const userDoc = await getDoc(userDocRef);
       
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        setUserStats({
+        const stats = {
           quizPoints: userData.quizPoints || 0,
           totalQuizAnswers: userData.totalQuizAnswers || 0,
           correctAnswers: userData.correctAnswers || 0
-        });
+        };
+        setUserStats(stats);
+        console.log('Fetched user stats:', stats);
+      } else {
+        console.log('User document does not exist, will create on first quiz submission');
       }
     } catch (error) {
       console.error('Error fetching user stats:', error);
@@ -95,38 +126,27 @@ const QuizScreen = ({ user }) => {
   };
 
   const fetchLeaderboard = async () => {
-    if (!showLeaderboard) return;
+    if (!showLeaderboard || !user?.uid) return;
     
     console.log('Starting fetchLeaderboard...');
     setLoadingLeaderboard(true);
     setLeaderboardError(null);
     
-    // Shorter timeout - 5 seconds
-    const timeoutId = setTimeout(() => {
-      console.log('Leaderboard fetch timeout - showing empty state');
-      if (showLeaderboard) {
-        setLeaderboardData([]);
-        setLeaderboardError(null);
-        setLoadingLeaderboard(false);
-      }
-    }, 5000);
-    
     try {
-      const usersRef = collection(db, 'users');
+      const usersRef = collection(db, COLLECTIONS.USERS);
       const querySnapshot = await getDocs(usersRef);
       
-      clearTimeout(timeoutId);
-      console.log('Found users:', querySnapshot.size);
+      console.log('Found users in database:', querySnapshot.size);
       
       const users = [];
       querySnapshot.forEach((doc) => {
         const userData = doc.data();
         
-        // Include current user even without quiz activity for testing
-        if (userData && (userData.totalQuizAnswers > 0 || userData.quizPoints > 0 || doc.id === user?.uid)) {
+        // Include users with quiz activity or current user
+        if (userData && (userData.totalQuizAnswers > 0 || userData.quizPoints > 0 || doc.id === user.uid)) {
           users.push({
             id: doc.id,
-            username: userData.username || userData.email?.split('@')[0] || 'You',
+            username: userData.username || userData.email?.split('@')[0] || 'Anonymous User',
             quizPoints: userData.quizPoints || 0,
             totalQuizAnswers: userData.totalQuizAnswers || 0,
             correctAnswers: userData.correctAnswers || 0
@@ -134,87 +154,35 @@ const QuizScreen = ({ user }) => {
         }
       });
 
+      // Sort by points descending
       users.sort((a, b) => b.quizPoints - a.quizPoints);
       
-      if (showLeaderboard) {
-        setLeaderboardData(users);
-        setLeaderboardError(null);
-      }
-    } catch (error) {
-      clearTimeout(timeoutId);
-      console.error('Leaderboard error:', error);
+      console.log('Processed leaderboard data:', users);
+      setLeaderboardData(users);
+      setLeaderboardError(null);
       
-      if (showLeaderboard) {
-        // Just show empty state instead of error
-        setLeaderboardData([]);
-        setLeaderboardError(null);
-      }
+    } catch (error) {
+      console.error('Leaderboard error:', error);
+      setLeaderboardError('Failed to load rankings');
+      setLeaderboardData([]);
     } finally {
-      if (showLeaderboard) {
-        setLoadingLeaderboard(false);
-      }
+      setLoadingLeaderboard(false);
     }
   };
 
   const openLeaderboard = () => {
     console.log('Opening leaderboard...');
     setShowLeaderboard(true);
-    setLoadingLeaderboard(true);
-    setLeaderboardError(null);
-    
-    // Clear any existing data first
-    setLeaderboardData([]);
-    
-    // Fetch data after modal is shown
+    // Fetch data after modal opens
     setTimeout(() => {
       fetchLeaderboard();
     }, 100);
   };
 
-  // Test function to add dummy data for debugging
-  const addTestData = () => {
-    const dummyUsers = [
-      { id: 'test1', username: 'TestUser1', quizPoints: 50, totalQuizAnswers: 5, correctAnswers: 4 },
-      { id: 'test2', username: 'TestUser2', quizPoints: 30, totalQuizAnswers: 3, correctAnswers: 3 },
-      { id: 'test3', username: 'TestUser3', quizPoints: 20, totalQuizAnswers: 2, correctAnswers: 1 },
-    ];
-    setLeaderboardData(dummyUsers);
-    setLoadingLeaderboard(false);
-    setLeaderboardError(null);
-    console.log('Added test data:', dummyUsers);
-  };
-
-  // Test Firebase connectivity
-  const testFirebaseConnection = async () => {
-    console.log('Testing Firebase connection...');
-    console.log('User authenticated:', !!user, user?.uid);
-    console.log('Database instance:', !!db);
-    
-    try {
-      // Try to write a test document
-      const testDoc = {
-        test: true,
-        timestamp: new Date().toISOString(),
-        userId: user?.uid
-      };
-      
-      const docRef = await addDoc(collection(db, 'test'), testDoc);
-      console.log('Firebase write test successful:', docRef.id);
-      
-      // Try to read it back
-      const testQuery = await getDocs(collection(db, 'test'));
-      console.log('Firebase read test successful, docs:', testQuery.size);
-      
-      Alert.alert('Success', 'Firebase connection is working!');
-    } catch (error) {
-      console.error('Firebase test failed:', error);
-      Alert.alert('Firebase Error', `Connection failed: ${error.message}`);
-    }
-  };
-
   const handleAnswerSelect = (answerIndex) => {
     if (hasAnsweredToday || submitting) return;
 
+    console.log('Answer selected:', answerIndex);
     setSelectedAnswer(answerIndex);
     
     // Animate button selection
@@ -233,15 +201,20 @@ const QuizScreen = ({ user }) => {
   };
 
   const submitAnswer = async () => {
-    if (selectedAnswer === null || submitting) return;
+    if (selectedAnswer === null || submitting || !user?.uid) {
+      console.log('Cannot submit:', { selectedAnswer, submitting, userUid: user?.uid });
+      return;
+    }
 
+    console.log('Submitting answer:', selectedAnswer);
     setSubmitting(true);
+    
     const today = getTodayDateString();
     const correct = selectedAnswer === dailyQuestion.correctAnswer;
     const pointsEarned = correct ? 10 : 0;
 
     try {
-      // Save quiz answer
+      // Save quiz answer with unique document ID
       const quizAnswerData = {
         userId: user.uid,
         date: today,
@@ -251,13 +224,15 @@ const QuizScreen = ({ user }) => {
         timestamp: new Date().toISOString()
       };
 
-      await setDoc(doc(db, 'quizAnswers', `${user.uid}_${today}`), quizAnswerData);
+      const docId = `${user.uid}_${today}`;
+      await setDoc(doc(db, COLLECTIONS.QUIZ_ANSWERS, docId), quizAnswerData);
+      console.log('Quiz answer saved successfully');
 
       // Update user stats
-      const userDocRef = doc(db, 'users', user.uid);
+      const userDocRef = doc(db, COLLECTIONS.USERS, user.uid);
       const userDoc = await getDoc(userDocRef);
       
-      let newStats = {
+      const newStats = {
         quizPoints: userStats.quizPoints + pointsEarned,
         totalQuizAnswers: userStats.totalQuizAnswers + 1,
         correctAnswers: userStats.correctAnswers + (correct ? 1 : 0)
@@ -265,41 +240,49 @@ const QuizScreen = ({ user }) => {
 
       if (userDoc.exists()) {
         await updateDoc(userDocRef, newStats);
+        console.log('User stats updated');
       } else {
-        // Create user document with basic info, but prompt to complete profile
-        await setDoc(userDocRef, {
+        // Create user document
+        const newUserData = {
           ...newStats,
           email: user.email,
-          username: user.email?.split('@')[0] || 'User', // Use email prefix as default username
+          username: user.email?.split('@')[0] || 'User',
           createdAt: new Date().toISOString()
-        });
+        };
+        await setDoc(userDocRef, newUserData);
+        console.log('User document created');
         
-        // Alert user to complete their profile for leaderboard
+        // Prompt user to complete profile
         setTimeout(() => {
           Alert.alert(
             'Complete Your Profile',
-            'To appear on the leaderboard, please complete your profile by setting a username in the Profile tab.',
+            'Visit the Profile tab to set a custom username for the leaderboard!',
             [{ text: 'OK' }]
           );
         }, 2000);
       }
 
+      // Update local state
       setUserStats(newStats);
       setHasAnsweredToday(true);
       setShowResult(true);
       setIsCorrect(correct);
 
+      // Show result
       Alert.alert(
         correct ? '🎉 Correct!' : '❌ Incorrect',
         correct 
-          ? `Great job! You earned ${pointsEarned} points!` 
+          ? `Excellent! You earned ${pointsEarned} points!` 
           : `The correct answer was: ${dailyQuestion.answers[dailyQuestion.correctAnswer]}`,
         [{ text: 'OK' }]
       );
 
     } catch (error) {
       console.error('Error submitting quiz answer:', error);
-      Alert.alert('Error', 'Failed to submit answer. Please try again.');
+      Alert.alert(
+        'Submission Error', 
+        `Failed to submit your answer: ${error.message}. Please check your internet connection and try again.`
+      );
     } finally {
       setSubmitting(false);
     }
@@ -318,7 +301,7 @@ const QuizScreen = ({ user }) => {
             <View style={styles.leaderboardHeader}>
               <View style={styles.leaderboardTitleContainer}>
                 <FontAwesome5 name="trophy" size={24} color="#FFD700" solid />
-                <Text style={styles.leaderboardTitle}> Quiz Leaderboard</Text>
+                <Text style={styles.leaderboardTitle}> Quiz Champions</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <TouchableOpacity
@@ -337,7 +320,7 @@ const QuizScreen = ({ user }) => {
               </View>
             </View>
             
-            <Text style={styles.leaderboardSubtitle}>Top Quiz Champions</Text>
+            <Text style={styles.leaderboardSubtitle}>Top Health Quiz Performers</Text>
             
             {loadingLeaderboard ? (
               <View style={styles.leaderboardLoading}>
@@ -365,8 +348,8 @@ const QuizScreen = ({ user }) => {
             ) : leaderboardData.length === 0 ? (
               <View style={styles.leaderboardEmpty}>
                 <FontAwesome5 name="trophy" size={32} color="#FFD700" />
-                <Text style={styles.leaderboardEmptyText}>No quiz participants yet!</Text>
-                <Text style={styles.leaderboardEmptySubtext}>Be the first to answer a question</Text>
+                <Text style={styles.leaderboardEmptyText}>No quiz champions yet!</Text>
+                <Text style={styles.leaderboardEmptySubtext}>Be the first to answer today's question</Text>
               </View>
             ) : (
               <ScrollView style={styles.leaderboardList} showsVerticalScrollIndicator={false}>
@@ -411,7 +394,7 @@ const QuizScreen = ({ user }) => {
                           isTopThree && styles.leaderboardUsernameTopThree,
                           isCurrentUser && styles.leaderboardUsernameCurrentUser
                         ]}>
-                          {item.username || 'Unknown'} {isCurrentUser ? '(You)' : ''}
+                          {item.username} {isCurrentUser ? '(You)' : ''}
                         </Text>
                         <Text style={styles.leaderboardUserStats}>
                           {item.totalQuizAnswers || 0} questions • {item.totalQuizAnswers > 0 ? Math.round(((item.correctAnswers || 0) / item.totalQuizAnswers) * 100) : 0}% accuracy
@@ -438,12 +421,27 @@ const QuizScreen = ({ user }) => {
     </Modal>
   );
 
+  // Show authentication error if no user
+  if (!user) {
+    return (
+      <LinearGradient colors={['#0D1421', '#1A237E']} style={styles.screenContainer}>
+        <View style={[styles.screenContainer, { justifyContent: 'center', alignItems: 'center' }]}>
+          <FontAwesome5 name="user-lock" size={48} color="#F44336" />
+          <Text style={[styles.loadingText, { marginTop: 20 }]}>Please log in to access the quiz</Text>
+          <Text style={[styles.loadingText, { fontSize: 14, opacity: 0.7, marginTop: 10 }]}>
+            Visit the Profile tab to sign in
+          </Text>
+        </View>
+      </LinearGradient>
+    );
+  }
+
   if (loading) {
     return (
       <LinearGradient colors={['#0D1421', '#1A237E']} style={styles.screenContainer}>
         <View style={[styles.screenContainer, { justifyContent: 'center', alignItems: 'center' }]}>
           <ActivityIndicator size="large" color="#4CAF50" />
-          <Text style={styles.loadingText}>Loading today's quiz...</Text>
+          <Text style={styles.loadingText}>Loading today's health quiz...</Text>
         </View>
       </LinearGradient>
     );
@@ -464,10 +462,7 @@ const QuizScreen = ({ user }) => {
             </View>
             <TouchableOpacity
               style={styles.leaderboardButton}
-              onPress={() => {
-                console.log('Leaderboard button pressed');
-                openLeaderboard();
-              }}
+              onPress={openLeaderboard}
             >
               <FontAwesome5 name="trophy" size={20} color="#FFD700" solid />
             </TouchableOpacity>
@@ -497,10 +492,15 @@ const QuizScreen = ({ user }) => {
         {hasAnsweredToday ? (
           /* Already Answered */
           <View style={styles.quizCompletedContainer}>
-            <FontAwesome5 name="check-circle" size={48} color="#4CAF50" solid />
-            <Text style={styles.quizCompletedTitle}>Already answered today!</Text>
+            <FontAwesome5 
+              name={isCorrect ? "check-circle" : "times-circle"} 
+              size={48} 
+              color={isCorrect ? "#4CAF50" : "#F44336"} 
+              solid 
+            />
+            <Text style={styles.quizCompletedTitle}>Quiz completed for today!</Text>
             <Text style={styles.quizCompletedText}>
-              Come back tomorrow for a new question
+              Come back tomorrow for a new health question
             </Text>
             <Text style={styles.quizCompletedSubtext}>
               Your answer: {dailyQuestion.answers[selectedAnswer]}
@@ -509,7 +509,7 @@ const QuizScreen = ({ user }) => {
               styles.quizCompletedResult,
               { color: isCorrect ? '#4CAF50' : '#F44336' }
             ]}>
-              {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
+              {isCorrect ? '✓ Correct! +10 points' : '✗ Incorrect'}
             </Text>
           </View>
         ) : (
@@ -558,7 +558,7 @@ const QuizScreen = ({ user }) => {
             {submitting && (
               <View style={styles.quizSubmittingContainer}>
                 <ActivityIndicator size="small" color="#4CAF50" />
-                <Text style={styles.quizSubmittingText}>Submitting...</Text>
+                <Text style={styles.quizSubmittingText}>Submitting your answer...</Text>
               </View>
             )}
           </View>
