@@ -60,6 +60,14 @@ const HomeScreen = ({ user }) => {
 
     const formatNumber = (num) => num.toLocaleString('en-SG');
 
+    // Calculate total dengue cases from weekly data
+    const calculateTotalDengueCases = () => {
+        if (!weeklyDengueData || weeklyDengueData.length === 0) {
+            return 0;
+        }
+        return weeklyDengueData.reduce((total, cases) => total + (cases || 0), 0);
+    };
+
     // Render dengue chart component
     const renderDengueChart = () => {
         // Don't render if data is not ready or invalid
@@ -207,6 +215,25 @@ const HomeScreen = ({ user }) => {
                 </View>
             </View>
 
+            {/* Demographics */}
+            <View style={styles.demographicsContainer}>
+                <Text style={styles.sectionTitle}>
+                    <FontAwesome5 name="users" size={18} color="#4CAF50" solid /> {t.demographics}
+                </Text>
+                <View style={styles.genderStats}>
+                    <View style={styles.genderCard}>
+                        <FontAwesome5 name="male" size={24} color="#4CAF50" style={styles.genderIcon} solid />
+                        <Text style={styles.genderNumber}>{formatNumber(populationData.demographics.male.population)}</Text>
+                        <Text style={styles.genderLabel}>{t.male} ({populationData.demographics.male.percentage}%)</Text>
+                    </View>
+                    <View style={styles.genderCard}>
+                        <FontAwesome5 name="female" size={24} color="#4CAF50" style={styles.genderIcon} solid />
+                        <Text style={styles.genderNumber}>{formatNumber(populationData.demographics.female.population)}</Text>
+                        <Text style={styles.genderLabel}>{t.female} ({populationData.demographics.female.percentage}%)</Text>
+                    </View>
+                </View>
+            </View>
+
             {/* Health Overview */}
             <View style={styles.todayStatsContainer}>
                 <Text style={styles.sectionTitle}>
@@ -239,7 +266,7 @@ const HomeScreen = ({ user }) => {
                 <View style={styles.todayStatsGrid}>
                     <View style={styles.todayStatCard}>
                         <FontAwesome5 name="bug" size={24} color="#4CAF50" style={styles.todayStatIcon} solid />
-                        <Text style={styles.todayStatNumber}>{healthStats.weeklyDengue}</Text>
+                        <Text style={styles.todayStatNumber}>{calculateTotalDengueCases()}</Text>
                         <Text style={styles.todayStatLabel}>{t.dengueCases}</Text>
                     </View>
                     <View style={styles.todayStatCard}>
@@ -268,29 +295,11 @@ const HomeScreen = ({ user }) => {
                     alignItems: 'center',
                 }}>
                     <FontAwesome5 name="chart-pie" size={24} color="#4CAF50" style={{ marginBottom: 8 }} solid />
-                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#4CAF50', marginBottom: 4 }}>{healthStats.weeklyDengue}</Text>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#4CAF50', marginBottom: 4 }}>{calculateTotalDengueCases()}</Text>
                     <Text style={{ fontSize: 12, color: '#B0BEC5', textAlign: 'center' }}>{t.totalDengueCases}</Text>
                 </View>
             </View>
 
-            {/* Demographics */}
-            <View style={styles.demographicsContainer}>
-                <Text style={styles.sectionTitle}>
-                    <FontAwesome5 name="users" size={18} color="#4CAF50" solid /> {t.demographics}
-                </Text>
-                <View style={styles.genderStats}>
-                    <View style={styles.genderCard}>
-                        <FontAwesome5 name="male" size={24} color="#4CAF50" style={styles.genderIcon} solid />
-                        <Text style={styles.genderNumber}>{formatNumber(populationData.demographics.male.population)}</Text>
-                        <Text style={styles.genderLabel}>{t.male} ({populationData.demographics.male.percentage}%)</Text>
-                    </View>
-                    <View style={styles.genderCard}>
-                        <FontAwesome5 name="female" size={24} color="#4CAF50" style={styles.genderIcon} solid />
-                        <Text style={styles.genderNumber}>{formatNumber(populationData.demographics.female.population)}</Text>
-                        <Text style={styles.genderLabel}>{t.female} ({populationData.demographics.female.percentage}%)</Text>
-                    </View>
-                </View>
-            </View>
         </ScrollView>
     );
 };
