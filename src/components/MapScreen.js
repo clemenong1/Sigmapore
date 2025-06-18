@@ -124,7 +124,6 @@ const MapScreen = ({ user }) => {
 
           console.log('Reports loaded:', reportsData.length, 'reports');
 
-          console.log('Sample report:', reportsData[0]);
           setReports(reportsData);
           setError(null);
         },
