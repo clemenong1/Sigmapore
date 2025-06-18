@@ -61,7 +61,7 @@ const MapScreen = ({ user }) => {
   }, [user]);
 
   const requestLocationPermission = async () => {
-    // For demo purposes, ignore device geo and use default Singapore center
+    // For demo purposes, always use Singapore location
     setLocation(defaultLocation);
     setCurrentRegion(defaultLocation);
     setLoading(false);
@@ -121,7 +121,9 @@ const MapScreen = ({ user }) => {
               timestamp: data.timestamp?.toDate?.() || new Date(data.createdAt),
             });
           });
-          console.log('Reports fetched for map:', reportsData.length, 'reports');
+
+          console.log('Reports loaded:', reportsData.length, 'reports');
+
           console.log('Sample report:', reportsData[0]);
           setReports(reportsData);
           setError(null);
@@ -258,11 +260,14 @@ const MapScreen = ({ user }) => {
           provider={PROVIDER_GOOGLE}
           style={mapStyles.map}
           initialRegion={location || defaultLocation}
+          region={currentRegion}
+          onRegionChangeComplete={handleRegionChange}
           onPress={handleMapPress}
           showsUserLocation
           showsMyLocationButton
         >
           {reports
+
             .filter(report => {
               // Handle both old format (latitude/longitude fields) and new format (location object)
               return (report.location && report.location.latitude && report.location.longitude) ||
@@ -293,7 +298,18 @@ const MapScreen = ({ user }) => {
                 </Marker>
               );
             })}
+
         </MapView>
+
+        {/* Zoom Controls */}
+        <View style={mapStyles.zoomControls}>
+          <TouchableOpacity style={mapStyles.zoomButton} onPress={handleZoomIn}>
+            <FontAwesome5 name="plus" size={20} color="#FFFFFF" solid />
+          </TouchableOpacity>
+          <TouchableOpacity style={[mapStyles.zoomButton, { borderBottomWidth: 0 }]} onPress={handleZoomOut}>
+            <FontAwesome5 name="minus" size={20} color="#FFFFFF" solid />
+          </TouchableOpacity>
+        </View>
 
         {/* Floating Action Button */}
         <TouchableOpacity

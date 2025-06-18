@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,11 @@ import {
   ActivityIndicator,
   Platform,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
+import MapView, { Marker } from 'react-native-maps';
 import {
   collection,
   addDoc,
@@ -47,6 +49,9 @@ const ReportScreen = ({ user }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [recentReports, setRecentReports] = useState([]);
+  const [mapRegion, setMapRegion] = useState(null);
+  const [showMap, setShowMap] = useState(false);
+  const mapRef = useRef(null);
 
   useEffect(() => {
     getCurrentLocation();
@@ -73,6 +78,15 @@ const ReportScreen = ({ user }) => {
 
       const { latitude, longitude } = currentLocation.coords;
       setLocation({ latitude, longitude });
+
+      // Set map region
+      const region = {
+        latitude,
+        longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+      setMapRegion(region);
 
       // Reverse geocoding to get address
       try {
@@ -111,6 +125,34 @@ const ReportScreen = ({ user }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleZoomIn = () => {
+    if (mapRegion && mapRef.current) {
+      const newRegion = {
+        ...mapRegion,
+        latitudeDelta: mapRegion.latitudeDelta * 0.5,
+        longitudeDelta: mapRegion.longitudeDelta * 0.5,
+      };
+      setMapRegion(newRegion);
+      mapRef.current.animateToRegion(newRegion, 300);
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (mapRegion && mapRef.current) {
+      const newRegion = {
+        ...mapRegion,
+        latitudeDelta: Math.min(mapRegion.latitudeDelta * 2, 0.1),
+        longitudeDelta: Math.min(mapRegion.longitudeDelta * 2, 0.1),
+      };
+      setMapRegion(newRegion);
+      mapRef.current.animateToRegion(newRegion, 300);
+    }
+  };
+
+  const toggleMapView = () => {
+    setShowMap(!showMap);
   };
 
   const fetchRecentReports = () => {
@@ -240,6 +282,57 @@ const ReportScreen = ({ user }) => {
       fontWeight: 'bold',
       color: '#666',
     },
+    locationHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    mapToggleButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'rgba(76, 175, 80, 0.1)',
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 15,
+      borderWidth: 1,
+      borderColor: 'rgba(76, 175, 80, 0.3)',
+    },
+    mapToggleText: {
+      fontSize: 12,
+      color: '#4CAF50',
+      fontWeight: '500',
+    },
+    mapContainer: {
+      marginTop: 15,
+      borderRadius: 12,
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    miniMap: {
+      width: '100%',
+      height: 200,
+    },
+    customMarker: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    zoomControls: {
+      position: 'absolute',
+      right: 10,
+      top: 10,
+      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+      borderRadius: 8,
+      overflow: 'hidden',
+    },
+    zoomButton: {
+      backgroundColor: 'rgba(76, 175, 80, 0.9)',
+      padding: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderBottomWidth: 1,
+      borderBottomColor: 'rgba(255, 255, 255, 0.2)',
+    },
   });
 
   return (
@@ -256,18 +349,63 @@ const ReportScreen = ({ user }) => {
 
         {/* Location Status */}
         <View style={styles.locationContainer}>
-          <Text style={styles.locationLabel}>
-            <FontAwesome5 name="map-marker-alt" size={16} color="#4CAF50" solid /> Report Location
-          </Text>
+          <View style={customStyles.locationHeader}>
+            <Text style={styles.locationLabel}>
+              <FontAwesome5 name="map-marker-alt" size={16} color="#4CAF50" solid /> Report Location
+            </Text>
+            {location && (
+              <TouchableOpacity style={customStyles.mapToggleButton} onPress={toggleMapView}>
+                <FontAwesome5 
+                  name={showMap ? "eye-slash" : "map"} 
+                  size={14} 
+                  color="#4CAF50" 
+                  solid 
+                />
+                <Text style={customStyles.mapToggleText}>
+                  {showMap ? " Hide Map" : " Show Map"}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          
           {loading ? (
             <View style={styles.locationLoading}>
               <ActivityIndicator size="small" color="#4CAF50" />
               <Text style={styles.locationText}>Getting your location...</Text>
             </View>
           ) : location ? (
-            <Text style={styles.locationText}>
-              {address || `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`}
-            </Text>
+            <>
+              <Text style={styles.locationText}>
+                {address || `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`}
+              </Text>
+              
+              {showMap && mapRegion && (
+                <View style={customStyles.mapContainer}>
+                  <MapView
+                    ref={mapRef}
+                    style={customStyles.miniMap}
+                    region={mapRegion}
+                    onRegionChangeComplete={setMapRegion}
+                  >
+                    <Marker coordinate={location}>
+                      <View style={customStyles.customMarker}>
+                        <FontAwesome5 name="map-marker-alt" size={24} color="#4CAF50" solid />
+                      </View>
+                    </Marker>
+                  </MapView>
+                  
+                  {/* Zoom Controls */}
+                  <View style={customStyles.zoomControls}>
+                    <TouchableOpacity style={customStyles.zoomButton} onPress={handleZoomIn}>
+                      <FontAwesome5 name="plus" size={16} color="#FFFFFF" solid />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={customStyles.zoomButton} onPress={handleZoomOut}>
+                      <FontAwesome5 name="minus" size={16} color="#FFFFFF" solid />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </>
           ) : (
             <TouchableOpacity style={styles.locationButton} onPress={getCurrentLocation}>
               <Text style={styles.locationButtonText}>

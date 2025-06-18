@@ -644,15 +644,19 @@ function AuthScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1, justifyContent: 'center', width: '100%' }}
         >
-          <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-            <View style={{ marginBottom: 40 }}>
-              <Text style={{ fontSize: 40, textAlign: 'center' }}>🏙️</Text>
+          <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 }}>
+            <View style={{ marginBottom: -300, alignItems: 'center', marginTop: -400 }}>
+              <Image 
+                source={require('./assets/Screenshot_2025-06-18_at_3.30.31_AM-removebg-preview.png')}
+                style={{ 
+                  width: width * 1.05, 
+                  height: 800, 
+                  resizeMode: 'contain' 
+                }}
+              />
             </View>
             
-            <Text style={{ fontSize: 36, fontWeight: 'bold', color: 'white', textAlign: 'center', marginBottom: 10 }}>Singapore Health Pulse</Text>
-            <Text style={{ fontSize: 16, color: '#E8F5E8', textAlign: 'center', marginBottom: 40 }}>Real-time health monitoring for Singapore</Text>
-            
-            <View style={{ width: '100%', maxWidth: 300 }}>
+            <View style={{ width: '100%', maxWidth: 300, marginTop: 0 }}>
               <TextInput
                 style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.9)',

@@ -143,11 +143,20 @@ const ReportModal = ({
 
     } catch (error) {
       console.error('Error submitting report:', error);
-      Alert.alert(
-        'Error',
-        'Failed to submit report. Please try again.',
-        [{ text: 'OK' }]
-      );
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      
+      let errorMessage = 'Failed to submit report. Please try again.';
+      
+      if (error.code === 'permission-denied') {
+        errorMessage = 'Permission denied. Please make sure you are logged in.';
+      } else if (error.code === 'network-request-failed') {
+        errorMessage = 'Network error. Please check your internet connection.';
+      } else if (error.message) {
+        errorMessage = `Error: ${error.message}`;
+      }
+      
+      Alert.alert('Error', errorMessage, [{ text: 'OK' }]);
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,4 @@
-// Stats module exports - Health monitoring services and data
+// Health monitoring services and data exports
 export { dengueService } from './services/dengueService';
 export { CovidService } from './services/covidService';
 export { DENGUE_GEOJSON_DATA } from './data/dengueData';
@@ -11,5 +11,5 @@ import covidServiceDefault from './services/covidService';
 export const psiService = psiServiceDefault;
 export const covidService = covidServiceDefault;
 
-// Re-export types if needed in the future
+// Re-export types if needed
 export type { DengueCluster } from './services/dengueService'; 

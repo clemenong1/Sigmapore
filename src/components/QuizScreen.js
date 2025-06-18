@@ -14,11 +14,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { styles } from '../styles/styles';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const QuizScreen = ({ user }) => {
   const [dailyQuestion, setDailyQuestion] = useState({
-    question: "What is the vaccination for COVID-19?",
-    answers: ["Pfizer", "Measles", "Mumps", "Tetanus"],
+    question: "How many hours of sleep do adults need per night for optimal health?",
+    answers: ["7-9 hours", "5-6 hours", "10-12 hours", "4-5 hours"],
     correctAnswer: 0
   });
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -35,57 +36,89 @@ const QuizScreen = ({ user }) => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+  const [leaderboardError, setLeaderboardError] = useState(null);
 
   const animatedValues = dailyQuestion.answers.map(() => new Animated.Value(1));
 
   useEffect(() => {
-    checkDailyQuizStatus();
-    fetchUserStats();
-  }, []);
+    if (user?.uid) {
+      initializeQuiz();
+    } else {
+      setLoading(false);
+      Alert.alert('Authentication Error', 'Please log in to access the quiz.');
+    }
+  }, [user]);
+
+  const initializeQuiz = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([
+        checkDailyQuizStatus(),
+        fetchUserStats()
+      ]);
+    } catch (error) {
+      console.error('Error initializing quiz:', error);
+      Alert.alert('Error', 'Failed to load quiz. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getTodayDateString = () => {
     return new Date().toISOString().split('T')[0];
   };
 
   const checkDailyQuizStatus = async () => {
+    if (!user?.uid) return;
+    
     try {
       const today = getTodayDateString();
-      const quizAnswersRef = collection(db, 'quizAnswers');
+      const quizAnswersRef = collection(db, COLLECTIONS.QUIZ_ANSWERS);
       const q = query(
         quizAnswersRef,
         where('userId', '==', user.uid),
         where('date', '==', today)
       );
       
+      console.log('Checking quiz status for user:', user.uid, 'date:', today);
       const querySnapshot = await getDocs(q);
-      setHasAnsweredToday(!querySnapshot.empty);
       
-      if (!querySnapshot.empty) {
+      const hasAnswered = !querySnapshot.empty;
+      setHasAnsweredToday(hasAnswered);
+      
+      if (hasAnswered) {
         const todayAnswer = querySnapshot.docs[0].data();
         setSelectedAnswer(todayAnswer.selectedAnswer);
         setShowResult(true);
         setIsCorrect(todayAnswer.isCorrect);
+        console.log('User has already answered today:', todayAnswer);
+      } else {
+        console.log('User has not answered today');
       }
     } catch (error) {
       console.error('Error checking daily quiz status:', error);
-      Alert.alert('Error', 'Failed to load quiz status');
-    } finally {
-      setLoading(false);
+      // Don't show error alert here, just log it
     }
   };
 
   const fetchUserStats = async () => {
+    if (!user?.uid) return;
+    
     try {
-      const userDocRef = doc(db, 'users', user.uid);
+      const userDocRef = doc(db, COLLECTIONS.USERS, user.uid);
       const userDoc = await getDoc(userDocRef);
       
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        setUserStats({
+        const stats = {
           quizPoints: userData.quizPoints || 0,
           totalQuizAnswers: userData.totalQuizAnswers || 0,
           correctAnswers: userData.correctAnswers || 0
-        });
+        };
+        setUserStats(stats);
+        console.log('Fetched user stats:', stats);
+      } else {
+        console.log('User document does not exist, will create on first quiz submission');
       }
     } catch (error) {
       console.error('Error fetching user stats:', error);
@@ -93,7 +126,12 @@ const QuizScreen = ({ user }) => {
   };
 
   const fetchLeaderboard = async () => {
+    if (!showLeaderboard || !user?.uid) return;
+    
+    console.log('Starting fetchLeaderboard...');
     setLoadingLeaderboard(true);
+    setLeaderboardError(null);
+    
     try {
       console.log('Fetching leaderboard data...');
       
@@ -113,8 +151,11 @@ const QuizScreen = ({ user }) => {
       
       const querySnapshot = await getDocs(q);
       
+      console.log('Found users in database:', querySnapshot.size);
+      
       const users = [];
       querySnapshot.forEach((doc) => {
+
         try {
           const userData = doc.data();
           // Include users with valid data
@@ -142,10 +183,11 @@ const QuizScreen = ({ user }) => {
       
       console.log('Leaderboard data fetched:', users.length, 'users');
       setLeaderboardData(users || []);
+
     } catch (error) {
-      console.error('Error fetching leaderboard:', error);
-      setLeaderboardData([]);
-      
+      console.error('Leaderboard error:', error);
+      setLeaderboardError('Failed to load rankings');
+      setLeaderboardData([]); 
       // More specific error handling
       if (error.code === 'permission-denied') {
         Alert.alert('Access Denied', 'You need to be logged in to view the leaderboard.');
@@ -179,6 +221,7 @@ const QuizScreen = ({ user }) => {
   const handleAnswerSelect = (answerIndex) => {
     if (hasAnsweredToday || submitting) return;
 
+    console.log('Answer selected:', answerIndex);
     setSelectedAnswer(answerIndex);
     
     // Animate button selection
@@ -197,15 +240,20 @@ const QuizScreen = ({ user }) => {
   };
 
   const submitAnswer = async () => {
-    if (selectedAnswer === null || submitting) return;
+    if (selectedAnswer === null || submitting || !user?.uid) {
+      console.log('Cannot submit:', { selectedAnswer, submitting, userUid: user?.uid });
+      return;
+    }
 
+    console.log('Submitting answer:', selectedAnswer);
     setSubmitting(true);
+    
     const today = getTodayDateString();
     const correct = selectedAnswer === dailyQuestion.correctAnswer;
     const pointsEarned = correct ? 10 : 0;
 
     try {
-      // Save quiz answer
+      // Save quiz answer with unique document ID
       const quizAnswerData = {
         userId: user.uid,
         date: today,
@@ -215,13 +263,15 @@ const QuizScreen = ({ user }) => {
         timestamp: new Date().toISOString()
       };
 
-      await setDoc(doc(db, 'quizAnswers', `${user.uid}_${today}`), quizAnswerData);
+      const docId = `${user.uid}_${today}`;
+      await setDoc(doc(db, COLLECTIONS.QUIZ_ANSWERS, docId), quizAnswerData);
+      console.log('Quiz answer saved successfully');
 
       // Update user stats
-      const userDocRef = doc(db, 'users', user.uid);
+      const userDocRef = doc(db, COLLECTIONS.USERS, user.uid);
       const userDoc = await getDoc(userDocRef);
       
-      let newStats = {
+      const newStats = {
         quizPoints: userStats.quizPoints + pointsEarned,
         totalQuizAnswers: userStats.totalQuizAnswers + 1,
         correctAnswers: userStats.correctAnswers + (correct ? 1 : 0)
@@ -229,34 +279,54 @@ const QuizScreen = ({ user }) => {
 
       if (userDoc.exists()) {
         await updateDoc(userDocRef, newStats);
+        console.log('User stats updated');
       } else {
-        await setDoc(userDocRef, {
+        // Create user document
+        const newUserData = {
           ...newStats,
           email: user.email,
+          username: user.email?.split('@')[0] || 'User',
           createdAt: new Date().toISOString()
-        });
+        };
+        await setDoc(userDocRef, newUserData);
+        console.log('User document created');
+        
+        // Prompt user to complete profile
+        setTimeout(() => {
+          Alert.alert(
+            'Complete Your Profile',
+            'Visit the Profile tab to set a custom username for the leaderboard!',
+            [{ text: 'OK' }]
+          );
+        }, 2000);
       }
 
+      // Update local state
       setUserStats(newStats);
       setHasAnsweredToday(true);
       setShowResult(true);
       setIsCorrect(correct);
 
+      // Show result
       Alert.alert(
         correct ? '🎉 Correct!' : '❌ Incorrect',
         correct 
-          ? `Great job! You earned ${pointsEarned} points!` 
+          ? `Excellent! You earned ${pointsEarned} points!` 
           : `The correct answer was: ${dailyQuestion.answers[dailyQuestion.correctAnswer]}`,
         [{ text: 'OK' }]
       );
 
     } catch (error) {
       console.error('Error submitting quiz answer:', error);
-      Alert.alert('Error', 'Failed to submit answer. Please try again.');
+      Alert.alert(
+        'Submission Error', 
+        `Failed to submit your answer: ${error.message}. Please check your internet connection and try again.`
+      );
     } finally {
       setSubmitting(false);
     }
   };
+
 
   const LeaderboardModal = () => {
     if (!showLeaderboard) return null;
@@ -378,12 +448,27 @@ const QuizScreen = ({ user }) => {
     }
   };
 
+  // Show authentication error if no user
+  if (!user) {
+    return (
+      <LinearGradient colors={['#0D1421', '#1A237E']} style={styles.screenContainer}>
+        <View style={[styles.screenContainer, { justifyContent: 'center', alignItems: 'center' }]}>
+          <FontAwesome5 name="user-lock" size={48} color="#F44336" />
+          <Text style={[styles.loadingText, { marginTop: 20 }]}>Please log in to access the quiz</Text>
+          <Text style={[styles.loadingText, { fontSize: 14, opacity: 0.7, marginTop: 10 }]}>
+            Visit the Profile tab to sign in
+          </Text>
+        </View>
+      </LinearGradient>
+    );
+  }
+
   if (loading) {
     return (
       <LinearGradient colors={['#0D1421', '#1A237E']} style={styles.screenContainer}>
         <View style={[styles.screenContainer, { justifyContent: 'center', alignItems: 'center' }]}>
           <ActivityIndicator size="large" color="#4CAF50" />
-          <Text style={styles.loadingText}>Loading today's quiz...</Text>
+          <Text style={styles.loadingText}>Loading today's health quiz...</Text>
         </View>
       </LinearGradient>
     );
@@ -396,14 +481,17 @@ const QuizScreen = ({ user }) => {
         <View style={styles.quizHeader}>
           <View style={styles.quizHeaderContent}>
             <View>
-              <Text style={styles.quizTitle}>📚 Daily Health Quiz</Text>
+              <View style={styles.quizTitleContainer}>
+                <FontAwesome5 name="book-medical" size={20} color="#4CAF50" solid />
+                <Text style={styles.quizTitle}> Daily Health Quiz</Text>
+              </View>
               <Text style={styles.quizSubtitle}>Test your health knowledge!</Text>
             </View>
             <TouchableOpacity
               style={styles.leaderboardButton}
               onPress={openLeaderboard}
             >
-              <Text style={styles.leaderboardButtonIcon}>🏆</Text>
+              <FontAwesome5 name="trophy" size={20} color="#FFD700" solid />
             </TouchableOpacity>
           </View>
         </View>
@@ -431,10 +519,16 @@ const QuizScreen = ({ user }) => {
         {hasAnsweredToday ? (
           /* Already Answered */
           <View style={styles.quizCompletedContainer}>
-            <Text style={styles.quizCompletedIcon}>✅</Text>
-            <Text style={styles.quizCompletedTitle}>Already answered today!</Text>
+            {console.log('Quiz completed state:', { hasAnsweredToday, selectedAnswer, isCorrect })}
+            <FontAwesome5 
+              name={isCorrect ? "check-circle" : "times-circle"} 
+              size={48} 
+              color={isCorrect ? "#4CAF50" : "#F44336"} 
+              solid 
+            />
+            <Text style={styles.quizCompletedTitle}>Quiz completed for today!</Text>
             <Text style={styles.quizCompletedText}>
-              Come back tomorrow for a new question
+              Come back tomorrow for a new health question
             </Text>
             <Text style={styles.quizCompletedSubtext}>
               Your answer: {dailyQuestion.answers[selectedAnswer]}
@@ -443,7 +537,45 @@ const QuizScreen = ({ user }) => {
               styles.quizCompletedResult,
               { color: isCorrect ? '#4CAF50' : '#F44336' }
             ]}>
-              {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
+              {isCorrect ? '✓ Correct! +10 points' : '✗ Incorrect'}
+            </Text>
+            
+            {/* Reset Button for Testing - Enhanced Visibility */}
+            <TouchableOpacity
+              style={{
+                marginTop: 30,
+                backgroundColor: '#FFC107',
+                paddingHorizontal: 25,
+                paddingVertical: 15,
+                borderRadius: 25,
+                borderWidth: 2,
+                borderColor: '#FF9800',
+                shadowColor: '#FFC107',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+              }}
+              onPress={resetTodayQuiz}
+            >
+              <Text style={{ 
+                color: '#000', 
+                fontWeight: 'bold', 
+                fontSize: 16,
+                textAlign: 'center' 
+              }}>
+                🔄 RESET QUIZ (TESTING)
+              </Text>
+            </TouchableOpacity>
+            
+            {/* Debug Info */}
+            <Text style={{ 
+              color: '#666', 
+              fontSize: 12, 
+              textAlign: 'center', 
+              marginTop: 10 
+            }}>
+              Debug: hasAnswered={hasAnsweredToday.toString()}
             </Text>
           </View>
         ) : (
@@ -492,7 +624,7 @@ const QuizScreen = ({ user }) => {
             {submitting && (
               <View style={styles.quizSubmittingContainer}>
                 <ActivityIndicator size="small" color="#4CAF50" />
-                <Text style={styles.quizSubmittingText}>Submitting...</Text>
+                <Text style={styles.quizSubmittingText}>Submitting your answer...</Text>
               </View>
             )}
           </View>

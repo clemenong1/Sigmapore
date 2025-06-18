@@ -16,7 +16,7 @@ import {
   SafeAreaView
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { HealthChatbotService, ChatMessage } from '../stats/services/chatbotService';
+import { HealthChatbotService, ChatMessage } from '../services/services/chatbotService';
 import HealthDataHeatmap from './HealthDataHeatmap';
 import MiniHeatmap from './MiniHeatmap';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
