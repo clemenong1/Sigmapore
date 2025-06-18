@@ -48,7 +48,7 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
     // Initialize with welcome message
     const welcomeMessage: ChatMessage = {
       id: 'welcome',
-      text: `Hi! I'm your Singapore Health Assistant!\n\nI can help you with:\n• Dengue risk information\n• Air quality (PSI) data\n• COVID-19 guidance\n• Travel health advice\n• Health predictions\n\nTry asking: "What's the dengue risk in Woodlands?" or "I'm traveling to Tampines, any health advice?"`,
+      text: `Hi! I'm SigmaBoy, your personal health assistant!\n\nI can help you with:\n• Dengue risk information\n• Air quality (PSI) data\n• COVID-19 guidance\n• Travel health advice\n• Health predictions\n\nTry asking: "What's the dengue risk in Woodlands?" or "I'm traveling to Tampines, any health advice?"`,
       isUser: false,
       timestamp: new Date()
     };

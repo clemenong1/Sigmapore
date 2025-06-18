@@ -68,7 +68,7 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({
             style={styles.gradient}
           >
             <FontAwesome5 name="robot" size={24} color="#FFFFFF" style={styles.buttonIcon} solid />
-            <Text style={styles.labelText}>Health AI</Text>
+            <Text style={styles.labelText}>SigmaBoy</Text>
           </LinearGradient>
         </TouchableOpacity>
       </Animated.View>
