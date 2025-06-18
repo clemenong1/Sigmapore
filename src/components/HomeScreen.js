@@ -48,18 +48,38 @@ const HomeScreen = ({ user }) => {
         const neaLabels = ['11-Jun', '12-Jun', '13-Jun', '14-Jun', '15-Jun', '16-Jun', '17-Jun'];
         const neaData = [29, 13, 17, 8, 6, 16, 2];
         
+        // Validate data before setting
+        const validData = neaData.map(num => {
+            const parsed = parseInt(num);
+            return isNaN(parsed) ? 0 : parsed;
+        });
+        
         setWeeklyDengueLabels(neaLabels);
-        setWeeklyDengueData(neaData);
+        setWeeklyDengueData(validData);
     }, []);
 
     const formatNumber = (num) => num.toLocaleString('en-SG');
 
     // Render dengue chart component
     const renderDengueChart = () => {
+        // Don't render if data is not ready or invalid
+        if (!weeklyDengueData || weeklyDengueData.length === 0 || !weeklyDengueLabels || weeklyDengueLabels.length === 0) {
+            return (
+                <View style={{ margin: 16 }}>
+                    <Text style={styles.sectionTitle}>
+                        <FontAwesome5 name="chart-bar" size={18} color="#4CAF50" solid /> {t.dengueTrend}
+                    </Text>
+                    <View style={[styles.chartContainer, { alignItems: 'center', justifyContent: 'center' }]}>
+                        <Text style={{ color: 'white', fontSize: 16 }}>Loading dengue data...</Text>
+                    </View>
+                </View>
+            );
+        }
+
         const chartData = {
             labels: weeklyDengueLabels,
             datasets: [{
-                data: weeklyDengueData,
+                data: weeklyDengueData.map(num => Math.max(0, num || 0)), // Ensure positive numbers
                 color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`,
                 strokeWidth: 3
             }]
@@ -81,36 +101,50 @@ const HomeScreen = ({ user }) => {
             fillShadowGradient: '#4CAF50',
         };
 
-        return (
-            <View style={{ margin: 16 }}>
-                <Text style={styles.sectionTitle}>
-                    <FontAwesome5 name="chart-bar" size={18} color="#4CAF50" solid /> {t.dengueTrend}
-                </Text>
-                <View style={[styles.chartContainer, { alignItems: 'center', justifyContent: 'center' }]}>
-                    <LineChart
-                        data={chartData}
-                        width={width - 62}
-                        height={220}
-                        chartConfig={{
-                            ...chartConfig,
-                            propsForLabels: { fontSize: 10 }
-                        }}
-                        bezier
-                        style={{
-                            marginVertical: 0,
-                            borderRadius: 12,
-                        }}
-                        withInnerLines={true}
-                        withOuterLines={true}
-                        withVerticalLines={true}
-                        withHorizontalLines={true}
-                        withDots={true}
-                        withShadow={true}
-                        segments={5}
-                    />
+        try {
+            return (
+                <View style={{ margin: 16 }}>
+                    <Text style={styles.sectionTitle}>
+                        <FontAwesome5 name="chart-bar" size={18} color="#4CAF50" solid /> {t.dengueTrend}
+                    </Text>
+                    <View style={[styles.chartContainer, { alignItems: 'center', justifyContent: 'center' }]}>
+                        <LineChart
+                            data={chartData}
+                            width={width - 62}
+                            height={220}
+                            chartConfig={{
+                                ...chartConfig,
+                                propsForLabels: { fontSize: 10 }
+                            }}
+                            bezier
+                            style={{
+                                marginVertical: 0,
+                                borderRadius: 12,
+                            }}
+                            withInnerLines={true}
+                            withOuterLines={true}
+                            withVerticalLines={true}
+                            withHorizontalLines={true}
+                            withDots={true}
+                            withShadow={true}
+                            segments={5}
+                        />
+                    </View>
                 </View>
-            </View>
-        );
+            );
+        } catch (error) {
+            console.error('Chart rendering error:', error);
+            return (
+                <View style={{ margin: 16 }}>
+                    <Text style={styles.sectionTitle}>
+                        <FontAwesome5 name="chart-bar" size={18} color="#4CAF50" solid /> {t.dengueTrend}
+                    </Text>
+                    <View style={[styles.chartContainer, { alignItems: 'center', justifyContent: 'center' }]}>
+                        <Text style={{ color: 'white', fontSize: 16 }}>Chart unavailable</Text>
+                    </View>
+                </View>
+            );
+        }
     };
 
     return (
