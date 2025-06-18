@@ -29,6 +29,7 @@ import { auth, db } from './src/config/firebase';
 import MapScreen from './src/components/MapScreen';
 import SingaporeMapScreen from './components/SingaporeMapScreen';
 import InfoScreen from './src/components/InfoScreen';
+import QuizScreen from './src/components/QuizScreen';
 import ReportScreen from './src/components/ReportScreen';
 import HomeScreen from './src/components/HomeScreen';
 import ChatbotButton from './components/ChatbotButton';
@@ -81,6 +82,7 @@ const translations = {
     // Navigation bar
     home: "Home",
     map: "Map",
+    quiz: "Quiz",
     reports: "Reports",
     profile: "Profile",
 
@@ -152,6 +154,7 @@ const translations = {
     // Navigation bar
     home: "首页",
     map: "地图",
+    quiz: "测验",
     reports: "报告",
     profile: "个人资料",
 
@@ -204,9 +207,9 @@ const translations = {
     activeDengueCases: "Kes Denggi Aktif",
     airQuality: "Kualiti Udara",
     lifeExpectancy: "Jangka Hayat",
-    dengueAvgPsi: "Denggi 7 Hari & Purata PSI",
-    dengueCases: "Kes Denggi 7 Hari",
-    avgPsi: "Purata PSI (4 kawasan)",
+    dengueAvgPsi: "7-Hari Denggi & Purata PSI",
+    dengueCases: "Kes Denggi 7-Hari",
+    avgPsi: "Purata PSI (4 wilayah)",
     dengueTrend: "Trend Kes Denggi (7 Hari)",
     totalDengueCases: "Jumlah Kes Denggi",
     demographics: "Demografi",
@@ -215,14 +218,15 @@ const translations = {
     logout: "Log Keluar",
     language: "Bahasa",
     english: "Bahasa Inggeris",
-    chinese: "Bahasa Cina",
-    malay: "Bahasa Melayu",
-    tamil: "Bahasa Tamil",
-    hindi: "Bahasa Hindi",
+    chinese: "Cina",
+    malay: "Melayu",
+    tamil: "Tamil",
+    hindi: "Hindi",
 
     // Navigation bar
-    home: "Laman Utama",
+    home: "Rumah",
     map: "Peta",
+    quiz: "Kuiz",
     reports: "Laporan",
     profile: "Profil",
 
@@ -237,28 +241,28 @@ const translations = {
     memberSince: "Ahli Sejak",
     emailCannotBeChanged: "E-mel tidak boleh diubah",
     notProvided: "Tidak disediakan",
-    edit: "Sunting",
+    edit: "Edit",
     cancel: "Batal",
     saveChanges: "Simpan Perubahan",
     confirmLogout: "Sahkan Log Keluar",
-    areYouSureLogout: "Adakah anda pasti mahu log keluar?",
+    areYouSureLogout: "Adakah anda pasti untuk log keluar?",
     loading: "Memuatkan...",
     loadingProfile: "Memuatkan profil...",
-    login: "Login",
+    login: "Log Masuk",
     signUp: "Daftar",
     password: "Kata Laluan",
-    selectCountry: "Pilih negara",
+    selectCountry: "Pilih negara anda",
     pleaseWait: "Sila tunggu...",
-    createAccount: "Buat Akun",
+    createAccount: "Cipta Akaun",
 
     // Error messages
     error: "Ralat",
-    fillAllFields: "Sila isi semua medan",
+    fillAllFields: "Sila isi semua ruangan",
     loginError: "Ralat Log Masuk",
     signupError: "Ralat Pendaftaran",
     success: "Berjaya",
-    accountCreated: "Akaun berjaya dibuat!",
-    accountCreatedWithError: "Akaun anda telah berjaya dibuat, tetapi terdapat masalah menyimpan data profil anda. Ralat: {0}\n\nAnda boleh mengemaskini profil anda kemudian dalam aplikasi."
+    accountCreated: "Akaun berjaya dicipta!",
+    accountCreatedWithError: "Akaun anda telah berjaya dicipta, tetapi terdapat masalah menyimpan data profil anda. Ralat: {0}\n\nAnda boleh mengemas kini profil anda kemudian dalam aplikasi."
   },
   tamil: {
     welcome: "வரவேற்கிறோம்",
@@ -267,16 +271,16 @@ const translations = {
     populationStats: "மக்கள்தொகை புள்ளிவிவரங்கள்",
     totalPopulation: "மொத்த மக்கள்தொகை",
     todayStatistics: "இன்றைய புள்ளிவிவரங்கள்",
-    birthsToday: "இன்றைய பிறப்புகள்",
-    deathsToday: "இன்றைய இறப்புகள்",
-    netMigration: "நிகர இடம்பெயர்வு",
+    birthsToday: "இன்று பிறப்புகள்",
+    deathsToday: "இன்று இறப்புகள்",
+    netMigration: "நிகர குடியேற்றம்",
     populationGrowth: "மக்கள்தொகை வளர்ச்சி",
     healthOverview: "சுகாதார கண்ணோட்டம்",
     activeDengueCases: "செயலில் உள்ள டெங்கு வழக்குகள்",
-    airQuality: "காற்று தரம்",
-    lifeExpectancy: "ஆயுள் எதிர்பார்ப்பு",
-    dengueAvgPsi: "7 நாள் டெங்கு & சராசரி PSI",
-    dengueCases: "7 நாள் டெங்கு வழக்குகள்",
+    airQuality: "காற்றின் தரம்",
+    lifeExpectancy: "வாழ்க்கை எதிர்பார்ப்பு",
+    dengueAvgPsi: "7-நாள் டெங்கு & சராசரி PSI",
+    dengueCases: "7-நாள் டெங்கு வழக்குகள்",
     avgPsi: "சராசரி PSI (4 பகுதிகள்)",
     dengueTrend: "டெங்கு வழக்குகள் போக்கு (7 நாட்கள்)",
     totalDengueCases: "மொத்த டெங்கு வழக்குகள்",
@@ -294,67 +298,68 @@ const translations = {
     // Navigation bar
     home: "முகப்பு",
     map: "வரைபடம்",
+    quiz: "வினாடிவினா",
     reports: "அறிக்கைகள்",
     profile: "சுயவிவரம்",
 
     // Profile information
     profileInformation: "சுயவிவர தகவல்",
     fullName: "முழு பெயர்",
-    username: "பயனர்பெயர்",
+    username: "பயனர் பெயர்",
     phoneNumber: "தொலைபேசி எண்",
     country: "நாடு",
     homeAddress: "வீட்டு முகவரி",
     email: "மின்னஞ்சல்",
-    memberSince: "உறுப்பினராக இருந்து",
+    memberSince: "உறுப்பினர் ஆனது",
     emailCannotBeChanged: "மின்னஞ்சலை மாற்ற முடியாது",
     notProvided: "வழங்கப்படவில்லை",
     edit: "திருத்து",
-    cancel: "ரத்து செய்",
+    cancel: "ரத்து",
     saveChanges: "மாற்றங்களை சேமி",
     confirmLogout: "வெளியேறுவதை உறுதிப்படுத்தவும்",
     areYouSureLogout: "நீங்கள் நிச்சயமாக வெளியேற விரும்புகிறீர்களா?",
     loading: "ஏற்றுகிறது...",
-    loadingProfile: "சுயவிவரம் ஏற்றப்படுகிறது...",
-    login: "உள்நுழைக",
-    signUp: "புதிய கணக்கு தயாரிக்க",
+    loadingProfile: "சுயவிவரம் ஏற்றுகிறது...",
+    login: "உள்நுழை",
+    signUp: "பதிவு செய்",
     password: "கடவுச்சொல்",
-    selectCountry: "நாட்டை தேர்ந்தெடுக்க",
-    pleaseWait: "சரியாக நேரம் விட்டு வருகிறேன்...",
-    createAccount: "புதிய கணக்கு தயாரிக்க",
+    selectCountry: "உங்கள் நாட்டைத் தேர்ந்தெடுக்கவும்",
+    pleaseWait: "தயவுசெய்து காத்திருக்கவும்...",
+    createAccount: "கணக்கை உருவாக்கவும்",
 
     // Error messages
     error: "பிழை",
-    fillAllFields: "அனைத்து புலங்களையும் நிரப்பவும்",
+    fillAllFields: "தயவுசெய்து அனைத்து புலங்களையும் நிரப்பவும்",
     loginError: "உள்நுழைவு பிழை",
     signupError: "பதிவு பிழை",
     success: "வெற்றி",
     accountCreated: "கணக்கு வெற்றிகரமாக உருவாக்கப்பட்டது!",
-    accountCreatedWithError: "உங்கள் கணக்கு வெற்றிகரமாக உருவாக்கப்பட்டது, ஆனால் உங்கள் சுயவிவர தரவைச் சேமிப்பதில் சிக்கல் இருந்தது. பிழை: {0}\n\nபயன்பாட்டில் பின்னர் உங்கள் சுயவிவரத்தைப் புதுப்பிக்கலாம்."
+    accountCreatedWithError: "உங்கள் கணக்கு வெற்றிகரமாக உருவாக்கப்பட்டது, ஆனால் உங்கள் சுயவிவர தரவைச் சேமிப்பதில் சிக்கல் இருந்தது. பிழை: {0}\n\nநீங்கள் பின்னர் பயன்பாட்டில் உங்கள் சுயவிவரத்தை புதுப்பிக்கலாம்."
   },
   hindi: {
     welcome: "स्वागत है",
     healthPulse: "सिंगापुर स्वास्थ्य पल्स",
-    tagline: "रीयल-टाइम स्वास्थ्य निगरानी और रिपोर्टिंग",
+    tagline: "वास्तविक समय स्वास्थ्य निगरानी और रिपोर्टिंग",
     populationStats: "जनसंख्या आंकड़े",
     totalPopulation: "कुल जनसंख्या",
     todayStatistics: "आज के आंकड़े",
-    birthsToday: "आज के जन्म",
-    deathsToday: "आज की मौतें",
-    netMigration: "शुद्ध प्रवास",
+    birthsToday: "आज जन्म",
+    deathsToday: "आज मृत्यु",
+    netMigration: "शुद्ध प्रवासन",
     populationGrowth: "जनसंख्या वृद्धि",
     healthOverview: "स्वास्थ्य अवलोकन",
-    activeDengueCases: "सक्रिय डेंगू मामले",
+    activeDengueCases: "सक्रिय डेंगू के मामले",
     airQuality: "वायु गुणवत्ता",
     lifeExpectancy: "जीवन प्रत्याशा",
     dengueAvgPsi: "7-दिन डेंगू और औसत PSI",
-    dengueCases: "7-दिन डेंगू मामले",
+    dengueCases: "7-दिन डेंगू के मामले",
     avgPsi: "औसत PSI (4 क्षेत्र)",
-    dengueTrend: "डेंगू मामलों का रुझान (7 दिन)",
-    totalDengueCases: "कुल डेंगू मामले",
+    dengueTrend: "डेंगू के मामलों की प्रवृत्ति (7 दिन)",
+    totalDengueCases: "कुल डेंगू के मामले",
     demographics: "जनसांख्यिकी",
     male: "पुरुष",
     female: "महिला",
-    logout: "लॉगआउट",
+    logout: "लॉग आउट",
     language: "भाषा",
     english: "अंग्रे़ी",
     chinese: "चीनी",
@@ -364,7 +369,8 @@ const translations = {
 
     // Navigation bar
     home: "होम",
-    map: "नक्शा",
+    map: "मैप",
+    quiz: "प्रश्नोत्तरी",
     reports: "रिपोर्ट",
     profile: "प्रोफाइल",
 
@@ -376,21 +382,21 @@ const translations = {
     country: "देश",
     homeAddress: "घर का पता",
     email: "ईमेल",
-    memberSince: "कब से सदस्य हैं",
-    emailCannotBeChanged: "ईमेल बदला नहीं जा सकता",
+    memberSince: "सदस्य बने",
+    emailCannotBeChanged: "ईमेल नहीं बदला जा सकता",
     notProvided: "प्रदान नहीं किया गया",
     edit: "संपादित करें",
     cancel: "रद्द करें",
     saveChanges: "परिवर्तन सहेजें",
-    confirmLogout: "लॉगआउट की पुष्टि करें",
-    areYouSureLogout: "क्या आप वाकई लॉगआउट करना चाहते हैं?",
+    confirmLogout: "लॉग आउट की पुष्टि करें",
+    areYouSureLogout: "क्या आप वाकई लॉग आउट करना चाहते हैं?",
     loading: "लोड हो रहा है...",
-    loadingProfile: "प्रोफ़ाइल लोड हो रही है...",
+    loadingProfile: "प्रोफाइल लोड हो रहा है...",
     login: "लॉग इन",
     signUp: "साइन अप",
     password: "पासवर्ड",
-    selectCountry: "देश चुनें",
-    pleaseWait: "कृपया इंतजार करें...",
+    selectCountry: "अपना देश चुनें",
+    pleaseWait: "कृपया प्रतीक्षा करें...",
     createAccount: "खाता बनाएं",
 
     // Error messages
@@ -400,17 +406,70 @@ const translations = {
     signupError: "साइनअप त्रुटि",
     success: "सफलता",
     accountCreated: "खाता सफलतापूर्वक बनाया गया!",
-    accountCreatedWithError: "आपका खाता सफलतापूर्वक बनाया गया था, लेकिन आपके प्रोफ़ाइल डेटा को सहेजने में समस्या थी। त्रुटि: {0}\n\nआप बाद में ऐप में अपनी प्रोफ़ाइल अपडेट कर सकते हैं।"
+    accountCreatedWithError: "आपका खाता सफलतापूर्वक बनाया गया था, लेकिन आपके प्रोफाइल डेटा को सहेजने में समस्या थी। त्रुटि: {0}\n\nआप बाद में ऐप में अपनी प्रोफाइल अपडेट कर सकते हैं।"
   }
 };
 
-const COUNTRIES = [
-  'China',
-  'India',
-  'Indonesia',
-  'Malaysia',
-  'Singapore'
+// Health districts data
+const healthDistricts: HealthDistrict[] = [
+  {
+    id: '1',
+    name: 'Central Singapore',
+    icon: '🏢',
+    percentage: 85,
+    color: '#4CAF50',
+    description: 'Low health risk areas'
+  },
+  {
+    id: '2',
+    name: 'East Singapore',
+    icon: '🏘️',
+    percentage: 73,
+    color: '#FF9800',
+    description: 'Moderate dengue activity'
+  },
+  {
+    id: '3',
+    name: 'North Singapore',
+    icon: '🏬',
+    percentage: 92,
+    color: '#2196F3',
+    description: 'Good air quality'
+  },
+  {
+    id: '4',
+    name: 'West Singapore',
+    icon: '🏭',
+    percentage: 68,
+    color: '#F44336',
+    description: 'Higher PSI levels'
+  },
+  {
+    id: '5',
+    name: 'Northeast Singapore',
+    icon: '🏠',
+    percentage: 79,
+    color: '#9C27B0',
+    description: 'Mixed health indicators'
+  },
+  {
+    id: '6',
+    name: 'Northwest Singapore',
+    icon: '🏘️',
+    percentage: 88,
+    color: '#00BCD4',
+    description: 'Improving health trends'
+  }
 ];
+
+interface HealthDistrict {
+  id: string;
+  name: string;
+  icon: string;
+  percentage: number;
+  color: string;
+  description: string;
+}
 
 interface UserData {
   username: string;
@@ -428,84 +487,73 @@ function CountryDropdown({
   onSelect: (country: string) => void;
   placeholder?: string;
 }) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [inputValue, setInputValue] = useState(value);
-  const [filteredCountries, setFilteredCountries] = useState(COUNTRIES);
-
-  // Get language context
-  const { language, translations } = useContext(LanguageContext);
-  const t = translations[language] || translations.english;
-
-  useEffect(() => {
-    setInputValue(value);
-  }, [value]);
-
-  useEffect(() => {
-    if (inputValue === '') {
-      setFilteredCountries(COUNTRIES);
-    } else {
-      const filtered = COUNTRIES.filter(country =>
-        country.toLowerCase().includes(inputValue.toLowerCase())
-      );
-      setFilteredCountries(filtered);
-    }
-  }, [inputValue]);
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const countries = [
+    "Singapore", "Malaysia", "Indonesia", "Thailand", "Philippines", "Vietnam",
+    "Cambodia", "Laos", "Myanmar", "Brunei", "United States", "United Kingdom",
+    "Australia", "Canada", "India", "China", "Japan", "South Korea", "Other"
+  ];
 
   const handleSelect = (country: string) => {
-    setInputValue(country);
     onSelect(country);
-    setIsVisible(false);
+    setIsOpen(false);
   };
 
   return (
-    <View style={styles.countryDropdownWrapper}>
+    <View>
       <TouchableOpacity
-        style={styles.countryInputContainer}
-        onPress={() => setIsVisible(!isVisible)}
-        activeOpacity={0.7}
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: 25,
+          paddingHorizontal: 20,
+          paddingVertical: 12,
+          marginBottom: 15,
+          justifyContent: 'center'
+        }}
+        onPress={() => setIsOpen(!isOpen)}
       >
-        <Text
-          style={[
-            styles.countryInput,
-            !inputValue && { color: '#B0BEC5' }
-          ]}
-        >
-          {inputValue || placeholder}
-        </Text>
-        <Text style={[styles.countryArrow, isVisible && styles.countryArrowUp]}>
-          ▼
+        <Text style={{ color: value ? '#333' : '#999' }}>
+          {value || placeholder}
         </Text>
       </TouchableOpacity>
-
-      {isVisible && (
-        <>
-          <TouchableOpacity
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'transparent',
-            }}
-            onPress={() => setIsVisible(false)}
-          />
-          <View style={[styles.countryDropdown, { zIndex: 1 }]}>
-            {filteredCountries.map((country, index) => (
-              <TouchableOpacity
-                key={country}
-                style={[
-                  styles.countryOption,
-                  index === filteredCountries.length - 1 && styles.lastCountryOption
-                ]}
-                onPress={() => handleSelect(country)}
-              >
-                <Text style={styles.countryOptionText}>{country}</Text>
-              </TouchableOpacity>
-            ))}
+      
+      <Modal
+        visible={isOpen}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsOpen(false)}
+      >
+        <TouchableOpacity
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center' }}
+          activeOpacity={1}
+          onPress={() => setIsOpen(false)}
+        >
+          <View style={{
+            backgroundColor: 'white',
+            margin: 20,
+            borderRadius: 10,
+            maxHeight: 400,
+          }}>
+            <FlatList
+              data={countries}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={{
+                    padding: 15,
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#eee'
+                  }}
+                  onPress={() => handleSelect(item)}
+                >
+                  <Text style={{ fontSize: 16 }}>{item}</Text>
+                </TouchableOpacity>
+              )}
+            />
           </View>
-        </>
-      )}
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -519,13 +567,9 @@ function AuthScreen() {
   const [homeAddress, setHomeAddress] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Get language context
-  const { language, setLanguage, translations } = useContext(LanguageContext);
-  const t = translations[language] || translations.english;
-
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert(t.error, t.fillAllFields);
+      Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
@@ -533,14 +577,14 @@ function AuthScreen() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error: any) {
-      Alert.alert(t.loginError, error.message);
+      Alert.alert('Login Error', error.message);
     }
     setLoading(false);
   };
 
   const handleSignup = async () => {
     if (!email || !password || !username || !country || !homeAddress) {
-      Alert.alert(t.error, t.fillAllFields);
+      Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
@@ -549,29 +593,30 @@ function AuthScreen() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Store additional user data in Firestore
+      // Save user data to Firestore
       try {
         await setDoc(doc(db, 'users', user.uid), {
           username,
           email,
           country,
           homeAddress,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          quizPoints: 0,
+          totalQuizAnswers: 0,
+          correctAnswers: 0
         });
-
-        Alert.alert(t.success, t.accountCreated);
+        Alert.alert('Success', 'Account created successfully!');
       } catch (firestoreError: any) {
         console.error('Firestore error:', firestoreError);
-
-        // If Firestore fails, still complete signup but warn user
         Alert.alert(
-          t.success,
-          t.accountCreatedWithError.replace('{0}', firestoreError.message)
+          'Success',
+          `Your account was created successfully, but there was an issue saving your profile data. Error: ${firestoreError.message}\n\nYou can update your profile later in the app.`
         );
       }
+      
+      resetForm();
     } catch (error: any) {
-      console.error('Signup error:', error);
-      Alert.alert(t.signupError, error.message);
+      Alert.alert('Signup Error', error.message);
     }
     setLoading(false);
   };
@@ -590,125 +635,170 @@ function AuthScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={['#1976D2', '#4CAF50', '#00796B']}
-      style={[styles.loginContainer, { paddingTop: 0, paddingBottom: 0 }]}
-    >
-      <View style={styles.loginContent}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+    <View style={styles.loginContainer}>
+      <LinearGradient
+        colors={['#0D1421', '#1A2332', '#2A3441']}
+        style={styles.loginContent}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1, justifyContent: 'center', width: '100%' }}
         >
-          <View style={{
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%'
-          }}>
-            <View style={[styles.citySkylne, { alignItems: 'center' }]}>
-              <Image
-                source={require('./assets/Screenshot_2025-06-18_at_3.30.31_AM-removebg-preview.png')}
-                style={{
-                  width: 300,
-                  height: 200,
-                  marginBottom: -50
-                }}
-                resizeMode="contain"
-              />
+          <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+            <View style={{ marginBottom: 40 }}>
+              <Text style={{ fontSize: 40, textAlign: 'center' }}>🏙️</Text>
             </View>
-
-            <Text style={[styles.subtitle, { marginBottom: 30, maxWidth: 300, textAlign: 'center' }]}>
-              {t.tagline}
-            </Text>
-
-            <View style={styles.authToggle}>
-              <TouchableOpacity
-                style={[styles.toggleButton, isLogin && styles.activeToggle]}
-                onPress={() => !isLogin && toggleMode()}
-              >
-                <Text style={[styles.toggleText, isLogin && styles.activeToggleText]}>
-                  {t.login}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.toggleButton, !isLogin && styles.activeToggle]}
-                onPress={() => isLogin && toggleMode()}
-              >
-                <Text style={[styles.toggleText, !isLogin && styles.activeToggleText]}>
-                  {t.signUp}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={[styles.inputContainer, { alignItems: 'center' }]}>
-              {!isLogin && (
-                <TextInput
-                  style={[styles.input, { width: '100%' }]}
-                  placeholder={t.username}
-                  placeholderTextColor="#333333"
-                  value={username}
-                  onChangeText={setUsername}
-                  autoCapitalize="none"
-                />
-              )}
-
+            
+            <Text style={{ fontSize: 36, fontWeight: 'bold', color: 'white', textAlign: 'center', marginBottom: 10 }}>Singapore Health Pulse</Text>
+            <Text style={{ fontSize: 16, color: '#E8F5E8', textAlign: 'center', marginBottom: 40 }}>Real-time health monitoring for Singapore</Text>
+            
+            <View style={{ width: '100%', maxWidth: 300 }}>
               <TextInput
-                style={[styles.input, { width: '100%' }]}
-                placeholder={t.email}
-                placeholderTextColor="#333333"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  borderRadius: 25,
+                  paddingHorizontal: 20,
+                  paddingVertical: 12,
+                  marginBottom: 15,
+                  fontSize: 16,
+                  color: '#333'
+                }}
+                placeholder="Email"
+                placeholderTextColor="#999"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
-
+              
               <TextInput
-                style={[styles.input, { width: '100%' }]}
-                placeholder={t.password}
-                placeholderTextColor="#333333"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  borderRadius: 25,
+                  paddingHorizontal: 20,
+                  paddingVertical: 12,
+                  marginBottom: 15,
+                  fontSize: 16,
+                  color: '#333'
+                }}
+                placeholder="Password"
+                placeholderTextColor="#999"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
               />
-
+              
               {!isLogin && (
                 <>
-                  <View style={{ width: '100%' }}>
-                    <CountryDropdown
-                      value={country}
-                      onSelect={setCountry}
-                      placeholder={t.selectCountry}
-                    />
-                  </View>
-
                   <TextInput
-                    style={[styles.input, { width: '100%' }]}
-                    placeholder={t.homeAddress}
-                    placeholderTextColor="#333333"
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      borderRadius: 25,
+                      paddingHorizontal: 20,
+                      paddingVertical: 12,
+                      marginBottom: 15,
+                      fontSize: 16,
+                      color: '#333'
+                    }}
+                    placeholder="Username"
+                    placeholderTextColor="#999"
+                    value={username}
+                    onChangeText={setUsername}
+                  />
+                  
+                  <CountryDropdown
+                    value={country}
+                    onSelect={setCountry}
+                    placeholder="Select your country"
+                  />
+                  
+                  <TextInput
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      borderRadius: 25,
+                      paddingHorizontal: 20,
+                      paddingVertical: 12,
+                      marginBottom: 15,
+                      fontSize: 16,
+                      color: '#333',
+                      minHeight: 50
+                    }}
+                    placeholder="Home Address"
+                    placeholderTextColor="#999"
                     value={homeAddress}
                     onChangeText={setHomeAddress}
                     multiline
                   />
                 </>
               )}
-
-              <TouchableOpacity
-                style={[styles.enterButton, loading && styles.disabledButton, { width: '100%' }]}
-                onPress={isLogin ? handleLogin : handleSignup}
-                disabled={loading}
-              >
-                <Text style={styles.enterButtonText}>
-                  {loading ? t.pleaseWait : isLogin ? t.login : t.createAccount}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ScrollView>
-      </View>
-    </LinearGradient>
+             
+             <TouchableOpacity
+               style={[{
+                 backgroundColor: '#4CAF50',
+                 paddingVertical: 15,
+                 paddingHorizontal: 30,
+                 borderRadius: 25,
+                 marginTop: 20,
+                 width: '100%',
+                 alignItems: 'center'
+               }, loading && { opacity: 0.6 }]}
+               onPress={isLogin ? handleLogin : handleSignup}
+               disabled={loading}
+             >
+               <Text style={{
+                 color: 'white',
+                 fontSize: 16,
+                 fontWeight: 'bold'
+               }}>
+                 {loading ? 'Please wait...' : (isLogin ? 'Login' : 'Create Account')}
+               </Text>
+             </TouchableOpacity>
+             
+             <TouchableOpacity
+               style={{ marginTop: 20 }}
+               onPress={toggleMode}
+             >
+               <Text style={{ color: '#4CAF50', fontSize: 16, textAlign: 'center' }}>
+                 {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
+               </Text>
+             </TouchableOpacity>
+           </View>
+         </ScrollView>
+       </KeyboardAvoidingView>
+     </LinearGradient>
+   </View>
   );
 }
 
-const getLivePopulationData = () => {
+function DistrictCard({ district }: { district: HealthDistrict }) {
+  const buildingHeight = (district.percentage / 100) * 60;
+
+  return (
+    <View style={styles.districtCard}>
+      <View style={styles.districtHeader}>
+        <Text style={styles.districtIcon}>{district.icon}</Text>
+        <Text style={styles.districtName}>{district.name}</Text>
+      </View>
+      
+      <View style={styles.buildingContainer}>
+        <View 
+          style={[
+            styles.building, 
+            { 
+              height: buildingHeight, 
+              backgroundColor: district.color 
+            }
+          ]} 
+        />
+        <Text style={styles.percentage}>{district.percentage}%</Text>
+      </View>
+      
+      <Text style={styles.description}>{district.description}</Text>
+    </View>
+  );
+}
+
+export const getLivePopulationData = () => {
   // Real-time data from countrymeters.info
   const currentTime = new Date();
   const startOfYear = new Date(currentTime.getFullYear(), 0, 1);
@@ -793,35 +883,25 @@ function BottomNavigation({
   const tabs = [
     { id: 'home', label: t.home, icon: 'home' },
     { id: 'map', label: t.map, icon: 'map-marked-alt' },
+    { id: 'quiz', label: t.quiz, icon: 'question-circle' },
     { id: 'report', label: t.reports, icon: 'clipboard-list' },
     { id: 'info', label: t.profile, icon: 'user' },
   ];
 
   return (
-    <View style={{
-      flexDirection: 'row',
-      backgroundColor: 'rgba(13, 20, 33, 0.95)',
-      paddingTop: 8,
-      paddingBottom: 8,
-      borderTopWidth: 1,
-      borderTopColor: 'rgba(76, 175, 80, 0.3)',
-    }}>
+    <View style={styles.bottomNavigation}>
       {tabs.map((tab) => (
         <TouchableOpacity
           key={tab.id}
-          style={{
-            flex: 1,
-            alignItems: 'center',
-            paddingVertical: 6,
-            backgroundColor: activeTab === tab.id ? 'rgba(76, 175, 80, 0.2)' : 'transparent',
-            borderRadius: 8,
-            margin: 2,
-          }}
+          style={[
+            styles.navItem,
+            activeTab === tab.id && styles.activeNavItem,
+          ]}
           onPress={() => onTabPress(tab.id)}
         >
           <FontAwesome5
             name={tab.icon}
-            size={22}
+            size={20}
             style={{
               marginBottom: 2,
               color: activeTab === tab.id ? '#4CAF50' : '#B0BEC5',
@@ -829,7 +909,7 @@ function BottomNavigation({
             solid
           />
           <Text style={{
-            fontSize: 12,
+            fontSize: 10,
             color: activeTab === tab.id ? '#4CAF50' : '#B0BEC5',
             fontWeight: activeTab === tab.id ? '600' : '400',
           }}>
@@ -850,6 +930,8 @@ function Dashboard({ user }: { user: User }) {
         return <SafeAreaView style={{ flex: 1 }}><HomeScreen user={user} /></SafeAreaView>;
       case 'map':
         return <SafeAreaView style={{ flex: 1 }}><SingaporeMapScreen user={user} /></SafeAreaView>;
+      case 'quiz':
+        return <SafeAreaView style={{ flex: 1 }}><QuizScreen user={user} /></SafeAreaView>;
       case 'report':
         return <SafeAreaView style={{ flex: 1 }}><MapScreen user={user} /></SafeAreaView>;
       case 'info':
@@ -879,7 +961,7 @@ function Dashboard({ user }: { user: User }) {
       <SafeAreaView style={{ backgroundColor: 'rgba(13, 20, 33, 0.95)' }}>
         <BottomNavigation
           activeTab={activeTab}
-          onTabPress={(tab) => setActiveTab(tab)}
+          onTabPress={(tab: string) => setActiveTab(tab)}
         />
       </SafeAreaView>
     </View>
@@ -892,13 +974,13 @@ export default function App() {
   const [language, setLanguage] = useState('english');
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
       setUser(user);
-      if (initializing) setInitializing(false);
+      setInitializing(false);
     });
 
     return unsubscribe;
-  }, [initializing]);
+  }, []);
 
   if (initializing) {
     return (
@@ -917,4 +999,4 @@ export default function App() {
       </View>
     </LanguageContext.Provider>
   );
-}
+} 

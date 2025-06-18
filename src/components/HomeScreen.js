@@ -9,7 +9,7 @@ import {
 import { styles } from '../styles/styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { LineChart } from 'react-native-chart-kit';
-import { LanguageContext } from '../../App';
+import { LanguageContext, getLivePopulationData } from '../../App';
 
 const { width } = Dimensions.get('window');
 
@@ -17,25 +17,7 @@ const HomeScreen = ({ user }) => {
     const { language, translations } = useContext(LanguageContext);
     const t = translations[language] || translations.english;
 
-    const [populationData, setPopulationData] = useState({
-        currentPopulation: 6480987,
-        demographics: {
-            male: { population: 3267057, percentage: 50.4 },
-            female: { population: 3213930, percentage: 49.6 }
-        },
-        today: {
-            births: 137,
-            deaths: 67,
-            migration: 219,
-            growth: 289
-        },
-        additionalStats: {
-            lifeExpectancy: 82.1,
-            literacyRate: 96.81,
-            populationDensity: 9168,
-            worldRank: 114
-        }
-    });
+    const [populationData, setPopulationData] = useState(getLivePopulationData());
 
     const [healthStats, setHealthStats] = useState({
         dengueCases: 245,
@@ -48,19 +30,10 @@ const HomeScreen = ({ user }) => {
     const [weeklyDengueData, setWeeklyDengueData] = useState([30, 29, 13, 17, 8, 6, 0]);
     const [weeklyDengueLabels, setWeeklyDengueLabels] = useState(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]);
 
-    // Simulate updating population counter every 10 seconds
+    // Update population data every 10 seconds using the live function
     useEffect(() => {
         const interval = setInterval(() => {
-            setPopulationData(prev => ({
-                ...prev,
-                currentPopulation: prev.currentPopulation + Math.floor(Math.random() * 3),
-                today: {
-                    ...prev.today,
-                    births: prev.today.births + (Math.random() > 0.7 ? 1 : 0),
-                    deaths: prev.today.deaths + (Math.random() > 0.8 ? 1 : 0),
-                    migration: prev.today.migration + (Math.random() > 0.6 ? 1 : 0),
-                }
-            }));
+            setPopulationData(getLivePopulationData());
         }, 10000);
 
         return () => clearInterval(interval);
