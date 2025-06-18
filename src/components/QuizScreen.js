@@ -478,43 +478,24 @@ const QuizScreen = ({ user }) => {
               {isCorrect ? '✓ Correct! +10 points' : '✗ Incorrect'}
             </Text>
             
-            {/* Reset Button for Testing - Enhanced Visibility */}
-            <TouchableOpacity
-              style={{
-                marginTop: 30,
-                backgroundColor: '#FFC107',
-                paddingHorizontal: 25,
-                paddingVertical: 15,
-                borderRadius: 25,
-                borderWidth: 2,
-                borderColor: '#FF9800',
-                shadowColor: '#FFC107',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 8,
-              }}
-              onPress={resetTodayQuiz}
-            >
-              <Text style={{ 
-                color: '#000', 
-                fontWeight: 'bold', 
-                fontSize: 16,
-                textAlign: 'center' 
-              }}>
-                🔄 RESET QUIZ (TESTING)
-              </Text>
-            </TouchableOpacity>
-            
-            {/* Debug Info */}
-            <Text style={{ 
-              color: '#666', 
-              fontSize: 12, 
-              textAlign: 'center', 
-              marginTop: 10 
-            }}>
-              Debug: hasAnswered={hasAnsweredToday.toString()}
-            </Text>
+            {/* Minimal Reset Button for Testing */}
+            <View style={{ alignItems: 'flex-end', marginTop: 20 }}>
+              <TouchableOpacity
+                style={{
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                }}
+                onPress={resetTodayQuiz}
+              >
+                <Text style={{ 
+                  color: '#666', 
+                  fontSize: 8,
+                  textAlign: 'center' 
+                }}>
+                  RESET
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           /* Quiz Question */
