@@ -327,6 +327,29 @@ const QuizScreen = ({ user }) => {
     }
   };
 
+  const resetTodayQuiz = async () => {
+    if (!user?.uid) return;
+    
+    try {
+      const today = getTodayDateString();
+      const docId = `${user.uid}_${today}`;
+      
+      // Delete today's quiz answer
+      await deleteDoc(doc(db, COLLECTIONS.QUIZ_ANSWERS, docId));
+      
+      // Reset local state
+      setHasAnsweredToday(false);
+      setSelectedAnswer(null);
+      setShowResult(false);
+      setIsCorrect(false);
+      
+      Alert.alert('Success', 'Today\'s quiz has been reset for testing!');
+      
+    } catch (error) {
+      console.error('Error resetting quiz:', error);
+      Alert.alert('Error', 'Failed to reset quiz: ' + error.message);
+    }
+  };
 
   const LeaderboardModal = () => {
     if (!showLeaderboard) return null;
