@@ -115,6 +115,10 @@ const ReportModal = ({
         description: description.trim(),
         latitude: location.latitude,
         longitude: location.longitude,
+        location: {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        },
         userId: user.uid,
         userEmail: user.email,
         timestamp: serverTimestamp(),

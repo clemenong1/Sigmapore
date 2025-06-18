@@ -121,7 +121,9 @@ const MapScreen = ({ user }) => {
               timestamp: data.timestamp?.toDate?.() || new Date(data.createdAt),
             });
           });
+
           console.log('Reports loaded:', reportsData.length, 'reports');
+
           console.log('Sample report:', reportsData[0]);
           setReports(reportsData);
           setError(null);
@@ -265,28 +267,38 @@ const MapScreen = ({ user }) => {
           showsMyLocationButton
         >
           {reports
-            .filter(report => report.latitude && report.longitude)
-            .map(report => (
-              <Marker
-                key={report.id}
-                coordinate={{
-                  latitude: report.latitude,
-                  longitude: report.longitude,
-                }}
-                title={report.title}
-                description={report.description}
-                onPress={() => handleMarkerPress(report)}
-              >
-                <View style={mapStyles.markerContainer}>
-                  <FontAwesome5
-                    name={getMarkerIcon(report.title)}
-                    size={24}
-                    color="#4CAF50"
-                    solid
-                  />
-                </View>
-              </Marker>
-            ))}
+
+            .filter(report => {
+              // Handle both old format (latitude/longitude fields) and new format (location object)
+              return (report.location && report.location.latitude && report.location.longitude) ||
+                     (report.latitude && report.longitude);
+            })
+            .map(report => {
+              // Get coordinates from either format
+              const coords = report.location 
+                ? { latitude: report.location.latitude, longitude: report.location.longitude }
+                : { latitude: report.latitude, longitude: report.longitude };
+              
+              return (
+                <Marker
+                  key={report.id}
+                  coordinate={coords}
+                  title={report.title}
+                  description={report.description}
+                  onPress={() => handleMarkerPress(report)}
+                >
+                  <View style={mapStyles.markerContainer}>
+                    <FontAwesome5
+                      name={getMarkerIcon(report.title)}
+                      size={24}
+                      color="#FF5722"
+                      solid
+                    />
+                  </View>
+                </Marker>
+              );
+            })}
+
         </MapView>
 
         {/* Zoom Controls */}

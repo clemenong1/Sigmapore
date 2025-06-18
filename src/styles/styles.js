@@ -83,6 +83,18 @@ export const mapStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  markerContainer: {
+    backgroundColor: 'white',
+    padding: 8,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#FF5722',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+
   zoomControls: {
     position: 'absolute',
     right: 15,
@@ -122,6 +134,7 @@ export const mapStyles = StyleSheet.create({
     },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+
   },
 });
 
