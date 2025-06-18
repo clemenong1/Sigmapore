@@ -11,7 +11,7 @@ import {
   FlatList,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { styles } from '../styles/styles';
 
@@ -96,21 +96,35 @@ const QuizScreen = ({ user }) => {
     setLoadingLeaderboard(true);
     try {
       console.log('Fetching leaderboard data...');
+      
+      // Check if user is authenticated
+      if (!user || !user.uid) {
+        console.warn('User not authenticated for leaderboard');
+        setLeaderboardData([]);
+        return;
+      }
+
       const usersRef = collection(db, 'users');
-      const querySnapshot = await getDocs(usersRef);
+      const q = query(
+        usersRef,
+        orderBy('quizPoints', 'desc'),
+        limit(50) // Limit to top 50 users to prevent performance issues
+      );
+      
+      const querySnapshot = await getDocs(q);
       
       const users = [];
       querySnapshot.forEach((doc) => {
         try {
           const userData = doc.data();
-          // Include users with valid usernames, even if they have 0 points
-          if (userData && userData.username) {
+          // Include users with valid data
+          if (userData && (userData.username || userData.email)) {
             users.push({
               id: doc.id,
-              username: userData.username,
-              quizPoints: userData.quizPoints || 0,
-              totalQuizAnswers: userData.totalQuizAnswers || 0,
-              correctAnswers: userData.correctAnswers || 0
+              username: userData.username || userData.email?.split('@')[0] || 'Anonymous',
+              quizPoints: Number(userData.quizPoints) || 0,
+              totalQuizAnswers: Number(userData.totalQuizAnswers) || 0,
+              correctAnswers: Number(userData.correctAnswers) || 0
             });
           }
         } catch (docError) {
@@ -118,7 +132,7 @@ const QuizScreen = ({ user }) => {
         }
       });
 
-      // Sort by points descending, then by total answers
+      // Additional sort to ensure proper ordering
       users.sort((a, b) => {
         if (b.quizPoints !== a.quizPoints) {
           return b.quizPoints - a.quizPoints;
@@ -127,23 +141,38 @@ const QuizScreen = ({ user }) => {
       });
       
       console.log('Leaderboard data fetched:', users.length, 'users');
-      setLeaderboardData(users);
+      setLeaderboardData(users || []);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       setLeaderboardData([]);
-      Alert.alert('Error', 'Failed to load leaderboard. Please try again.');
+      
+      // More specific error handling
+      if (error.code === 'permission-denied') {
+        Alert.alert('Access Denied', 'You need to be logged in to view the leaderboard.');
+      } else if (error.code === 'unavailable') {
+        Alert.alert('Network Error', 'Please check your internet connection and try again.');
+      } else {
+        Alert.alert('Error', 'Failed to load leaderboard. Please try again.');
+      }
     } finally {
       setLoadingLeaderboard(false);
     }
   };
 
-  const openLeaderboard = () => {
+  const openLeaderboard = async () => {
     try {
+      if (!user || !user.uid) {
+        Alert.alert('Login Required', 'Please log in to view the leaderboard.');
+        return;
+      }
+      
+      console.log('Opening leaderboard...');
       setShowLeaderboard(true);
-      fetchLeaderboard();
+      await fetchLeaderboard();
     } catch (error) {
       console.error('Error opening leaderboard:', error);
-      Alert.alert('Error', 'Failed to open leaderboard');
+      setShowLeaderboard(false);
+      Alert.alert('Error', 'Failed to open leaderboard: ' + error.message);
     }
   };
 
@@ -229,95 +258,125 @@ const QuizScreen = ({ user }) => {
     }
   };
 
-  const LeaderboardModal = () => (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={showLeaderboard}
-      onRequestClose={() => setShowLeaderboard(false)}
-    >
-      <View style={styles.leaderboardOverlay}>
-        <View style={styles.leaderboardContainer}>
-          <LinearGradient colors={['#0D1421', '#1A237E']} style={{ flex: 1, borderRadius: 20, padding: 20 }}>
-            <View style={styles.leaderboardHeader}>
-              <Text style={styles.leaderboardTitle}>🏆 Quiz Leaderboard</Text>
-              <TouchableOpacity
-                style={styles.leaderboardCloseButton}
-                onPress={() => setShowLeaderboard(false)}
-              >
-                <Text style={styles.leaderboardCloseButtonText}>✕</Text>
-              </TouchableOpacity>
+  const LeaderboardModal = () => {
+    if (!showLeaderboard) return null;
+    
+    try {
+      return (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={showLeaderboard}
+          onRequestClose={() => setShowLeaderboard(false)}
+        >
+          <View style={styles.leaderboardOverlay}>
+            <View style={styles.leaderboardContainer}>
+              <View style={{ flex: 1, backgroundColor: '#0D1421', borderRadius: 20, padding: 20 }}>
+                <View style={styles.leaderboardHeader}>
+                  <Text style={styles.leaderboardTitle}>🏆 Quiz Leaderboard</Text>
+                  <TouchableOpacity
+                    style={styles.leaderboardCloseButton}
+                    onPress={() => setShowLeaderboard(false)}
+                  >
+                    <Text style={styles.leaderboardCloseButtonText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                <Text style={styles.leaderboardSubtitle}>Top Quiz Champions</Text>
+                
+                {loadingLeaderboard ? (
+                  <View style={styles.leaderboardLoading}>
+                    <ActivityIndicator size="large" color="#4CAF50" />
+                    <Text style={styles.leaderboardLoadingText}>Loading rankings...</Text>
+                  </View>
+                ) : !leaderboardData || leaderboardData.length === 0 ? (
+                  <View style={styles.leaderboardEmpty}>
+                    <Text style={styles.leaderboardEmptyText}>No quiz participants yet!</Text>
+                    <Text style={styles.leaderboardEmptySubtext}>Be the first to answer a question</Text>
+                  </View>
+                ) : (
+                  <ScrollView style={styles.leaderboardList} showsVerticalScrollIndicator={false}>
+                    {leaderboardData.map((item, index) => {
+                      try {
+                        if (!item) return null;
+                        
+                        const safeItem = {
+                          id: String(item.id || `user-${index}`),
+                          username: String(item.username || item.email?.split('@')[0] || 'Anonymous'),
+                          quizPoints: Number(item.quizPoints) || 0,
+                          totalQuizAnswers: Number(item.totalQuizAnswers) || 0,
+                          correctAnswers: Number(item.correctAnswers) || 0
+                        };
+                        
+                        const isTopThree = index < 3;
+                        const isCurrentUser = user && user.uid && item.id === user.uid;
+                        
+                        return (
+                          <View 
+                            key={safeItem.id}
+                            style={styles.leaderboardItem}
+                          >
+                            <View style={styles.leaderboardRank}>
+                              <Text style={styles.leaderboardRankText}>
+                                {isTopThree ? ['🥇', '🥈', '🥉'][index] : `#${index + 1}`}
+                              </Text>
+                            </View>
+                            
+                            <View style={styles.leaderboardUserInfo}>
+                              <Text style={styles.leaderboardUsername}>
+                                {safeItem.username} {isCurrentUser ? '(You)' : ''}
+                              </Text>
+                              <Text style={styles.leaderboardUserStats}>
+                                {safeItem.totalQuizAnswers} questions • {safeItem.totalQuizAnswers > 0 ? Math.round((safeItem.correctAnswers / safeItem.totalQuizAnswers) * 100) : 0}% accuracy
+                              </Text>
+                            </View>
+                            
+                            <View style={styles.leaderboardPoints}>
+                              <Text style={styles.leaderboardPointsText}>
+                                {safeItem.quizPoints}
+                              </Text>
+                              <Text style={styles.leaderboardPointsLabel}>pts</Text>
+                            </View>
+                          </View>
+                        );
+                      } catch (renderError) {
+                        console.warn('Error rendering leaderboard item:', renderError);
+                        return null;
+                      }
+                    }).filter(Boolean)}
+                  </ScrollView>
+                )}
+              </View>
             </View>
-            
-            <Text style={styles.leaderboardSubtitle}>Top Quiz Champions</Text>
-            
-            {loadingLeaderboard ? (
-              <View style={styles.leaderboardLoading}>
-                <ActivityIndicator size="large" color="#4CAF50" />
-                <Text style={styles.leaderboardLoadingText}>Loading rankings...</Text>
+          </View>
+        </Modal>
+      );
+    } catch (error) {
+      console.error('Error rendering leaderboard modal:', error);
+      return (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={showLeaderboard}
+          onRequestClose={() => setShowLeaderboard(false)}
+        >
+          <View style={styles.leaderboardOverlay}>
+            <View style={styles.leaderboardContainer}>
+              <View style={{ flex: 1, backgroundColor: '#0D1421', borderRadius: 20, padding: 20, justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ color: 'white', fontSize: 18, marginBottom: 20 }}>Error loading leaderboard</Text>
+                <TouchableOpacity
+                  style={{ backgroundColor: '#4CAF50', padding: 15, borderRadius: 10 }}
+                  onPress={() => setShowLeaderboard(false)}
+                >
+                  <Text style={{ color: 'white', fontWeight: 'bold' }}>Close</Text>
+                </TouchableOpacity>
               </View>
-            ) : leaderboardData.length === 0 ? (
-              <View style={styles.leaderboardEmpty}>
-                <Text style={styles.leaderboardEmptyText}>No quiz participants yet!</Text>
-                <Text style={styles.leaderboardEmptySubtext}>Be the first to answer a question</Text>
-              </View>
-            ) : (
-              <ScrollView style={styles.leaderboardList} showsVerticalScrollIndicator={false}>
-                {leaderboardData.map((item, index) => {
-                  const isTopThree = index < 3;
-                  const rankIcons = ['🥇', '🥈', '🥉'];
-                  const isCurrentUser = user && item.id === user.uid;
-                  
-                  return (
-                    <View 
-                      key={item.id || index}
-                      style={[
-                        styles.leaderboardItem,
-                        isTopThree && styles.leaderboardItemTopThree,
-                        isCurrentUser && styles.leaderboardItemCurrentUser
-                      ]}
-                    >
-                      <View style={styles.leaderboardRank}>
-                        <Text style={[
-                          styles.leaderboardRankText,
-                          isTopThree && styles.leaderboardRankTextTopThree
-                        ]}>
-                          {isTopThree ? rankIcons[index] : `#${index + 1}`}
-                        </Text>
-                      </View>
-                      
-                      <View style={styles.leaderboardUserInfo}>
-                        <Text style={[
-                          styles.leaderboardUsername,
-                          isTopThree && styles.leaderboardUsernameTopThree,
-                          isCurrentUser && styles.leaderboardUsernameCurrentUser
-                        ]}>
-                          {item.username || 'Unknown'} {isCurrentUser ? '(You)' : ''}
-                        </Text>
-                        <Text style={styles.leaderboardUserStats}>
-                          {item.totalQuizAnswers || 0} questions • {item.totalQuizAnswers > 0 ? Math.round(((item.correctAnswers || 0) / item.totalQuizAnswers) * 100) : 0}% accuracy
-                        </Text>
-                      </View>
-                      
-                      <View style={styles.leaderboardPoints}>
-                        <Text style={[
-                          styles.leaderboardPointsText,
-                          isTopThree && styles.leaderboardPointsTextTopThree
-                        ]}>
-                          {item.quizPoints || 0}
-                        </Text>
-                        <Text style={styles.leaderboardPointsLabel}>pts</Text>
-                      </View>
-                    </View>
-                  );
-                })}
-              </ScrollView>
-            )}
-          </LinearGradient>
-        </View>
-      </View>
-    </Modal>
-  );
+            </View>
+          </View>
+        </Modal>
+      );
+    }
+  };
 
   if (loading) {
     return (
