@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { LinearGradient } from 'expo-linear-gradient';
-import { dengueService, psiService, covidService } from '../stats';
+import { dengueService, psiService, covidService } from '../services';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const SingaporeMapScreen = ({ user }) => {

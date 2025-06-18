@@ -83,6 +83,46 @@ export const mapStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  zoomControls: {
+    position: 'absolute',
+    right: 15,
+    bottom: 160,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: 8,
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 999,
+  },
+  zoomButton: {
+    backgroundColor: '#4CAF50',
+    padding: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.3)',
+    width: 50,
+    height: 50,
+  },
+  markerContainer: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 8,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
 });
 
 export const modalStyles = StyleSheet.create({
@@ -1241,6 +1281,11 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
   },
+  quizTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   quizSubtitle: {
     fontSize: 16,
     color: '#B0BEC5',
@@ -1422,6 +1467,11 @@ export const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#4CAF50',
+  },
+  leaderboardTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   leaderboardSubtitle: {
     fontSize: 16,

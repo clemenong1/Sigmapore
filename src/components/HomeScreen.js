@@ -5,6 +5,7 @@ import {
     ScrollView,
     Dimensions,
     SafeAreaView,
+    Image,
 } from 'react-native';
 import { styles } from '../styles/styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -108,8 +109,16 @@ const HomeScreen = ({ user }) => {
         >
             <View style={styles.header}>
                 <Text style={styles.welcomeText}>{t.welcome}, {user?.displayName || 'User'}</Text>
-                <Text style={styles.dashboardTitle}>{t.healthPulse}</Text>
-                <Text style={styles.tagline}>{t.tagline}</Text>
+                <View style={{ alignItems: 'center', marginTop: -80, marginBottom: -100 }}>
+                    <Image 
+                        source={require('../../assets/Screenshot_2025-06-18_at_3.30.31_AM-removebg-preview.png')}
+                        style={{ 
+                            width: width * 1.1, 
+                            height: 400, 
+                            resizeMode: 'contain' 
+                        }}
+                    />
+                </View>
             </View>
 
             {/* Population Stats */}

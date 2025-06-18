@@ -11,9 +11,10 @@ import {
   FlatList,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { styles } from '../styles/styles';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const QuizScreen = ({ user }) => {
   const [dailyQuestion, setDailyQuestion] = useState({
@@ -35,6 +36,7 @@ const QuizScreen = ({ user }) => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+  const [leaderboardError, setLeaderboardError] = useState(null);
 
   const animatedValues = dailyQuestion.answers.map(() => new Animated.Value(1));
 
@@ -93,57 +95,120 @@ const QuizScreen = ({ user }) => {
   };
 
   const fetchLeaderboard = async () => {
+    if (!showLeaderboard) return;
+    
+    console.log('Starting fetchLeaderboard...');
     setLoadingLeaderboard(true);
+    setLeaderboardError(null);
+    
+    // Shorter timeout - 5 seconds
+    const timeoutId = setTimeout(() => {
+      console.log('Leaderboard fetch timeout - showing empty state');
+      if (showLeaderboard) {
+        setLeaderboardData([]);
+        setLeaderboardError(null);
+        setLoadingLeaderboard(false);
+      }
+    }, 5000);
+    
     try {
-      console.log('Fetching leaderboard data...');
       const usersRef = collection(db, 'users');
       const querySnapshot = await getDocs(usersRef);
       
+      clearTimeout(timeoutId);
+      console.log('Found users:', querySnapshot.size);
+      
       const users = [];
       querySnapshot.forEach((doc) => {
-        try {
-          const userData = doc.data();
-          // Include users with valid usernames, even if they have 0 points
-          if (userData && userData.username) {
-            users.push({
-              id: doc.id,
-              username: userData.username,
-              quizPoints: userData.quizPoints || 0,
-              totalQuizAnswers: userData.totalQuizAnswers || 0,
-              correctAnswers: userData.correctAnswers || 0
-            });
-          }
-        } catch (docError) {
-          console.warn('Error processing user document:', docError);
+        const userData = doc.data();
+        
+        // Include current user even without quiz activity for testing
+        if (userData && (userData.totalQuizAnswers > 0 || userData.quizPoints > 0 || doc.id === user?.uid)) {
+          users.push({
+            id: doc.id,
+            username: userData.username || userData.email?.split('@')[0] || 'You',
+            quizPoints: userData.quizPoints || 0,
+            totalQuizAnswers: userData.totalQuizAnswers || 0,
+            correctAnswers: userData.correctAnswers || 0
+          });
         }
       });
 
-      // Sort by points descending, then by total answers
-      users.sort((a, b) => {
-        if (b.quizPoints !== a.quizPoints) {
-          return b.quizPoints - a.quizPoints;
-        }
-        return b.totalQuizAnswers - a.totalQuizAnswers;
-      });
+      users.sort((a, b) => b.quizPoints - a.quizPoints);
       
-      console.log('Leaderboard data fetched:', users.length, 'users');
-      setLeaderboardData(users);
+      if (showLeaderboard) {
+        setLeaderboardData(users);
+        setLeaderboardError(null);
+      }
     } catch (error) {
-      console.error('Error fetching leaderboard:', error);
-      setLeaderboardData([]);
-      Alert.alert('Error', 'Failed to load leaderboard. Please try again.');
+      clearTimeout(timeoutId);
+      console.error('Leaderboard error:', error);
+      
+      if (showLeaderboard) {
+        // Just show empty state instead of error
+        setLeaderboardData([]);
+        setLeaderboardError(null);
+      }
     } finally {
-      setLoadingLeaderboard(false);
+      if (showLeaderboard) {
+        setLoadingLeaderboard(false);
+      }
     }
   };
 
   const openLeaderboard = () => {
-    try {
-      setShowLeaderboard(true);
+    console.log('Opening leaderboard...');
+    setShowLeaderboard(true);
+    setLoadingLeaderboard(true);
+    setLeaderboardError(null);
+    
+    // Clear any existing data first
+    setLeaderboardData([]);
+    
+    // Fetch data after modal is shown
+    setTimeout(() => {
       fetchLeaderboard();
+    }, 100);
+  };
+
+  // Test function to add dummy data for debugging
+  const addTestData = () => {
+    const dummyUsers = [
+      { id: 'test1', username: 'TestUser1', quizPoints: 50, totalQuizAnswers: 5, correctAnswers: 4 },
+      { id: 'test2', username: 'TestUser2', quizPoints: 30, totalQuizAnswers: 3, correctAnswers: 3 },
+      { id: 'test3', username: 'TestUser3', quizPoints: 20, totalQuizAnswers: 2, correctAnswers: 1 },
+    ];
+    setLeaderboardData(dummyUsers);
+    setLoadingLeaderboard(false);
+    setLeaderboardError(null);
+    console.log('Added test data:', dummyUsers);
+  };
+
+  // Test Firebase connectivity
+  const testFirebaseConnection = async () => {
+    console.log('Testing Firebase connection...');
+    console.log('User authenticated:', !!user, user?.uid);
+    console.log('Database instance:', !!db);
+    
+    try {
+      // Try to write a test document
+      const testDoc = {
+        test: true,
+        timestamp: new Date().toISOString(),
+        userId: user?.uid
+      };
+      
+      const docRef = await addDoc(collection(db, 'test'), testDoc);
+      console.log('Firebase write test successful:', docRef.id);
+      
+      // Try to read it back
+      const testQuery = await getDocs(collection(db, 'test'));
+      console.log('Firebase read test successful, docs:', testQuery.size);
+      
+      Alert.alert('Success', 'Firebase connection is working!');
     } catch (error) {
-      console.error('Error opening leaderboard:', error);
-      Alert.alert('Error', 'Failed to open leaderboard');
+      console.error('Firebase test failed:', error);
+      Alert.alert('Firebase Error', `Connection failed: ${error.message}`);
     }
   };
 
@@ -201,11 +266,22 @@ const QuizScreen = ({ user }) => {
       if (userDoc.exists()) {
         await updateDoc(userDocRef, newStats);
       } else {
+        // Create user document with basic info, but prompt to complete profile
         await setDoc(userDocRef, {
           ...newStats,
           email: user.email,
+          username: user.email?.split('@')[0] || 'User', // Use email prefix as default username
           createdAt: new Date().toISOString()
         });
+        
+        // Alert user to complete their profile for leaderboard
+        setTimeout(() => {
+          Alert.alert(
+            'Complete Your Profile',
+            'To appear on the leaderboard, please complete your profile by setting a username in the Profile tab.',
+            [{ text: 'OK' }]
+          );
+        }, 2000);
       }
 
       setUserStats(newStats);
@@ -240,13 +316,25 @@ const QuizScreen = ({ user }) => {
         <View style={styles.leaderboardContainer}>
           <LinearGradient colors={['#0D1421', '#1A237E']} style={{ flex: 1, borderRadius: 20, padding: 20 }}>
             <View style={styles.leaderboardHeader}>
-              <Text style={styles.leaderboardTitle}>🏆 Quiz Leaderboard</Text>
-              <TouchableOpacity
-                style={styles.leaderboardCloseButton}
-                onPress={() => setShowLeaderboard(false)}
-              >
-                <Text style={styles.leaderboardCloseButtonText}>✕</Text>
-              </TouchableOpacity>
+              <View style={styles.leaderboardTitleContainer}>
+                <FontAwesome5 name="trophy" size={24} color="#FFD700" solid />
+                <Text style={styles.leaderboardTitle}> Quiz Leaderboard</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <TouchableOpacity
+                  style={[styles.leaderboardCloseButton, { marginRight: 10, backgroundColor: 'rgba(76, 175, 80, 0.2)' }]}
+                  onPress={fetchLeaderboard}
+                  disabled={loadingLeaderboard}
+                >
+                  <FontAwesome5 name="sync-alt" size={16} color="#4CAF50" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.leaderboardCloseButton, { backgroundColor: 'rgba(244, 67, 54, 0.2)' }]}
+                  onPress={() => setShowLeaderboard(false)}
+                >
+                  <FontAwesome5 name="times" size={16} color="#F44336" />
+                </TouchableOpacity>
+              </View>
             </View>
             
             <Text style={styles.leaderboardSubtitle}>Top Quiz Champions</Text>
@@ -256,8 +344,27 @@ const QuizScreen = ({ user }) => {
                 <ActivityIndicator size="large" color="#4CAF50" />
                 <Text style={styles.leaderboardLoadingText}>Loading rankings...</Text>
               </View>
+            ) : leaderboardError ? (
+              <View style={styles.leaderboardEmpty}>
+                <FontAwesome5 name="exclamation-triangle" size={32} color="#F44336" />
+                <Text style={styles.leaderboardEmptyText}>Error loading leaderboard</Text>
+                <Text style={styles.leaderboardEmptySubtext}>{leaderboardError}</Text>
+                <TouchableOpacity
+                  style={{
+                    marginTop: 15,
+                    backgroundColor: 'rgba(76, 175, 80, 0.8)',
+                    paddingHorizontal: 20,
+                    paddingVertical: 10,
+                    borderRadius: 20,
+                  }}
+                  onPress={fetchLeaderboard}
+                >
+                  <Text style={{ color: 'white', fontWeight: 'bold' }}>Try Again</Text>
+                </TouchableOpacity>
+              </View>
             ) : leaderboardData.length === 0 ? (
               <View style={styles.leaderboardEmpty}>
+                <FontAwesome5 name="trophy" size={32} color="#FFD700" />
                 <Text style={styles.leaderboardEmptyText}>No quiz participants yet!</Text>
                 <Text style={styles.leaderboardEmptySubtext}>Be the first to answer a question</Text>
               </View>
@@ -265,7 +372,15 @@ const QuizScreen = ({ user }) => {
               <ScrollView style={styles.leaderboardList} showsVerticalScrollIndicator={false}>
                 {leaderboardData.map((item, index) => {
                   const isTopThree = index < 3;
-                  const rankIcons = ['🥇', '🥈', '🥉'];
+                  const getRankIcon = (position) => {
+                    const iconProps = { size: 20, solid: true };
+                    switch(position) {
+                      case 0: return <FontAwesome5 name="medal" color="#FFD700" {...iconProps} />;
+                      case 1: return <FontAwesome5 name="medal" color="#C0C0C0" {...iconProps} />;
+                      case 2: return <FontAwesome5 name="medal" color="#CD7F32" {...iconProps} />;
+                      default: return null;
+                    }
+                  };
                   const isCurrentUser = user && item.id === user.uid;
                   
                   return (
@@ -278,12 +393,16 @@ const QuizScreen = ({ user }) => {
                       ]}
                     >
                       <View style={styles.leaderboardRank}>
-                        <Text style={[
-                          styles.leaderboardRankText,
-                          isTopThree && styles.leaderboardRankTextTopThree
-                        ]}>
-                          {isTopThree ? rankIcons[index] : `#${index + 1}`}
-                        </Text>
+                        {isTopThree ? (
+                          getRankIcon(index)
+                        ) : (
+                          <Text style={[
+                            styles.leaderboardRankText,
+                            isTopThree && styles.leaderboardRankTextTopThree
+                          ]}>
+                            #{index + 1}
+                          </Text>
+                        )}
                       </View>
                       
                       <View style={styles.leaderboardUserInfo}>
@@ -337,14 +456,20 @@ const QuizScreen = ({ user }) => {
         <View style={styles.quizHeader}>
           <View style={styles.quizHeaderContent}>
             <View>
-              <Text style={styles.quizTitle}>📚 Daily Health Quiz</Text>
+              <View style={styles.quizTitleContainer}>
+                <FontAwesome5 name="book-medical" size={20} color="#4CAF50" solid />
+                <Text style={styles.quizTitle}> Daily Health Quiz</Text>
+              </View>
               <Text style={styles.quizSubtitle}>Test your health knowledge!</Text>
             </View>
             <TouchableOpacity
               style={styles.leaderboardButton}
-              onPress={openLeaderboard}
+              onPress={() => {
+                console.log('Leaderboard button pressed');
+                openLeaderboard();
+              }}
             >
-              <Text style={styles.leaderboardButtonIcon}>🏆</Text>
+              <FontAwesome5 name="trophy" size={20} color="#FFD700" solid />
             </TouchableOpacity>
           </View>
         </View>
@@ -372,7 +497,7 @@ const QuizScreen = ({ user }) => {
         {hasAnsweredToday ? (
           /* Already Answered */
           <View style={styles.quizCompletedContainer}>
-            <Text style={styles.quizCompletedIcon}>✅</Text>
+            <FontAwesome5 name="check-circle" size={48} color="#4CAF50" solid />
             <Text style={styles.quizCompletedTitle}>Already answered today!</Text>
             <Text style={styles.quizCompletedText}>
               Come back tomorrow for a new question

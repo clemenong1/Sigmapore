@@ -32,7 +32,8 @@ export const goOffline = () => disableNetwork(db);
 // Collections
 export const COLLECTIONS = {
   USERS: 'users',
-  REPORTS: 'reports'
+  REPORTS: 'reports',
+  QUIZ_ANSWERS: 'quizAnswers'
 };
 
 export default app; 

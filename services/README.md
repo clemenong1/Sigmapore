@@ -14,7 +14,7 @@ stats/
 │   ├── dengueData.ts      # Dengue cluster data wrapper
 │   ├── DENGUECLUSTER.json # Official government dengue clusters
 │   ├── PollutantStandardsIndexPSI.json # PSI air quality specifications
-│   └── Covid19PatientAdmissionLocations.kml # COVID-19 hospital locations
+
 └── index.ts           # Module exports
 ```
 
@@ -45,7 +45,7 @@ stats/
 ## Usage
 
 ```typescript
-import { dengueService, psiService, covidService } from '../stats';
+import { dengueService, psiService, covidService } from '../services';
 
 // Get dengue clusters
 const clusters = await dengueService.getDengueClusters();
