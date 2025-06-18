@@ -49,6 +49,130 @@ export class HealthPredictionService {
     this.initializeHistoricalData();
   }
 
+  // Location coordinates database for GPS-precise predictions
+  private locationCoordinates: { [key: string]: { lat: number; lng: number } } = {
+    // Central Region
+    'orchard': { lat: 1.3048, lng: 103.8318 },
+    'marina bay': { lat: 1.2810, lng: 103.8598 },
+    'chinatown': { lat: 1.2833, lng: 103.8437 },
+    'bugis': { lat: 1.3000, lng: 103.8558 },
+    'raffles place': { lat: 1.2845, lng: 103.8507 },
+    'little india': { lat: 1.3063, lng: 103.8516 },
+    'clarke quay': { lat: 1.2888, lng: 103.8467 },
+    'toa payoh': { lat: 1.3343, lng: 103.8470 },
+    'bishan': { lat: 1.3503, lng: 103.8487 },
+    'ang mo kio': { lat: 1.3690, lng: 103.8454 },
+    
+    // North Region
+    'woodlands': { lat: 1.4382, lng: 103.7890 },
+    'yishun': { lat: 1.4304, lng: 103.8354 },
+    'sembawang': { lat: 1.4491, lng: 103.8185 },
+    'admiralty': { lat: 1.4407, lng: 103.8010 },
+    'marsiling': { lat: 1.4327, lng: 103.7742 },
+    
+    // South Region
+    'sentosa': { lat: 1.2494, lng: 103.8303 },
+    'harbourfront': { lat: 1.2659, lng: 103.8223 },
+    'tiong bahru': { lat: 1.2855, lng: 103.8270 },
+    'tanjong pagar': { lat: 1.2762, lng: 103.8458 },
+    'queenstown': { lat: 1.2941, lng: 103.8059 },
+    
+    // East Region
+    'changi': { lat: 1.3644, lng: 103.9915 },
+    'tampines': { lat: 1.3496, lng: 103.9568 },
+    'pasir ris': { lat: 1.3721, lng: 103.9474 },
+    'bedok': { lat: 1.3236, lng: 103.9273 },
+    'katong': { lat: 1.3048, lng: 103.9065 },
+    'geylang': { lat: 1.3133, lng: 103.8785 },
+    'paya lebar': { lat: 1.3175, lng: 103.8918 },
+    
+    // West Region  
+    'jurong east': { lat: 1.3329, lng: 103.7436 },
+    'jurong west': { lat: 1.3404, lng: 103.7090 },
+    'boon lay': { lat: 1.3387, lng: 103.7018 },
+    'clementi': { lat: 1.3162, lng: 103.7649 },
+    'tuas': { lat: 1.2966, lng: 103.6361 },
+    'bukit batok': { lat: 1.3590, lng: 103.7637 },
+    'choa chu kang': { lat: 1.3840, lng: 103.7470 },
+    'bukit panjang': { lat: 1.3774, lng: 103.7719 },
+    
+    // North-East Region
+    'hougang': { lat: 1.3613, lng: 103.8862 },
+    'serangoon': { lat: 1.3554, lng: 103.8654 },
+    'punggol': { lat: 1.4043, lng: 103.9021 },
+    'sengkang': { lat: 1.3916, lng: 103.8946 }
+  };
+
+  // Get precise coordinates for a location
+  private getLocationCoordinates(location: string): { lat: number; lng: number } | null {
+    const normalizedLocation = location.toLowerCase().trim();
+    
+    // Try exact match first
+    if (this.locationCoordinates[normalizedLocation]) {
+      return this.locationCoordinates[normalizedLocation];
+    }
+
+    // Try partial match
+    for (const [key, coords] of Object.entries(this.locationCoordinates)) {
+      if (key.includes(normalizedLocation) || normalizedLocation.includes(key)) {
+        return coords;
+      }
+    }
+
+    return null;
+  }
+
+  // Calculate precise distance between two GPS coordinates
+  private calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  // Fallback island-wide dengue prediction for unknown locations
+  private predictIslandWideDengueRisk(daysAhead: number): any {
+    const currentClusters = DENGUE_GEOJSON_DATA.features;
+    const currentCases = currentClusters.reduce((sum, cluster) => sum + cluster.properties.CASE_SIZE, 0);
+    
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + daysAhead);
+    const seasonalFactor = this.getSeasonalFactor(targetDate);
+    const weatherMultiplier = this.getWeatherImpact('dengue', daysAhead);
+    const clusterGrowthRate = this.analyzeClusterGrowth(currentClusters);
+    const weeklyTrend = this.getWeeklyTrend(daysAhead);
+    
+    const basePrediction = currentCases * (1 + (weeklyTrend / 100));
+    const finalPrediction = basePrediction * weatherMultiplier * (1 + seasonalFactor) * (1 + clusterGrowthRate);
+    
+    return {
+      predicted: Math.max(0, Math.round(finalPrediction)),
+      confidence: this.calculateConfidence(seasonalFactor, weatherMultiplier, 0.65),
+      trend: finalPrediction > currentCases * 1.1 ? 'increasing' : 'stable',
+      factors: [`Island-wide: ${currentCases} total cases`, 'General Singapore forecast'],
+      isHyperlocal: false
+    };
+  }
+
+  // Analyze local cluster growth patterns (for nearby clusters only)
+  private analyzeLocalClusterGrowth(nearbyClusters: any[]): number {
+    if (nearbyClusters.length === 0) return 0;
+    
+    // Simulate local growth based on cluster density and cases
+    const totalLocalCases = nearbyClusters.reduce((sum, c) => sum + c.cases, 0);
+    const avgCasesPerCluster = totalLocalCases / nearbyClusters.length;
+    
+    // Higher growth rate if clusters are dense and large
+    if (avgCasesPerCluster > 15 && nearbyClusters.length > 2) return 0.15; // 15% growth
+    if (avgCasesPerCluster > 10) return 0.1; // 10% growth  
+    if (avgCasesPerCluster > 5) return 0.05; // 5% growth
+    return 0.02; // 2% baseline growth
+  }
+
   // Initialize with simulated historical data (in real app, load from database)
   private initializeHistoricalData() {
     const dates = this.generateDateRange(30); // Last 30 days
@@ -105,45 +229,70 @@ export class HealthPredictionService {
     };
   }
 
-  // Dengue prediction using cluster analysis + weather patterns
+  // HYPERLOCAL Dengue prediction using GPS-based cluster analysis + weather patterns
   private async predictDengueRisk(location: string, daysAhead: number): Promise<any> {
     const currentClusters = DENGUE_GEOJSON_DATA.features;
-    const currentCases = currentClusters.reduce((sum, cluster) => sum + cluster.properties.CASE_SIZE, 0);
+    const locationCoords = this.getLocationCoordinates(location);
     
+    if (!locationCoords) {
+      // Fallback to island-wide prediction for unknown locations
+      return this.predictIslandWideDengueRisk(daysAhead);
+    }
+
+    // HYPERLOCAL ANALYSIS: Calculate distances to all clusters for this specific location
+    const clusterDistances = currentClusters.map(cluster => {
+      const clusterCoords = cluster.geometry.coordinates[0][0]; // [lng, lat]
+      const distance = this.calculateDistance(
+        locationCoords.lat, locationCoords.lng,
+        clusterCoords[1], clusterCoords[0]
+      );
+      return { cluster, distance, cases: cluster.properties.CASE_SIZE };
+    });
+
+    // Sort by distance and get nearby clusters
+    clusterDistances.sort((a, b) => a.distance - b.distance);
+    const within2km = clusterDistances.filter(c => c.distance <= 2.0);
+    const within5km = clusterDistances.filter(c => c.distance <= 5.0);
+    
+    const currentLocalCases = within2km.reduce((sum, c) => sum + c.cases, 0);
+    const nearbyInfluence = within5km.reduce((sum, c) => sum + (c.cases / (c.distance + 1)), 0);
+
     // Weather impact (monsoon season increases risk)
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + daysAhead);
     const seasonalFactor = this.getSeasonalFactor(targetDate);
     const weatherMultiplier = this.getWeatherImpact('dengue', daysAhead);
     
-    // Cluster growth pattern
-    const clusterGrowthRate = this.analyzeClusterGrowth(currentClusters);
+    // Local cluster growth pattern (focus on nearby clusters)
+    const localGrowthRate = this.analyzeLocalClusterGrowth(within2km);
     
-    // Weekly trend simulation
+    // Weekly trend simulation with local factors
     const weeklyTrend = this.getWeeklyTrend(daysAhead);
     
-    // Prediction calculation
-    const basePrediction = currentCases * (1 + (weeklyTrend / 100));
-    const weatherAdjusted = basePrediction * weatherMultiplier;
+    // HYPERLOCAL Prediction calculation
+    const baseLocalPrediction = currentLocalCases * (1 + (weeklyTrend / 100));
+    const influenceFactor = nearbyInfluence * 0.3; // Nearby clusters influence
+    const weatherAdjusted = (baseLocalPrediction + influenceFactor) * weatherMultiplier;
     const seasonalAdjusted = weatherAdjusted * (1 + seasonalFactor);
-    const finalPrediction = seasonalAdjusted * (1 + clusterGrowthRate);
+    const finalPrediction = seasonalAdjusted * (1 + localGrowthRate);
 
     const predicted = Math.max(0, Math.round(finalPrediction));
-    const confidence = this.calculateConfidence(seasonalFactor, weatherMultiplier, 0.75);
+    const confidence = this.calculateConfidence(seasonalFactor, weatherMultiplier, 0.8); // Higher confidence for hyperlocal
     
     let trend: 'increasing' | 'decreasing' | 'stable';
-    if (predicted > currentCases * 1.1) trend = 'increasing';
-    else if (predicted < currentCases * 0.9) trend = 'decreasing';
+    if (predicted > currentLocalCases * 1.15) trend = 'increasing';
+    else if (predicted < currentLocalCases * 0.85) trend = 'decreasing';
     else trend = 'stable';
 
     const factors = [
-      `Current clusters: ${currentClusters.length} active (${currentCases} total cases)`,
+      `${location}: ${currentLocalCases} cases within 2km, ${within2km.length} active clusters nearby`,
+      `Closest cluster: ${clusterDistances[0]?.distance.toFixed(1)}km away (${clusterDistances[0]?.cases} cases)`,
       `Seasonal factor: ${seasonalFactor > 0 ? 'High risk period (wet season)' : 'Lower risk period'}`,
       `Weather impact: ${weatherMultiplier > 1 ? 'Favorable for mosquito breeding' : 'Less favorable conditions'}`,
-      `Growth pattern: ${clusterGrowthRate > 0.1 ? 'Rapid expansion expected' : 'Steady progression'}`
+      `Local growth pattern: ${localGrowthRate > 0.1 ? 'Rapid expansion expected in nearby clusters' : 'Steady progression'}`
     ];
 
-    return { predicted, confidence, trend, factors };
+    return { predicted, confidence, trend, factors, isHyperlocal: true };
   }
 
   // Air quality prediction using weather patterns

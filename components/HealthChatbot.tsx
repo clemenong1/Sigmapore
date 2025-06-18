@@ -40,6 +40,7 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
   const [isTyping, setIsTyping] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [heatmapData, setHeatmapData] = useState<any>(null);
+  const [regionalData, setRegionalData] = useState<any>(null);
   const chatbotService = useRef(new HealthChatbotService(openaiApiKey));
   const scrollViewRef = useRef<ScrollView>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -182,6 +183,26 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
                     locationData={message.locationData}
                     onExpand={() => {
                       setHeatmapData(message.locationData);
+                      setRegionalData(null); // Clear regional data when showing hyperlocal
+                      setShowHeatmap(true);
+                    }}
+                  />
+                )}
+
+                {/* Show regional data for Singapore-wide predictions */}
+                {(message as any).regionalData && (
+                  <MiniHeatmap
+                    regionalData={(message as any).regionalData}
+                    onExpand={() => {
+                      // For regional data, create a generic location analysis for the heatmap
+                      setHeatmapData({
+                        location: 'Singapore',
+                        dengueRisk: { level: 'Medium', casesNearby: 45 },
+                        airQuality: { psi: 65, level: 'Moderate' },
+                        covidRisk: { level: 'Low', hospitalCases: 15 },
+                        overallRisk: 'Medium'
+                      });
+                      setRegionalData((message as any).regionalData);
                       setShowHeatmap(true);
                     }}
                   />
@@ -213,6 +234,7 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
                         overallRisk: message.predictionData.overallRisk.level || 'Medium'
                       };
                       setHeatmapData(convertedData);
+                      setRegionalData(null); // Clear regional data when showing prediction data
                       setShowHeatmap(true);
                     }}
                   />
@@ -237,6 +259,7 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
                           covidRisk: { level: 'Low', hospitalCases: 15 },
                           overallRisk: message.metadata?.riskLevel || 'Low'
                         });
+                        setRegionalData(null); // Clear regional data when showing fallback data
                         setShowHeatmap(true);
                       }}
                     />
@@ -405,7 +428,11 @@ const HealthChatbot: React.FC<HealthChatbotProps> = ({
           {heatmapData && (
             <HealthDataHeatmap
               locationAnalysis={heatmapData}
-              onClose={() => setShowHeatmap(false)}
+              regionalData={regionalData}
+              onClose={() => {
+                setShowHeatmap(false);
+                setRegionalData(null); // Clear regional data when closing
+              }}
             />
           )}
         </Modal>

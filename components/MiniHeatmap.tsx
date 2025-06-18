@@ -24,10 +24,19 @@ interface MiniHeatmapProps {
     covidRisk: { level: string; hospitalCases: number };
     overallRisk: string;
   };
+  regionalData?: {
+    regions: Array<{
+      name: string;
+      dengueRisk: { level: string; casesNearby: number };
+      airQuality: { psi: number; level: string };
+      covidRisk: { level: string; hospitalCases: number };
+      overallRisk: string;
+    }>;
+  };
   onExpand?: () => void;
 }
 
-const MiniHeatmap: React.FC<MiniHeatmapProps> = ({ predictionData, locationData, onExpand }) => {
+const MiniHeatmap: React.FC<MiniHeatmapProps> = ({ predictionData, locationData, regionalData, onExpand }) => {
   const getColorForValue = (value: number, type: string): string => {
     if (type === 'dengue') {
       if (value > 100) return '#F44336';
@@ -77,10 +86,14 @@ const MiniHeatmap: React.FC<MiniHeatmapProps> = ({ predictionData, locationData,
   const renderPredictionMini = () => {
     if (!predictionData) return null;
 
+    // Check if this is hyperlocal prediction data (has isHyperlocal flag) or general Singapore
+    const isHyperlocal = predictionData.dengueRisk && (predictionData.dengueRisk as any).isHyperlocal;
+    const title = isHyperlocal ? "Hyperlocal Prediction" : "Singapore Regional Forecast";
+
     return (
       <View style={styles.miniContainer}>
         <Text style={styles.miniTitle}>
-          <FontAwesome5 name="chart-bar" size={12} color="#333" solid /> Prediction Data
+          <FontAwesome5 name={isHyperlocal ? "map-pin" : "chart-bar"} size={12} color="#333" solid /> {title}
         </Text>
 
         <View style={styles.miniGrid}>
@@ -195,10 +208,77 @@ const MiniHeatmap: React.FC<MiniHeatmapProps> = ({ predictionData, locationData,
     );
   };
 
+  const renderRegionalMini = () => {
+    if (!regionalData) return null;
+
+    // Show summary of regional data
+    const totalDengue = regionalData.regions.reduce((sum, region) => sum + region.dengueRisk.casesNearby, 0);
+    const avgPSI = Math.round(regionalData.regions.reduce((sum, region) => sum + region.airQuality.psi, 0) / regionalData.regions.length);
+    const totalCovid = regionalData.regions.reduce((sum, region) => sum + region.covidRisk.hospitalCases, 0);
+
+    return (
+      <View style={styles.miniContainer}>
+        <Text style={styles.miniTitle}>
+          <FontAwesome5 name="chart-bar" size={12} color="#333" solid /> Singapore Regional Forecast
+        </Text>
+        <Text style={styles.locationInsight}>5 regions - North, South, East, West, Central</Text>
+
+        <View style={styles.miniGrid}>
+          {/* Total Dengue */}
+          <View style={[
+            styles.miniTile,
+            { backgroundColor: getColorForValue(totalDengue, 'dengue') }
+          ]}>
+            <FontAwesome5 name="bug" size={12} color="#fff" style={styles.miniIcon} solid />
+            <Text style={styles.miniValue}>{totalDengue}</Text>
+            <Text style={styles.miniStatus}>Total</Text>
+          </View>
+
+          {/* Average PSI */}
+          <View style={[
+            styles.miniTile,
+            { backgroundColor: getColorForValue(avgPSI, 'air') }
+          ]}>
+            <FontAwesome5 name="smog" size={12} color="#fff" style={styles.miniIcon} solid />
+            <Text style={styles.miniValue}>{avgPSI}</Text>
+            <Text style={styles.miniStatus}>Avg PSI</Text>
+          </View>
+
+          {/* Total COVID */}
+          <View style={[
+            styles.miniTile,
+            { backgroundColor: getColorForValue(totalCovid, 'covid') }
+          ]}>
+            <FontAwesome5 name="hospital" size={12} color="#fff" style={styles.miniIcon} solid />
+            <Text style={styles.miniValue}>{totalCovid}</Text>
+            <Text style={styles.miniStatus}>Total</Text>
+          </View>
+
+          {/* Regional Breakdown */}
+          <View style={[
+            styles.miniTile,
+            { backgroundColor: '#667eea' }
+          ]}>
+            <FontAwesome5 name="map" size={12} color="#fff" style={styles.miniIcon} solid />
+            <Text style={styles.miniValueSmall}>5</Text>
+            <Text style={styles.miniStatus}>Regions</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity style={styles.expandButton} onPress={onExpand}>
+          <Text style={styles.expandText}>
+            <FontAwesome5 name="expand" size={10} color="#667eea" solid /> View Regional Breakdown
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <View>
       {predictionData && renderPredictionMini()}
       {locationData && renderLocationMini()}
+      {regionalData && renderRegionalMini()}
     </View>
   );
 };
