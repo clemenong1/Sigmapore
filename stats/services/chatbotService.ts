@@ -765,7 +765,7 @@ Have a safe trip! 🌟`;
   // Handle general chat with OpenAI
   private async handleGeneralChat(message: string): Promise<ChatMessage> {
     if (!this.openaiApiKey) {
-      return this.createResponse("Hi! I'm your Singapore Health Assistant. I can help you with dengue risks, air quality, COVID info, and travel health advice. What would you like to know?");
+      return this.createResponse("Hi! I'm SigmaBoy, your personal health assistant! I can help you with dengue risks, air quality, COVID info, and travel health advice. What would you like to know?");
     }
 
     try {
