@@ -1,4 +1,4 @@
-# 🏙️ SigmaPulse
+# 🏙️ SigmaShield
 
 **A Living City Health Visualization** - Transform community health data into a breathing cityscape.
 
@@ -11,8 +11,6 @@ git clone https://github.com/clemenong1/Sigmapore.git
 cd Sigmapore
 npx expo start
 ```
-
-That's it! No bullshit setup like Flutter.
 
 ## 📱 Run Options
 
@@ -78,7 +76,6 @@ Each district features a **visual building** that grows taller based on health p
 
 *"Transform community health data into a living, breathing city visualization where neighborhoods represent different health metrics. Buildings grow taller with positive trends, change colors for alerts, and pulse with real-time activity."*
 
-Perfect for hackathon presentations showing community health insights in an intuitive, visual way that anyone can understand at a glance.
 
 ## 🛠️ Tech Stack
 
@@ -102,7 +99,7 @@ Perfect for hackathon presentations showing community health insights in an intu
 
 1. **Launch** → Beautiful gradient login screen
 2. **Enter city** → Input your location (defaults to Singapore)
-3. **Tap "Enter SigmaPulse"** → Navigate to dashboard
+3. **Tap "Enter SigmaShield"** → Navigate to dashboard
 4. **View stats** → Population, age, wellbeing overview
 5. **Explore districts** → Scroll through 6 health neighborhoods
 6. **Visual feedback** → Buildings show health percentages instantly
@@ -115,5 +112,4 @@ Perfect for hackathon presentations showing community health insights in an intu
 ✅ **Beautiful UI with gradients and animations**  
 ✅ **Git version control with full history**  
 ✅ **Easy setup - just `npx expo start`**  
-
-Perfect for Singapore Hackathon presentations! 🏆 
+ 
