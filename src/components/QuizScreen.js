@@ -516,6 +516,7 @@ const QuizScreen = ({ user }) => {
         {hasAnsweredToday ? (
           /* Already Answered */
           <View style={styles.quizCompletedContainer}>
+            {console.log('Quiz completed state:', { hasAnsweredToday, selectedAnswer, isCorrect })}
             <FontAwesome5 
               name={isCorrect ? "check-circle" : "times-circle"} 
               size={48} 
@@ -536,21 +537,43 @@ const QuizScreen = ({ user }) => {
               {isCorrect ? '✓ Correct! +10 points' : '✗ Incorrect'}
             </Text>
             
-            {/* Reset Button for Testing */}
+            {/* Reset Button for Testing - Enhanced Visibility */}
             <TouchableOpacity
               style={{
-                marginTop: 20,
-                backgroundColor: 'rgba(255, 193, 7, 0.8)',
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                borderRadius: 20,
+                marginTop: 30,
+                backgroundColor: '#FFC107',
+                paddingHorizontal: 25,
+                paddingVertical: 15,
+                borderRadius: 25,
+                borderWidth: 2,
+                borderColor: '#FF9800',
+                shadowColor: '#FFC107',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
               }}
               onPress={resetTodayQuiz}
             >
-              <Text style={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>
-                🔄 Reset Quiz (Testing)
+              <Text style={{ 
+                color: '#000', 
+                fontWeight: 'bold', 
+                fontSize: 16,
+                textAlign: 'center' 
+              }}>
+                🔄 RESET QUIZ (TESTING)
               </Text>
             </TouchableOpacity>
+            
+            {/* Debug Info */}
+            <Text style={{ 
+              color: '#666', 
+              fontSize: 12, 
+              textAlign: 'center', 
+              marginTop: 10 
+            }}>
+              Debug: hasAnswered={hasAnsweredToday.toString()}
+            </Text>
           </View>
         ) : (
           /* Quiz Question */
